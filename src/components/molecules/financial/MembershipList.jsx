@@ -3,7 +3,7 @@ import { Button } from '../../atoms/Button'
 import { formatDate, formatCurrency } from '../../../utils/helpers'
 import { MEMBERSHIP_STATUS_VARIANT } from '../../../utils/financialConstants'
 
-export function MembershipList({ memberships, canEdit, onSelect, onDelete }) {
+export function MembershipList({ memberships, canEdit, onSelect, onDelete, onCancel, onRenew }) {
   if (memberships.length === 0) {
     return (
       <p className="text-sm text-slate-400 text-center py-6">
@@ -17,6 +17,8 @@ export function MembershipList({ memberships, canEdit, onSelect, onDelete }) {
       {memberships.map((m) => {
         const statusCode = m.membership_status?.code
         const variant = MEMBERSHIP_STATUS_VARIANT[statusCode] || 'default'
+        const isCancellable = m.is_current && statusCode !== 'CANCELADA'
+        const isRenewable = m.is_current
 
         return (
           <div
@@ -70,7 +72,31 @@ export function MembershipList({ memberships, canEdit, onSelect, onDelete }) {
             </div>
 
             {canEdit && (
-              <div className="flex justify-end mt-2 pt-2 border-t border-slate-100">
+              <div className="flex justify-end gap-2 mt-2 pt-2 border-t border-slate-100">
+                {isRenewable && (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onRenew(m)
+                    }}
+                  >
+                    🔄 Renovar
+                  </Button>
+                )}
+                {isCancellable && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onCancel(m)
+                    }}
+                  >
+                    ✕ Cancelar
+                  </Button>
+                )}
                 <Button
                   variant="secondary"
                   size="sm"

@@ -162,6 +162,55 @@ export function AssociateDetailPage() {
     }
   }
 
+  const handleMembershipCancel = async (membership) => {
+    if (!confirm(`¿Cancelar la membresía ${membership.membership_type?.label}? Las cuotas no pagadas serán eliminadas.`)) return
+    setActionLoading(true)
+    try {
+      await membershipsService.cancel(membership.id, profile?.id)
+      notify.success('Membresía cancelada')
+      detail.refetch()
+    } catch (error) {
+      notify.error('Error: ' + error.message)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleMembershipRenew = async (oldMembershipId, newData) => {
+    setActionLoading(true)
+    try {
+      const membership = await membershipsService.renew(oldMembershipId, {
+        ...newData,
+        associate_id: id,
+      }, profile?.id)
+
+      // Generar cronograma para la nueva membresía
+      const { data: pendingStatus } = await supabase
+        .from('catalog_items')
+        .select('id, group:group_id(code)')
+        .eq('code', 'PENDIENTE')
+
+      const collectionPending = pendingStatus?.find(
+        (item) => item.group?.code === 'COLLECTION_STATUS'
+      )
+
+      if (collectionPending) {
+        await membershipsService.generateSchedule({
+          membership,
+          defaultStatusId: collectionPending.id,
+          userId: profile?.id,
+        })
+      }
+
+      notify.success('Membresía renovada y cronograma generado')
+      detail.refetch()
+    } catch (error) {
+      notify.error('Error: ' + error.message)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
   if (detail.loading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -211,6 +260,8 @@ export function AssociateDetailPage() {
         onContactDelete={handleContactDelete}
         onMembershipSubmit={handleMembershipSubmit}
         onMembershipDelete={handleMembershipDelete}
+        onMembershipCancel={handleMembershipCancel}
+        onMembershipRenew={handleMembershipRenew}
       />
     </div>
   )

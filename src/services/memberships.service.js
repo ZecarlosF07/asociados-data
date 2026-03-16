@@ -94,6 +94,82 @@ export const membershipsService = {
     return data
   },
 
+  async cancel(id, userId) {
+    // Buscar estado CANCELADA
+    const { data: statuses } = await supabase
+      .from('catalog_items')
+      .select('id, group:group_id(code)')
+      .eq('code', 'CANCELADA')
+
+    const cancelStatus = statuses?.find(
+      (s) => s.group?.code === 'MEMBERSHIP_STATUS'
+    )
+    if (!cancelStatus) throw new Error('Estado CANCELADA no encontrado')
+
+    const { data, error } = await supabase
+      .from('memberships')
+      .update({
+        membership_status_id: cancelStatus.id,
+        is_current: false,
+        end_date: new Date().toISOString().split('T')[0],
+        updated_at: new Date().toISOString(),
+        updated_by: userId,
+      })
+      .eq('id', id)
+      .select(MEMBERSHIP_SELECT)
+      .single()
+
+    if (error) throw error
+
+    // Eliminar cuotas no pagadas
+    await supabase
+      .from('payment_schedules')
+      .update({
+        is_deleted: true,
+        deleted_at: new Date().toISOString(),
+        deleted_by: userId,
+      })
+      .eq('membership_id', id)
+      .eq('is_paid', false)
+
+    return data
+  },
+
+  async renew(oldMembershipId, newMembershipData, userId) {
+    // Marcar la anterior como RENOVADA
+    const { data: statuses } = await supabase
+      .from('catalog_items')
+      .select('id, group:group_id(code)')
+      .eq('code', 'RENOVADA')
+
+    const renewedStatus = statuses?.find(
+      (s) => s.group?.code === 'MEMBERSHIP_STATUS'
+    )
+
+    if (renewedStatus) {
+      await supabase
+        .from('memberships')
+        .update({
+          membership_status_id: renewedStatus.id,
+          is_current: false,
+          end_date: new Date().toISOString().split('T')[0],
+          updated_at: new Date().toISOString(),
+          updated_by: userId,
+        })
+        .eq('id', oldMembershipId)
+    }
+
+    // Crear nueva membresía
+    const created = await membershipsService.create({
+      ...newMembershipData,
+      is_current: true,
+      created_by: userId,
+    })
+
+    return created
+  },
+
+
   async softDelete(id, deletedBy) {
     const { error } = await supabase
       .from('memberships')

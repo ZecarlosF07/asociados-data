@@ -33,6 +33,8 @@ export function AssociateDetailTabs({
   onContactDelete,
   onMembershipSubmit,
   onMembershipDelete,
+  onMembershipCancel,
+  onMembershipRenew,
 }) {
   const [activeTab, setActiveTab] = useState('info')
   const [showPersonForm, setShowPersonForm] = useState(false)
@@ -40,6 +42,7 @@ export function AssociateDetailTabs({
   const [showContactForm, setShowContactForm] = useState(false)
   const [editingContact, setEditingContact] = useState(null)
   const [showMembershipForm, setShowMembershipForm] = useState(false)
+  const [renewingFrom, setRenewingFrom] = useState(null)
 
   // Person handlers
   const handlePersonAdd = async (data) => {
@@ -77,8 +80,18 @@ export function AssociateDetailTabs({
 
   // Membership handlers
   const handleMembershipAdd = async (data) => {
-    await onMembershipSubmit(data)
+    if (renewingFrom) {
+      await onMembershipRenew(renewingFrom.id, data)
+      setRenewingFrom(null)
+    } else {
+      await onMembershipSubmit(data)
+    }
     setShowMembershipForm(false)
+  }
+
+  const handleRenewClick = (membership) => {
+    setRenewingFrom(membership)
+    setShowMembershipForm(true)
   }
 
   return (
@@ -203,9 +216,24 @@ export function AssociateDetailTabs({
 
           {showMembershipForm && (
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+              {renewingFrom && (
+                <p className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-3 py-2 mb-3">
+                  🔄 Renovando membresía {renewingFrom.membership_type?.label} — La anterior se marcará como "Renovada".
+                </p>
+              )}
               <MembershipForm
+                initialData={renewingFrom ? {
+                  membership_type_id: renewingFrom.membership_type_id,
+                  category_id: renewingFrom.category_id,
+                  fee_amount: renewingFrom.fee_amount,
+                  currency_code: renewingFrom.currency_code,
+                  monthly_billing_day: renewingFrom.monthly_billing_day,
+                  membership_status_id: renewingFrom.membership_status_id,
+                  negotiation_notes: '',
+                  is_current: true,
+                } : null}
                 onSubmit={handleMembershipAdd}
-                onCancel={() => setShowMembershipForm(false)}
+                onCancel={() => { setShowMembershipForm(false); setRenewingFrom(null) }}
                 loading={actionLoading}
               />
             </div>
@@ -215,6 +243,8 @@ export function AssociateDetailTabs({
             memberships={memberships}
             canEdit={canEdit}
             onDelete={onMembershipDelete}
+            onCancel={onMembershipCancel}
+            onRenew={handleRenewClick}
           />
 
           {schedules.length > 0 && (
