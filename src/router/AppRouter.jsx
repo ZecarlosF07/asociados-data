@@ -14,6 +14,9 @@ import { ProspectsPage } from '../pages/prospects/ProspectsPage'
 import { ProspectCreatePage } from '../pages/prospects/ProspectCreatePage'
 import { ProspectDetailPage } from '../pages/prospects/ProspectDetailPage'
 import { ProspectEditPage } from '../pages/prospects/ProspectEditPage'
+import { AssociatesPage } from '../pages/associates/AssociatesPage'
+import { AssociateDetailPage } from '../pages/associates/AssociateDetailPage'
+import { AssociateEditPage } from '../pages/associates/AssociateEditPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
 
 export function AppRouter() {
@@ -65,6 +68,32 @@ export function AppRouter() {
             element={
               <PermissionGuard module="prospectos">
                 <ProspectEditPage />
+              </PermissionGuard>
+            }
+          />
+
+          {/* Asociados */}
+          <Route
+            path={ROUTES.ASOCIADOS}
+            element={
+              <PermissionGuard module="asociados">
+                <AssociatesPage />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path={ROUTES.ASOCIADOS_DETALLE}
+            element={
+              <PermissionGuard module="asociados">
+                <AssociateDetailPage />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path={ROUTES.ASOCIADOS_EDITAR}
+            element={
+              <PermissionGuard module="asociados">
+                <AssociateEditPage />
               </PermissionGuard>
             }
           />

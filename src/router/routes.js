@@ -8,8 +8,10 @@ export const ROUTES = {
   PROSPECTOS_DETALLE: '/prospectos/:id',
   PROSPECTOS_EDITAR: '/prospectos/:id/editar',
 
-  // Módulos futuros
+  // Asociados
   ASOCIADOS: '/asociados',
+  ASOCIADOS_DETALLE: '/asociados/:id',
+  ASOCIADOS_EDITAR: '/asociados/:id/editar',
   MEMBRESIAS: '/membresias',
   COBRANZA: '/cobranza',
   DOCUMENTOS: '/documentos',

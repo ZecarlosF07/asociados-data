@@ -8,9 +8,11 @@ import { useCategories } from '../../hooks/useCategories'
 import { prospectsService } from '../../services/prospects.service'
 import { prospectEvaluationsService } from '../../services/prospectEvaluations.service'
 import { prospectQuotesService } from '../../services/prospectQuotes.service'
+import { associatesService } from '../../services/associates.service'
 import { ProspectDetailHeader } from './sections/ProspectDetailHeader'
 import { ProspectDetailTabs } from './sections/ProspectDetailTabs'
 import { StatusChangeModal } from '../../components/molecules/prospects/StatusChangeModal'
+import { ConvertProspectModal } from '../../components/molecules/associates/ConvertProspectModal'
 import { Loader } from '../../components/atoms/Loader'
 import { ROUTES } from '../../router/routes'
 
@@ -23,6 +25,7 @@ export function ProspectDetailPage() {
   const { categories } = useCategories()
   const detail = useProspectDetail(id)
   const [statusModal, setStatusModal] = useState(false)
+  const [convertModal, setConvertModal] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
 
   const handleStatusChange = async ({ newStatusId, reason }) => {
@@ -88,6 +91,24 @@ export function ProspectDetailPage() {
     }
   }
 
+  const handleConvert = async (conversionData) => {
+    setActionLoading(true)
+    try {
+      const associate = await associatesService.convertFromProspect({
+        prospect: detail.prospect,
+        conversionData,
+        userId: profile?.id,
+      })
+      notify.success('Prospecto convertido a asociado')
+      setConvertModal(false)
+      navigate(`${ROUTES.ASOCIADOS}/${associate.id}`)
+    } catch (error) {
+      notify.error('Error: ' + error.message)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
   if (detail.loading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -119,6 +140,7 @@ export function ProspectDetailPage() {
         canEdit={canEdit}
         onEdit={() => navigate(`${ROUTES.PROSPECTOS}/${id}/editar`)}
         onStatusChange={() => setStatusModal(true)}
+        onConvert={() => setConvertModal(true)}
         onBack={() => navigate(ROUTES.PROSPECTOS)}
       />
 
@@ -139,6 +161,14 @@ export function ProspectDetailPage() {
         onClose={() => setStatusModal(false)}
         currentStatusId={detail.prospect.prospect_status_id}
         onSubmit={handleStatusChange}
+        loading={actionLoading}
+      />
+
+      <ConvertProspectModal
+        isOpen={convertModal}
+        prospect={detail.prospect}
+        onClose={() => setConvertModal(false)}
+        onSubmit={handleConvert}
         loading={actionLoading}
       />
     </div>

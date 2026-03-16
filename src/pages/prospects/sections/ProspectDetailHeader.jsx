@@ -7,11 +7,15 @@ export function ProspectDetailHeader({
   canEdit,
   onEdit,
   onStatusChange,
+  onConvert,
   onBack,
 }) {
   const statusCode = prospect.prospect_status?.code
   const statusLabel = prospect.prospect_status?.label || '—'
   const variant = PROSPECT_STATUS_VARIANT[statusCode] || 'default'
+  const canConvert =
+    statusCode === 'APROBADO' && !prospect.converted_to_associate_id
+  const isConverted = !!prospect.converted_to_associate_id
 
   return (
     <div className="mb-6">
@@ -29,6 +33,9 @@ export function ProspectDetailHeader({
               {prospect.company_name}
             </h1>
             <Badge variant={variant}>{statusLabel}</Badge>
+            {isConverted && (
+              <Badge variant="success">Convertido</Badge>
+            )}
           </div>
           {prospect.trade_name && (
             <p className="text-sm text-slate-400">{prospect.trade_name}</p>
@@ -42,10 +49,15 @@ export function ProspectDetailHeader({
 
         {canEdit && (
           <div className="flex gap-2">
+            {canConvert && (
+              <Button size="sm" onClick={onConvert}>
+                Convertir a asociado
+              </Button>
+            )}
             <Button variant="secondary" size="sm" onClick={onStatusChange}>
               Cambiar estado
             </Button>
-            <Button size="sm" onClick={onEdit}>
+            <Button variant="secondary" size="sm" onClick={onEdit}>
               Editar
             </Button>
           </div>
