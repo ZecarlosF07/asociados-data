@@ -8,7 +8,8 @@ const ASSOCIATE_SELECT = `
   company_size:company_size_id(id, code, label),
   affiliation_responsible:affiliation_responsible_user_id(id, first_name, last_name),
   captador:captador_id(id, full_name, is_internal),
-  payment_health:payment_health_status_id(id, code, label)
+  payment_health:payment_health_status_id(id, code, label),
+  prospect_origin:prospect_origin_id(id, suggested_fee, current_category_id, current_category:current_category_id(id, code, name, base_fee))
 `
 
 export const associatesService = {

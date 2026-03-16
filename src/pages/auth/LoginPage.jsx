@@ -25,7 +25,7 @@ export function LoginPage() {
 
     setLoading(true)
     try {
-      await signIn(email, password)
+      await signIn({ email, password })
       navigate(ROUTES.DASHBOARD, { replace: true })
     } catch (error) {
       notify.error(error.message || 'Error al iniciar sesión')

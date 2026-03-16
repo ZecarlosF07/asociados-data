@@ -17,6 +17,8 @@ import { ProspectEditPage } from '../pages/prospects/ProspectEditPage'
 import { AssociatesPage } from '../pages/associates/AssociatesPage'
 import { AssociateDetailPage } from '../pages/associates/AssociateDetailPage'
 import { AssociateEditPage } from '../pages/associates/AssociateEditPage'
+import { MembershipsPage } from '../pages/financial/MembershipsPage'
+import { PendingPaymentsPage } from '../pages/financial/PendingPaymentsPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
 
 export function AppRouter() {
@@ -94,6 +96,26 @@ export function AppRouter() {
             element={
               <PermissionGuard module="asociados">
                 <AssociateEditPage />
+              </PermissionGuard>
+            }
+          />
+
+          {/* Membresías */}
+          <Route
+            path={ROUTES.MEMBRESIAS}
+            element={
+              <PermissionGuard module="membresias">
+                <MembershipsPage />
+              </PermissionGuard>
+            }
+          />
+
+          {/* Cobranza */}
+          <Route
+            path={ROUTES.COBRANZA}
+            element={
+              <PermissionGuard module="cobranza">
+                <PendingPaymentsPage />
               </PermissionGuard>
             }
           />

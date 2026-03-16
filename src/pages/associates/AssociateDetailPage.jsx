@@ -5,6 +5,9 @@ import { useNotification } from '../../hooks/useNotification'
 import { useUserProfile } from '../../hooks/useUserProfile'
 import { usePermissions } from '../../hooks/usePermissions'
 import { associatesService } from '../../services/associates.service'
+import { membershipsService } from '../../services/memberships.service'
+import { paymentSchedulesService } from '../../services/paymentSchedules.service'
+import { supabase } from '../../lib/supabaseClient'
 import { AssociateDetailHeader } from './sections/AssociateDetailHeader'
 import { AssociateDetailTabs } from './sections/AssociateDetailTabs'
 import { Loader } from '../../components/atoms/Loader'
@@ -19,6 +22,7 @@ export function AssociateDetailPage() {
   const detail = useAssociateDetail(id)
   const [actionLoading, setActionLoading] = useState(false)
 
+  // ---- Personas vinculadas ----
   const handlePersonSubmit = async (data) => {
     setActionLoading(true)
     try {
@@ -63,6 +67,7 @@ export function AssociateDetailPage() {
     }
   }
 
+  // ---- Contactos por área ----
   const handleContactSubmit = async (data) => {
     setActionLoading(true)
     try {
@@ -107,6 +112,56 @@ export function AssociateDetailPage() {
     }
   }
 
+  // ---- Membresías ----
+  const handleMembershipSubmit = async (data) => {
+    setActionLoading(true)
+    try {
+      const membership = await membershipsService.create({
+        ...data,
+        associate_id: id,
+        created_by: profile?.id,
+      })
+
+      // Generar cronograma automáticamente
+      // Buscar el estado PENDIENTE del grupo COLLECTION_STATUS
+      const { data: pendingStatus } = await supabase
+        .from('catalog_items')
+        .select('id, group:group_id(code)')
+        .eq('code', 'PENDIENTE')
+
+      const collectionPending = pendingStatus?.find(
+        (item) => item.group?.code === 'COLLECTION_STATUS'
+      )
+
+      if (collectionPending) {
+        await membershipsService.generateSchedule({
+          membership,
+          defaultStatusId: collectionPending.id,
+          userId: profile?.id,
+        })
+      }
+
+      notify.success('Membresía creada y cronograma generado')
+      detail.refetch()
+    } catch (error) {
+      notify.error('Error: ' + error.message)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleMembershipDelete = async (membership) => {
+    if (!confirm('¿Eliminar esta membresía?')) return
+    try {
+      await paymentSchedulesService.softDeleteByMembership(membership.id, profile?.id)
+      await membershipsService.softDelete(membership.id, profile?.id)
+      notify.success('Membresía eliminada')
+      detail.refetch()
+    } catch (error) {
+      notify.error('Error: ' + error.message)
+    }
+  }
+
   if (detail.loading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -144,6 +199,8 @@ export function AssociateDetailPage() {
         associate={detail.associate}
         people={detail.people}
         areaContacts={detail.areaContacts}
+        memberships={detail.memberships}
+        schedules={detail.schedules}
         canEdit={canEdit}
         actionLoading={actionLoading}
         onPersonSubmit={handlePersonSubmit}
@@ -152,6 +209,8 @@ export function AssociateDetailPage() {
         onContactSubmit={handleContactSubmit}
         onContactUpdate={handleContactUpdate}
         onContactDelete={handleContactDelete}
+        onMembershipSubmit={handleMembershipSubmit}
+        onMembershipDelete={handleMembershipDelete}
       />
     </div>
   )
