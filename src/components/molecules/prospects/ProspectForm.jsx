@@ -2,12 +2,17 @@ import { useState } from 'react'
 import { FormField } from '../FormField'
 import { Textarea } from '../../atoms/Textarea'
 import { CatalogSelect } from '../CatalogSelect'
+import { CaptadorSelect } from '../CaptadorSelect'
 import { Button } from '../../atoms/Button'
+import { NewCaptadorModal } from './NewCaptadorModal'
+import { captadoresService } from '../../../services/captadores.service'
+import { useNotification } from '../../../hooks/useNotification'
 import { PROSPECT_CATALOG_GROUPS } from '../../../utils/prospectConstants'
 import { validateProspectForm } from '../../../utils/prospectValidation'
 
 export function ProspectForm({ initialData, onSubmit, onCancel, loading }) {
   const isEdit = !!initialData?.id
+  const { notify } = useNotification()
 
   const [form, setForm] = useState({
     company_name: initialData?.company_name || '',
@@ -21,11 +26,15 @@ export function ProspectForm({ initialData, onSubmit, onCancel, loading }) {
     contact_position: initialData?.contact_position || '',
     contact_phone: initialData?.contact_phone || '',
     source: initialData?.source || '',
+    captador_id: initialData?.captador_id || '',
     notes: initialData?.notes || '',
     ...(isEdit && { negotiated_fee: initialData?.negotiated_fee || '' }),
   })
 
   const [errors, setErrors] = useState({})
+  const [showCaptadorModal, setShowCaptadorModal] = useState(false)
+  const [savingCaptador, setSavingCaptador] = useState(false)
+  const [captadorKey, setCaptadorKey] = useState(0)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -42,7 +51,6 @@ export function ProspectForm({ initialData, onSubmit, onCancel, loading }) {
       return
     }
 
-    // Limpiar valores vacíos para evitar errores en Supabase
     const cleaned = Object.fromEntries(
       Object.entries(form).map(([k, v]) => [k, v === '' ? null : v])
     )
@@ -50,7 +58,20 @@ export function ProspectForm({ initialData, onSubmit, onCancel, loading }) {
     onSubmit(cleaned)
   }
 
-
+  const handleNewCaptador = async (captadorData) => {
+    setSavingCaptador(true)
+    try {
+      const created = await captadoresService.create(captadorData)
+      setForm((prev) => ({ ...prev, captador_id: created.id }))
+      setCaptadorKey((prev) => prev + 1)
+      setShowCaptadorModal(false)
+      notify.success('Captador registrado')
+    } catch (error) {
+      notify.error('Error: ' + error.message)
+    } finally {
+      setSavingCaptador(false)
+    }
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -102,6 +123,35 @@ export function ProspectForm({ initialData, onSubmit, onCancel, loading }) {
         </div>
       </Section>
 
+      <Section title="Captador">
+        <div className="flex items-end gap-3">
+          <div className="flex-1">
+            <FormField label="Responsable de captación" name="captador_id" required
+              error={errors.captador_id}
+              helpText="Persona que captó al prospecto. Define la comisión al convertir."
+            >
+              <CaptadorSelect
+                key={captadorKey}
+                value={form.captador_id}
+                onChange={handleChange}
+                name="captador_id"
+                placeholder="Seleccionar captador..."
+                hasError={!!errors.captador_id}
+              />
+            </FormField>
+          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            type="button"
+            onClick={() => setShowCaptadorModal(true)}
+            className="mb-1"
+          >
+            + Nuevo
+          </Button>
+        </div>
+      </Section>
+
       {isEdit && (
         <Section title="Tarifa negociada">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -127,6 +177,13 @@ export function ProspectForm({ initialData, onSubmit, onCancel, loading }) {
           {isEdit ? 'Guardar cambios' : 'Registrar prospecto'}
         </Button>
       </div>
+
+      <NewCaptadorModal
+        isOpen={showCaptadorModal}
+        onClose={() => setShowCaptadorModal(false)}
+        onCreated={handleNewCaptador}
+        loading={savingCaptador}
+      />
     </form>
   )
 }

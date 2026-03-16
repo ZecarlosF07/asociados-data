@@ -14,6 +14,10 @@ export function validateProspectForm(form) {
     errors.primary_email = 'El correo no es válido'
   }
 
+  if (!form.captador_id) {
+    errors.captador_id = 'El captador es obligatorio'
+  }
+
   return errors
 }
 

@@ -25,7 +25,6 @@ export function ProspectCreatePage() {
       const prospect = {
         ...formData,
         prospect_status_id: defaultStatus?.id || statuses[0]?.id,
-        captured_by_user_id: profile?.id || null,
         created_by: profile?.id || null,
       }
 

@@ -55,10 +55,8 @@ export function ProspectCard({ prospect, onClick }) {
 
       <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-100 text-[0.7rem] text-slate-400">
         <span>{formatDate(prospect.created_at)}</span>
-        {prospect.captured_by && (
-          <span>
-            {prospect.captured_by.first_name} {prospect.captured_by.last_name}
-          </span>
+        {prospect.captador && (
+          <span>{prospect.captador.full_name}</span>
         )}
       </div>
     </div>

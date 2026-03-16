@@ -20,8 +20,8 @@ export function ProspectInfoSection({ prospect }) {
       <InfoRow
         label="Captador"
         value={
-          prospect.captured_by
-            ? `${prospect.captured_by.first_name} ${prospect.captured_by.last_name}`
+          prospect.captador
+            ? `${prospect.captador.full_name} (${prospect.captador.is_internal ? 'interno' : 'externo'})`
             : null
         }
       />

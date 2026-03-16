@@ -6,7 +6,7 @@ const PROSPECT_SELECT = `
   current_category:current_category_id(id, code, name, base_fee),
   activity_type:activity_type_id(id, code, label),
   company_size:company_size_id(id, code, label),
-  captured_by:captured_by_user_id(id, first_name, last_name)
+  captador:captador_id(id, full_name, is_internal, email, phone)
 `
 
 export const prospectsService = {
