@@ -10,6 +10,10 @@ import { UsersPage } from '../pages/users/UsersPage'
 import { SettingsPage } from '../pages/settings/SettingsPage'
 import { CatalogsPage } from '../pages/settings/CatalogsPage'
 import { CategoriesPage } from '../pages/settings/CategoriesPage'
+import { ProspectsPage } from '../pages/prospects/ProspectsPage'
+import { ProspectCreatePage } from '../pages/prospects/ProspectCreatePage'
+import { ProspectDetailPage } from '../pages/prospects/ProspectDetailPage'
+import { ProspectEditPage } from '../pages/prospects/ProspectEditPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
 
 export function AppRouter() {
@@ -31,6 +35,41 @@ export function AppRouter() {
         >
           <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
 
+          {/* Prospectos */}
+          <Route
+            path={ROUTES.PROSPECTOS}
+            element={
+              <PermissionGuard module="prospectos">
+                <ProspectsPage />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path={ROUTES.PROSPECTOS_NUEVO}
+            element={
+              <PermissionGuard module="prospectos">
+                <ProspectCreatePage />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path={ROUTES.PROSPECTOS_DETALLE}
+            element={
+              <PermissionGuard module="prospectos">
+                <ProspectDetailPage />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path={ROUTES.PROSPECTOS_EDITAR}
+            element={
+              <PermissionGuard module="prospectos">
+                <ProspectEditPage />
+              </PermissionGuard>
+            }
+          />
+
+          {/* Usuarios */}
           <Route
             path={ROUTES.USUARIOS}
             element={
@@ -40,6 +79,7 @@ export function AppRouter() {
             }
           />
 
+          {/* Configuración */}
           <Route
             path={ROUTES.CONFIGURACION}
             element={

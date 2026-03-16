@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { FormField } from '../FormField'
 import { Textarea } from '../../atoms/Textarea'
 import { CatalogSelect } from '../CatalogSelect'
-import { CategorySelect } from '../CategorySelect'
 import { Button } from '../../atoms/Button'
 import { PROSPECT_CATALOG_GROUPS } from '../../../utils/prospectConstants'
 import { validateProspectForm } from '../../../utils/prospectValidation'
 
 export function ProspectForm({ initialData, onSubmit, onCancel, loading }) {
+  const isEdit = !!initialData?.id
+
   const [form, setForm] = useState({
     company_name: initialData?.company_name || '',
     trade_name: initialData?.trade_name || '',
@@ -21,9 +22,7 @@ export function ProspectForm({ initialData, onSubmit, onCancel, loading }) {
     contact_phone: initialData?.contact_phone || '',
     source: initialData?.source || '',
     notes: initialData?.notes || '',
-    current_category_id: initialData?.current_category_id || '',
-    suggested_fee: initialData?.suggested_fee || '',
-    negotiated_fee: initialData?.negotiated_fee || '',
+    ...(isEdit && { negotiated_fee: initialData?.negotiated_fee || '' }),
   })
 
   const [errors, setErrors] = useState({})
@@ -51,7 +50,7 @@ export function ProspectForm({ initialData, onSubmit, onCancel, loading }) {
     onSubmit(cleaned)
   }
 
-  const isEdit = !!initialData?.id
+
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -79,6 +78,10 @@ export function ProspectForm({ initialData, onSubmit, onCancel, loading }) {
               value={form.company_size_id} onChange={handleChange} name="company_size_id"
             />
           </FormField>
+          <FormField label="Procedencia" name="source"
+            value={form.source} onChange={handleChange}
+            helpText="¿Cómo se captó este prospecto?"
+          />
         </div>
       </Section>
 
@@ -99,24 +102,16 @@ export function ProspectForm({ initialData, onSubmit, onCancel, loading }) {
         </div>
       </Section>
 
-      <Section title="Clasificación y tarifas">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField label="Categoría" name="current_category_id">
-            <CategorySelect value={form.current_category_id}
-              onChange={handleChange} name="current_category_id"
+      {isEdit && (
+        <Section title="Tarifa negociada">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField label="Tarifa negociada" name="negotiated_fee" type="number" step="0.01"
+              value={form.negotiated_fee} onChange={handleChange}
+              helpText="Monto acordado tras la negociación. La categoría y tarifa sugerida se generan desde la evaluación."
             />
-          </FormField>
-          <FormField label="Procedencia" name="source"
-            value={form.source} onChange={handleChange}
-          />
-          <FormField label="Tarifa sugerida" name="suggested_fee" type="number" step="0.01"
-            value={form.suggested_fee} onChange={handleChange}
-          />
-          <FormField label="Tarifa negociada" name="negotiated_fee" type="number" step="0.01"
-            value={form.negotiated_fee} onChange={handleChange}
-          />
-        </div>
-      </Section>
+          </div>
+        </Section>
+      )}
 
       <FormField label="Observaciones" name="notes">
         <Textarea name="notes" value={form.notes} onChange={handleChange}
