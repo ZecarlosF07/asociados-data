@@ -1,40 +1,37 @@
 const VARIANTS = {
-  primary: 'btn btn-primary',
-  secondary: 'btn btn-secondary',
-  danger: 'btn btn-danger',
-  ghost: 'btn btn-ghost',
+  primary: 'bg-blue-600 text-white hover:bg-blue-700',
+  secondary: 'bg-white text-slate-800 border border-slate-200 hover:bg-slate-50',
+  danger: 'bg-red-500 text-white hover:bg-red-600',
+  ghost: 'bg-transparent text-slate-500 hover:bg-slate-100 hover:text-slate-800',
 }
 
 const SIZES = {
-  sm: 'btn-sm',
-  md: 'btn-md',
-  lg: 'btn-lg',
+  sm: 'px-3 py-1.5 text-xs',
+  md: 'px-4 py-2 text-sm',
+  lg: 'px-5 py-2.5 text-base',
 }
 
 export function Button({
   children,
   variant = 'primary',
   size = 'md',
-  disabled = false,
   loading = false,
-  type = 'button',
+  disabled = false,
   className = '',
-  onClick,
-  ...props
+  ...rest
 }) {
-  const classes = [VARIANTS[variant], SIZES[size], className]
-    .filter(Boolean)
-    .join(' ')
+  const base = 'inline-flex items-center justify-center gap-2 rounded-md font-semibold cursor-pointer transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed'
 
   return (
     <button
-      type={type}
-      className={classes}
+      className={`${base} ${VARIANTS[variant]} ${SIZES[size]} ${className}`}
       disabled={disabled || loading}
-      onClick={onClick}
-      {...props}
+      {...rest}
     >
-      {loading ? <span className="btn-loader" /> : children}
+      {loading && (
+        <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+      )}
+      {children}
     </button>
   )
 }

@@ -2,39 +2,30 @@ import { Input } from '../atoms/Input'
 
 export function FormField({
   label,
-  id,
   name,
-  type = 'text',
-  placeholder,
-  value,
-  onChange,
-  error,
   required = false,
-  disabled = false,
+  error,
   helpText,
+  children,
+  ...inputProps
 }) {
-  const fieldId = id || name
-
   return (
-    <div className="form-field">
+    <div className="flex flex-col gap-1">
       {label && (
-        <label htmlFor={fieldId} className="form-label">
+        <label htmlFor={name} className="text-xs font-semibold text-slate-800">
           {label}
-          {required && <span className="form-required">*</span>}
+          {required && <span className="text-red-500 ml-0.5">*</span>}
         </label>
       )}
-      <Input
-        id={fieldId}
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        error={!!error}
-        disabled={disabled}
-      />
-      {error && <span className="form-error">{error}</span>}
-      {helpText && !error && <span className="form-help">{helpText}</span>}
+
+      {children || (
+        <Input id={name} name={name} hasError={!!error} {...inputProps} />
+      )}
+
+      {error && <p className="text-xs text-red-500">{error}</p>}
+      {helpText && !error && (
+        <p className="text-xs text-slate-400">{helpText}</p>
+      )}
     </div>
   )
 }

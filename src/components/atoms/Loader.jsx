@@ -1,14 +1,22 @@
-export function Loader({ size = 'md', className = '' }) {
+const SIZES = {
+  sm: 'h-4 w-4',
+  md: 'h-6 w-6',
+  lg: 'h-9 w-9',
+}
+
+export function Loader({ size = 'md' }) {
   return (
-    <div className={`loader loader-${size} ${className}`}>
-      <div className="loader-spinner" />
-    </div>
+    <span className="inline-flex items-center justify-center">
+      <span
+        className={`${SIZES[size]} border-3 border-slate-200 border-t-blue-500 rounded-full animate-spin`}
+      />
+    </span>
   )
 }
 
 export function PageLoader() {
   return (
-    <div className="page-loader">
+    <div className="flex items-center justify-center min-h-screen">
       <Loader size="lg" />
     </div>
   )

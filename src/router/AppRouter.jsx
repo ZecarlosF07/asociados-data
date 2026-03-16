@@ -8,6 +8,8 @@ import { LoginPage } from '../pages/auth/LoginPage'
 import { DashboardPage } from '../pages/dashboard/DashboardPage'
 import { UsersPage } from '../pages/users/UsersPage'
 import { SettingsPage } from '../pages/settings/SettingsPage'
+import { CatalogsPage } from '../pages/settings/CatalogsPage'
+import { CategoriesPage } from '../pages/settings/CategoriesPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
 
 export function AppRouter() {
@@ -43,6 +45,24 @@ export function AppRouter() {
             element={
               <PermissionGuard module="configuracion">
                 <SettingsPage />
+              </PermissionGuard>
+            }
+          />
+
+          <Route
+            path={ROUTES.CATALOGOS}
+            element={
+              <PermissionGuard module="configuracion">
+                <CatalogsPage />
+              </PermissionGuard>
+            }
+          />
+
+          <Route
+            path={ROUTES.CATEGORIAS}
+            element={
+              <PermissionGuard module="configuracion">
+                <CategoriesPage />
               </PermissionGuard>
             }
           />

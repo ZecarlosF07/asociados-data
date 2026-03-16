@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useNotification } from '../../hooks/useNotification'
 import { FormField } from '../../components/molecules/FormField'
 import { Button } from '../../components/atoms/Button'
+import { APP_NAME } from '../../utils/constants'
 import { ROUTES } from '../../router/routes'
 
 export function LoginPage() {
@@ -24,9 +25,8 @@ export function LoginPage() {
 
     setLoading(true)
     try {
-      await signIn({ email, password })
-      notify.success('Bienvenido al sistema')
-      navigate(ROUTES.DASHBOARD)
+      await signIn(email, password)
+      navigate(ROUTES.DASHBOARD, { replace: true })
     } catch (error) {
       notify.error(error.message || 'Error al iniciar sesión')
     } finally {
@@ -35,42 +35,43 @@ export function LoginPage() {
   }
 
   return (
-    <>
-      <div className="auth-header">
-        <h1 className="auth-title">Sistema de Asociados</h1>
-        <p className="auth-subtitle">Ingresa tus credenciales para acceder</p>
+    <div className="bg-white border border-slate-200 rounded-lg px-8 py-9 shadow-md">
+      <div className="text-center mb-7">
+        <h1 className="text-2xl font-bold text-slate-900 mb-1">{APP_NAME}</h1>
+        <p className="text-sm text-slate-400">Ingresa con tu cuenta</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="auth-form">
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <FormField
           label="Correo electrónico"
           name="email"
           type="email"
-          placeholder="correo@ejemplo.com"
+          required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
+          placeholder="usuario@ejemplo.com"
         />
 
         <FormField
           label="Contraseña"
           name="password"
           type="password"
-          placeholder="••••••••"
+          required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
+          placeholder="••••••••"
         />
 
         <Button
           type="submit"
           variant="primary"
+          size="md"
           loading={loading}
-          className="auth-submit"
+          className="w-full mt-1"
         >
           Iniciar sesión
         </Button>
       </form>
-    </>
+    </div>
   )
 }

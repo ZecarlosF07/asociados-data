@@ -50,12 +50,12 @@ export function UsersPage() {
   }
 
   return (
-    <div className="page">
-      <div className="page-header">
-        <div className="page-header-row">
+    <div className="max-w-5xl">
+      <div className="mb-7">
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="page-title">Usuarios</h1>
-            <p className="page-subtitle">
+            <h1 className="text-2xl font-bold text-slate-900 mb-1">Usuarios</h1>
+            <p className="text-sm text-slate-400">
               Gestión de usuarios y perfiles del sistema
             </p>
           </div>
