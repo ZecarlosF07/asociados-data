@@ -7,6 +7,7 @@ import { usePermissions } from '../../hooks/usePermissions'
 import { associatesService } from '../../services/associates.service'
 import { membershipsService } from '../../services/memberships.service'
 import { paymentSchedulesService } from '../../services/paymentSchedules.service'
+import { documentsService } from '../../services/documents.service'
 import { supabase } from '../../lib/supabaseClient'
 import { AssociateDetailHeader } from './sections/AssociateDetailHeader'
 import { AssociateDetailTabs } from './sections/AssociateDetailTabs'
@@ -211,6 +212,44 @@ export function AssociateDetailPage() {
     }
   }
 
+  // ---- Documentos ----
+  const handleDocumentUpload = async ({ file, metadata }) => {
+    setActionLoading(true)
+    try {
+      await documentsService.upload({
+        file,
+        metadata: { ...metadata, associate_id: id },
+        userId: profile?.id,
+      })
+      notify.success('Documento subido correctamente')
+      detail.refetch()
+    } catch (error) {
+      notify.error('Error al subir: ' + error.message)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleDocumentDownload = async (document) => {
+    try {
+      const url = await documentsService.getSignedUrl(document.storage_path)
+      if (url) window.open(url, '_blank')
+    } catch (error) {
+      notify.error('Error al descargar: ' + error.message)
+    }
+  }
+
+  const handleDocumentDelete = async (document) => {
+    if (!confirm(`¿Eliminar "${document.title}"?`)) return
+    try {
+      await documentsService.softDelete(document.id, profile?.id)
+      notify.success('Documento eliminado')
+      detail.refetch()
+    } catch (error) {
+      notify.error('Error: ' + error.message)
+    }
+  }
+
   if (detail.loading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -250,6 +289,7 @@ export function AssociateDetailPage() {
         areaContacts={detail.areaContacts}
         memberships={detail.memberships}
         schedules={detail.schedules}
+        documents={detail.documents}
         canEdit={canEdit}
         actionLoading={actionLoading}
         onPersonSubmit={handlePersonSubmit}
@@ -262,6 +302,9 @@ export function AssociateDetailPage() {
         onMembershipDelete={handleMembershipDelete}
         onMembershipCancel={handleMembershipCancel}
         onMembershipRenew={handleMembershipRenew}
+        onDocumentUpload={handleDocumentUpload}
+        onDocumentDownload={handleDocumentDownload}
+        onDocumentDelete={handleDocumentDelete}
       />
     </div>
   )

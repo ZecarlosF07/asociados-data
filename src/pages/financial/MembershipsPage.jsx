@@ -4,9 +4,11 @@ import { membershipsService } from '../../services/memberships.service'
 import { Input } from '../../components/atoms/Input'
 import { CatalogSelect } from '../../components/molecules/CatalogSelect'
 import { Badge } from '../../components/atoms/Badge'
+import { Button } from '../../components/atoms/Button'
 import { Loader } from '../../components/atoms/Loader'
 import { EmptyState } from '../../components/atoms/EmptyState'
 import { formatDate, formatCurrency } from '../../utils/helpers'
+import { exportToExcel, EXPORT_COLUMNS } from '../../utils/exportUtils'
 import {
   MEMBERSHIP_STATUS_VARIANT,
   FINANCIAL_CATALOG_GROUPS,
@@ -52,15 +54,31 @@ export function MembershipsPage() {
   return (
     <div className="max-w-6xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 mb-1">Membresías</h1>
-        <p className="text-sm text-slate-400">
-          Vista global de todas las membresías registradas.
-          {!loading && (
-            <span className="ml-2 font-medium text-slate-600">
-              {memberships.length} total · {totalActivas} vigentes
-            </span>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 mb-1">Membresías</h1>
+            <p className="text-sm text-slate-400">
+              Vista global de todas las membresías registradas.
+              {!loading && (
+                <span className="ml-2 font-medium text-slate-600">
+                  {memberships.length} total · {totalActivas} vigentes
+                </span>
+              )}
+            </p>
+          </div>
+          {memberships.length > 0 && (
+            <Button variant="secondary" size="sm" onClick={() => {
+              exportToExcel({
+                filename: `membresias_${formatDate(new Date()).replace(/\//g, '-')}`,
+                sheetName: 'Membresías',
+                data: memberships,
+                columns: EXPORT_COLUMNS.memberships,
+              })
+            }}>
+              📥 Exportar Excel
+            </Button>
           )}
-        </p>
+        </div>
       </div>
 
       {/* Filtros */}

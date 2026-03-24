@@ -4,6 +4,7 @@ import { membershipsService } from '../services/memberships.service'
 import { paymentSchedulesService } from '../services/paymentSchedules.service'
 import { paymentsService } from '../services/payments.service'
 import { collectionActionsService } from '../services/collectionActions.service'
+import { documentsService } from '../services/documents.service'
 
 export function useAssociateDetail(associateId) {
   const [associate, setAssociate] = useState(null)
@@ -13,6 +14,7 @@ export function useAssociateDetail(associateId) {
   const [schedules, setSchedules] = useState([])
   const [payments, setPayments] = useState([])
   const [collectionActions, setCollectionActions] = useState([])
+  const [documents, setDocuments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -31,6 +33,7 @@ export function useAssociateDetail(associateId) {
         schedulesData,
         paymentsData,
         collectionsData,
+        documentsData,
       ] = await Promise.all([
         associatesService.getById(associateId),
         associatesService.getPeople(associateId),
@@ -39,6 +42,7 @@ export function useAssociateDetail(associateId) {
         paymentSchedulesService.getByAssociate(associateId),
         paymentsService.getByAssociate(associateId),
         collectionActionsService.getByAssociate(associateId),
+        documentsService.getByAssociate(associateId),
       ])
 
       setAssociate(associateData)
@@ -48,6 +52,7 @@ export function useAssociateDetail(associateId) {
       setSchedules(schedulesData)
       setPayments(paymentsData)
       setCollectionActions(collectionsData)
+      setDocuments(documentsData)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -67,6 +72,7 @@ export function useAssociateDetail(associateId) {
     schedules,
     payments,
     collectionActions,
+    documents,
     loading,
     error,
     refetch: fetchAll,

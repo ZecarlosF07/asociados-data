@@ -15,6 +15,7 @@ export const ROUTES = {
   MEMBRESIAS: '/membresias',
   COBRANZA: '/cobranza',
   DOCUMENTOS: '/documentos',
+  DOCUMENTOS_DETALLE: '/documentos/:id',
   REPORTES: '/reportes',
   USUARIOS: '/usuarios',
   CONFIGURACION: '/configuracion',

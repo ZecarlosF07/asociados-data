@@ -19,6 +19,8 @@ import { AssociateDetailPage } from '../pages/associates/AssociateDetailPage'
 import { AssociateEditPage } from '../pages/associates/AssociateEditPage'
 import { MembershipsPage } from '../pages/financial/MembershipsPage'
 import { PendingPaymentsPage } from '../pages/financial/PendingPaymentsPage'
+import { DocumentsPage } from '../pages/documents/DocumentsPage'
+import { ReportsPage } from '../pages/reports/ReportsPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
 
 export function AppRouter() {
@@ -116,6 +118,26 @@ export function AppRouter() {
             element={
               <PermissionGuard module="cobranza">
                 <PendingPaymentsPage />
+              </PermissionGuard>
+            }
+          />
+
+          {/* Documentos */}
+          <Route
+            path={ROUTES.DOCUMENTOS}
+            element={
+              <PermissionGuard module="documentos">
+                <DocumentsPage />
+              </PermissionGuard>
+            }
+          />
+
+          {/* Reportes */}
+          <Route
+            path={ROUTES.REPORTES}
+            element={
+              <PermissionGuard module="reportes">
+                <ReportsPage />
               </PermissionGuard>
             }
           />

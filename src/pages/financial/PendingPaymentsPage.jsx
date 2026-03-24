@@ -14,6 +14,7 @@ import { EmptyState } from '../../components/atoms/EmptyState'
 import { PaymentForm } from '../../components/molecules/financial/PaymentForm'
 import { CollectionActionForm } from '../../components/molecules/financial/CollectionActionForm'
 import { formatDate, formatCurrency } from '../../utils/helpers'
+import { exportToExcel, EXPORT_COLUMNS } from '../../utils/exportUtils'
 import { COLLECTION_STATUS_VARIANT } from '../../utils/financialConstants'
 import { ROUTES } from '../../router/routes'
 
@@ -128,10 +129,26 @@ export function PendingPaymentsPage() {
   return (
     <div className="max-w-6xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 mb-1">Cobranza</h1>
-        <p className="text-sm text-slate-400">
-          Cuotas pendientes de cobro, ordenadas por fecha de vencimiento.
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 mb-1">Cobranza</h1>
+            <p className="text-sm text-slate-400">
+              Cuotas pendientes de cobro, ordenadas por fecha de vencimiento.
+            </p>
+          </div>
+          {schedules.length > 0 && (
+            <Button variant="secondary" size="sm" onClick={() => {
+              exportToExcel({
+                filename: `cobranza_${formatDate(new Date()).replace(/\//g, '-')}`,
+                sheetName: 'Cobranza',
+                data: schedules,
+                columns: EXPORT_COLUMNS.schedules,
+              })
+            }}>
+              📥 Exportar Excel
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Resumen */}

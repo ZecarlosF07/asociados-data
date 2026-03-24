@@ -7,6 +7,8 @@ import { AreaContactForm } from '../../../components/molecules/associates/AreaCo
 import { MembershipList } from '../../../components/molecules/financial/MembershipList'
 import { MembershipForm } from '../../../components/molecules/financial/MembershipForm'
 import { ScheduleTable } from '../../../components/molecules/financial/ScheduleTable'
+import { DocumentUploadForm } from '../../../components/molecules/documents/DocumentUploadForm'
+import { DocumentList } from '../../../components/molecules/documents/DocumentList'
 import { Button } from '../../../components/atoms/Button'
 import { formatCurrency } from '../../../utils/helpers'
 
@@ -15,6 +17,7 @@ const TABS = [
   { key: 'people', label: 'Personas' },
   { key: 'contacts', label: 'Contactos' },
   { key: 'memberships', label: 'Membresías' },
+  { key: 'documents', label: 'Documentos' },
 ]
 
 export function AssociateDetailTabs({
@@ -23,6 +26,7 @@ export function AssociateDetailTabs({
   areaContacts,
   memberships,
   schedules,
+  documents,
   canEdit,
   actionLoading,
   onPersonSubmit,
@@ -35,6 +39,9 @@ export function AssociateDetailTabs({
   onMembershipDelete,
   onMembershipCancel,
   onMembershipRenew,
+  onDocumentUpload,
+  onDocumentDownload,
+  onDocumentDelete,
 }) {
   const [activeTab, setActiveTab] = useState('info')
   const [showPersonForm, setShowPersonForm] = useState(false)
@@ -43,6 +50,7 @@ export function AssociateDetailTabs({
   const [editingContact, setEditingContact] = useState(null)
   const [showMembershipForm, setShowMembershipForm] = useState(false)
   const [renewingFrom, setRenewingFrom] = useState(null)
+  const [showDocumentUpload, setShowDocumentUpload] = useState(false)
 
   // Person handlers
   const handlePersonAdd = async (data) => {
@@ -255,6 +263,43 @@ export function AssociateDetailTabs({
               <ScheduleTable schedules={schedules} />
             </div>
           )}
+        </div>
+      )}
+
+      {/* Documentos */}
+      {activeTab === 'documents' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-slate-700">
+              Documentos ({documents?.length || 0})
+            </h3>
+            {canEdit && !showDocumentUpload && (
+              <Button size="sm" onClick={() => setShowDocumentUpload(true)}>
+                + Subir documento
+              </Button>
+            )}
+          </div>
+
+          {showDocumentUpload && (
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+              <DocumentUploadForm
+                associateId={associate.id}
+                onSubmit={async (data) => {
+                  await onDocumentUpload(data)
+                  setShowDocumentUpload(false)
+                }}
+                onCancel={() => setShowDocumentUpload(false)}
+                loading={actionLoading}
+              />
+            </div>
+          )}
+
+          <DocumentList
+            documents={documents || []}
+            canEdit={canEdit}
+            onDownload={onDocumentDownload}
+            onDelete={onDocumentDelete}
+          />
         </div>
       )}
     </div>
