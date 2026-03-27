@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { paymentSchedulesService } from '../../services/paymentSchedules.service'
 import { paymentsService } from '../../services/payments.service'
@@ -14,9 +14,13 @@ import { EmptyState } from '../../components/atoms/EmptyState'
 import { PaymentForm } from '../../components/molecules/financial/PaymentForm'
 import { CollectionActionForm } from '../../components/molecules/financial/CollectionActionForm'
 import { formatDate, formatCurrency } from '../../utils/helpers'
-import { exportToExcel, EXPORT_COLUMNS } from '../../utils/exportUtils'
 import { COLLECTION_STATUS_VARIANT } from '../../utils/financialConstants'
 import { ROUTES } from '../../router/routes'
+
+const MONTH_NAMES = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+]
 
 export function PendingPaymentsPage() {
   const navigate = useNavigate()
@@ -29,6 +33,12 @@ export function PendingPaymentsPage() {
   const [activePaymentRow, setActivePaymentRow] = useState(null)
   const [activeCollectionRow, setActiveCollectionRow] = useState(null)
   const [actionLoading, setActionLoading] = useState(false)
+
+  // Filtro de mes: por defecto mes actual
+  const now = new Date()
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1) // 1-12
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear())
+  const [showAllMonths, setShowAllMonths] = useState(false)
 
   const fetchPending = useCallback(async () => {
     setLoading(true)
@@ -46,33 +56,75 @@ export function PendingPaymentsPage() {
     fetchPending()
   }, [fetchPending])
 
-  // Filtrar por búsqueda
-  const filtered = search
-    ? schedules.filter((s) => {
-        const term = search.toLowerCase()
+  // Filtrar por búsqueda + mes
+  const filtered = useMemo(() => {
+    let result = schedules
+
+    // Filtrar por mes/año (salvo si está en modo "todos los meses")
+    if (!showAllMonths) {
+      result = result.filter((s) => {
+        const due = new Date(s.due_date)
         return (
+          due.getMonth() + 1 === selectedMonth &&
+          due.getFullYear() === selectedYear
+        )
+      })
+    }
+
+    // Filtrar por búsqueda de texto
+    if (search) {
+      const term = search.toLowerCase()
+      result = result.filter(
+        (s) =>
           s.associate?.company_name?.toLowerCase().includes(term) ||
           s.associate?.ruc?.includes(term) ||
           s.associate?.internal_code?.toLowerCase().includes(term)
-        )
-      })
-    : schedules
+      )
+    }
+
+    return result
+  }, [schedules, selectedMonth, selectedYear, showAllMonths, search])
 
   // Separar vencidos y próximos
-  const now = new Date()
-  now.setHours(0, 0, 0, 0)
-  const overdue = filtered.filter((s) => new Date(s.due_date) < now)
-  const upcoming = filtered.filter((s) => new Date(s.due_date) >= now)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const overdue = filtered.filter((s) => new Date(s.due_date) < today)
+  const upcoming = filtered.filter((s) => new Date(s.due_date) >= today)
 
-  // Totales
+  // Totales del mes filtrado
   const totalPending = filtered.reduce(
-    (sum, s) => sum + Number(s.expected_amount || 0),
-    0
+    (sum, s) => sum + Number(s.expected_amount || 0), 0
   )
   const totalOverdue = overdue.reduce(
-    (sum, s) => sum + Number(s.expected_amount || 0),
-    0
+    (sum, s) => sum + Number(s.expected_amount || 0), 0
   )
+
+  // Navegar entre meses
+  const handlePrevMonth = () => {
+    if (selectedMonth === 1) {
+      setSelectedMonth(12)
+      setSelectedYear((y) => y - 1)
+    } else {
+      setSelectedMonth((m) => m - 1)
+    }
+    setShowAllMonths(false)
+  }
+
+  const handleNextMonth = () => {
+    if (selectedMonth === 12) {
+      setSelectedMonth(1)
+      setSelectedYear((y) => y + 1)
+    } else {
+      setSelectedMonth((m) => m + 1)
+    }
+    setShowAllMonths(false)
+  }
+
+  const handleCurrentMonth = () => {
+    setSelectedMonth(now.getMonth() + 1)
+    setSelectedYear(now.getFullYear())
+    setShowAllMonths(false)
+  }
 
   // Registrar pago desde cobranza
   const handlePaymentSubmit = async (data) => {
@@ -129,38 +181,91 @@ export function PendingPaymentsPage() {
   return (
     <div className="max-w-6xl">
       <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-1">Cobranza</h1>
-            <p className="text-sm text-slate-400">
-              Cuotas pendientes de cobro, ordenadas por fecha de vencimiento.
-            </p>
-          </div>
-          {schedules.length > 0 && (
-            <Button variant="secondary" size="sm" onClick={() => {
-              exportToExcel({
-                filename: `cobranza_${formatDate(new Date()).replace(/\//g, '-')}`,
-                sheetName: 'Cobranza',
-                data: schedules,
-                columns: EXPORT_COLUMNS.schedules,
-              })
-            }}>
-              📥 Exportar Excel
-            </Button>
-          )}
-        </div>
+        <h1 className="text-2xl font-bold text-slate-900 mb-1">Cobranza</h1>
+        <p className="text-sm text-slate-400">
+          Cuotas pendientes de cobro, ordenadas por fecha de vencimiento.
+        </p>
       </div>
 
-      {/* Resumen */}
-      {!loading && schedules.length > 0 && (
+      {/* Filtro de mes */}
+      <div className="flex flex-wrap items-center gap-3 mb-6 bg-white border border-slate-200 rounded-lg p-4">
+        <div className="flex items-center gap-1">
+          <button
+            className="w-8 h-8 flex items-center justify-center rounded hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
+            onClick={handlePrevMonth}
+            title="Mes anterior"
+          >
+            ◀
+          </button>
+
+          <div className="min-w-[160px] text-center">
+            <span className="text-sm font-bold text-slate-900">
+              {showAllMonths
+                ? 'Todos los meses'
+                : `${MONTH_NAMES[selectedMonth - 1]} ${selectedYear}`}
+            </span>
+          </div>
+
+          <button
+            className="w-8 h-8 flex items-center justify-center rounded hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
+            onClick={handleNextMonth}
+            title="Mes siguiente"
+          >
+            ▶
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2 ml-2">
+          <button
+            className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+              !showAllMonths && selectedMonth === now.getMonth() + 1 && selectedYear === now.getFullYear()
+                ? 'bg-slate-900 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+            onClick={handleCurrentMonth}
+          >
+            Mes actual
+          </button>
+          <button
+            className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+              showAllMonths
+                ? 'bg-slate-900 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+            onClick={() => setShowAllMonths(!showAllMonths)}
+          >
+            Ver todo
+          </button>
+        </div>
+
+        <div className="flex-1 min-w-[180px] ml-auto">
+          <Input
+            placeholder="Buscar asociado..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        {search && (
+          <button
+            type="button"
+            className="text-xs text-slate-400 hover:text-slate-600 underline"
+            onClick={() => setSearch('')}
+          >
+            Limpiar
+          </button>
+        )}
+      </div>
+
+      {/* Resumen del mes */}
+      {!loading && filtered.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <SummaryCard
-            label="Total pendiente"
+            label={showAllMonths ? 'Total pendiente' : `Pendiente ${MONTH_NAMES[selectedMonth - 1]}`}
             value={formatCurrency(totalPending)}
             accent="text-slate-900"
           />
           <SummaryCard
-            label="Cuotas pendientes"
+            label="Cuotas"
             value={String(filtered.length)}
             accent="text-slate-900"
           />
@@ -177,29 +282,6 @@ export function PendingPaymentsPage() {
         </div>
       )}
 
-      {/* Buscador */}
-      <div className="flex items-end gap-3 mb-6 bg-white border border-slate-200 rounded-lg p-4">
-        <div className="flex-1 min-w-[200px]">
-          <label className="text-xs font-semibold text-slate-600 mb-1 block">
-            Buscar asociado
-          </label>
-          <Input
-            placeholder="Razón social, RUC, código..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        {search && (
-          <button
-            type="button"
-            className="text-xs text-slate-400 hover:text-slate-600 underline pb-1"
-            onClick={() => setSearch('')}
-          >
-            Limpiar
-          </button>
-        )}
-      </div>
-
       {/* Contenido */}
       {loading ? (
         <div className="flex items-center justify-center py-16">
@@ -210,9 +292,11 @@ export function PendingPaymentsPage() {
           icon="✅"
           title="Sin cuotas pendientes"
           description={
-            search
-              ? 'No se encontraron cuotas pendientes para esa búsqueda.'
-              : 'Todos los asociados están al día.'
+            showAllMonths
+              ? search
+                ? 'No se encontraron cuotas para esa búsqueda.'
+                : 'Todos los asociados están al día.'
+              : `No hay cuotas pendientes en ${MONTH_NAMES[selectedMonth - 1]} ${selectedYear}.`
           }
         />
       ) : (
@@ -232,9 +316,7 @@ export function PendingPaymentsPage() {
                 setActiveCollectionRow(null)
               }}
               onCollectionClick={(id) => {
-                setActiveCollectionRow(
-                  activeCollectionRow === id ? null : id
-                )
+                setActiveCollectionRow(activeCollectionRow === id ? null : id)
                 setActivePaymentRow(null)
               }}
               onPaymentSubmit={handlePaymentSubmit}
@@ -258,9 +340,7 @@ export function PendingPaymentsPage() {
                 setActiveCollectionRow(null)
               }}
               onCollectionClick={(id) => {
-                setActiveCollectionRow(
-                  activeCollectionRow === id ? null : id
-                )
+                setActiveCollectionRow(activeCollectionRow === id ? null : id)
                 setActivePaymentRow(null)
               }}
               onPaymentSubmit={handlePaymentSubmit}
