@@ -18,6 +18,9 @@ export function PaymentList({ payments }) {
             <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500">
               Fecha
             </th>
+            <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500">
+              Cuota
+            </th>
             <th className="text-right py-2 px-3 text-xs font-semibold text-slate-500">
               Monto
             </th>
@@ -46,6 +49,9 @@ export function PaymentList({ payments }) {
               <td className="py-2 px-3 text-slate-800">
                 {formatDate(p.payment_date)}
               </td>
+              <td className="py-2 px-3 text-slate-600">
+                {getScheduleLabel(p.payment_schedule)}
+              </td>
               <td className="py-2 px-3 text-right text-slate-800 font-medium">
                 {formatCurrency(p.amount_paid)}
               </td>
@@ -73,4 +79,12 @@ export function PaymentList({ payments }) {
       </table>
     </div>
   )
+}
+
+function getScheduleLabel(schedule) {
+  if (!schedule) return '—'
+
+  return schedule.period_month
+    ? `${String(schedule.period_month).padStart(2, '0')}/${schedule.period_year}`
+    : String(schedule.period_year)
 }

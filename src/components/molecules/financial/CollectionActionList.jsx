@@ -41,6 +41,8 @@ export function CollectionActionList({ actions }) {
                   {formatDateTime(a.action_date)}
                   {a.managed_by &&
                     ` · ${a.managed_by.first_name} ${a.managed_by.last_name}`}
+                  {a.payment_schedule &&
+                    ` · Cuota ${getScheduleLabel(a.payment_schedule)}`}
                 </p>
               </div>
             </div>
@@ -66,4 +68,10 @@ export function CollectionActionList({ actions }) {
       })}
     </div>
   )
+}
+
+function getScheduleLabel(schedule) {
+  return schedule.period_month
+    ? `${String(schedule.period_month).padStart(2, '0')}/${schedule.period_year}`
+    : String(schedule.period_year)
 }

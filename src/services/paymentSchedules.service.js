@@ -78,6 +78,29 @@ export const paymentSchedulesService = {
     return data
   },
 
+  async updateCollectionStatus(id, { statusCode, userId }) {
+    const { data: status, error: statusError } = await supabase
+      .from('catalog_items')
+      .select('id, group:group_id(code)')
+      .eq('code', statusCode)
+      .eq('is_deleted', false)
+
+    if (statusError) throw statusError
+
+    const collectionStatus = status?.find(
+      (item) => item.group?.code === 'COLLECTION_STATUS'
+    )
+
+    if (!collectionStatus) {
+      throw new Error(`No se encontró el estado de cobranza ${statusCode}.`)
+    }
+
+    return paymentSchedulesService.update(id, {
+      collection_status_id: collectionStatus.id,
+      updated_by: userId,
+    })
+  },
+
   async softDeleteByMembership(membershipId, deletedBy) {
     const { error } = await supabase
       .from('payment_schedules')

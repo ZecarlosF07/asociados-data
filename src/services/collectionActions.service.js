@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabaseClient'
 
 const ACTION_SELECT = `
   *,
+  payment_schedule:payment_schedule_id(id, due_date, period_year, period_month, expected_amount, is_paid),
   contact_type:contact_type_id(id, code, label),
   action_result:action_result_id(id, code, label),
   managed_by:managed_by_user_id(id, first_name, last_name)

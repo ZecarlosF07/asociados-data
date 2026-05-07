@@ -134,18 +134,10 @@ export function PendingPaymentsPage() {
 
       await paymentsService.create({
         ...data,
-        associate_id: schedule.associate_id,
-        membership_id: schedule.membership_id,
         payment_schedule_id: schedule.id,
-        registered_by_user_id: profile?.id,
-        created_by: profile?.id,
       })
 
-      await paymentSchedulesService.markAsPaid(schedule.id, {
-        userId: profile?.id,
-      })
-
-      notify.success('Pago registrado y cuota marcada como pagada')
+      notify.success('Pago registrado y cronograma actualizado')
       setActivePaymentRow(null)
       fetchPending()
     } catch (error) {
@@ -169,8 +161,14 @@ export function PendingPaymentsPage() {
         created_by: profile?.id,
       })
 
+      await paymentSchedulesService.updateCollectionStatus(schedule.id, {
+        statusCode: 'EN_GESTION',
+        userId: profile?.id,
+      })
+
       notify.success('Gestión de cobranza registrada')
       setActiveCollectionRow(null)
+      fetchPending()
     } catch (error) {
       notify.error('Error: ' + error.message)
     } finally {
@@ -522,6 +520,7 @@ function ScheduleRow({
                 onSubmit={onPaymentSubmit}
                 onCancel={() => onPayClick(null)}
                 loading={actionLoading}
+                requireSchedule
               />
             </div>
           </td>
@@ -536,6 +535,7 @@ function ScheduleRow({
                 Registrar gestión — {s.associate?.company_name} — {periodLabel}
               </h4>
               <CollectionActionForm
+                schedules={[s]}
                 onSubmit={onCollectionSubmit}
                 onCancel={() => onCollectionClick(null)}
                 loading={actionLoading}

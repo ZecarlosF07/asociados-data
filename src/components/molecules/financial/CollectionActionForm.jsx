@@ -5,8 +5,15 @@ import { Button } from '../../atoms/Button'
 import { FINANCIAL_CATALOG_GROUPS } from '../../../utils/financialConstants'
 import { validateCollectionActionForm } from '../../../utils/financialValidation'
 
-export function CollectionActionForm({ onSubmit, onCancel, loading }) {
+export function CollectionActionForm({
+  schedules = [],
+  onSubmit,
+  onCancel,
+  loading,
+}) {
+  const initialSchedule = schedules.length === 1 ? schedules[0] : null
   const [form, setForm] = useState({
+    payment_schedule_id: initialSchedule?.id || '',
     contact_type_id: '',
     subject: '',
     short_observation: '',
@@ -42,6 +49,31 @@ export function CollectionActionForm({ onSubmit, onCancel, loading }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {schedules.length > 0 && (
+          <FormField label="Cuota asociada" name="payment_schedule_id"
+            helpText="Opcional, para marcar la cuota en gestión."
+          >
+            <select
+              name="payment_schedule_id"
+              value={form.payment_schedule_id}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded-md text-sm text-slate-900 bg-white border-slate-300 outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
+            >
+              <option value="">Sin cuota específica</option>
+              {schedules.map((s) => {
+                const label = s.period_month
+                  ? `${String(s.period_month).padStart(2, '0')}/${s.period_year}`
+                  : String(s.period_year)
+                return (
+                  <option key={s.id} value={s.id}>
+                    {label} — S/ {s.expected_amount}
+                  </option>
+                )
+              })}
+            </select>
+          </FormField>
+        )}
+
         <FormField label="Tipo de contacto" name="contact_type_id" required
           error={errors.contact_type_id}
         >

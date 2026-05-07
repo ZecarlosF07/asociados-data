@@ -26,8 +26,12 @@ export function validateMembershipForm(form) {
 /**
  * Validación del formulario de pago
  */
-export function validatePaymentForm(form) {
+export function validatePaymentForm(form, options = {}) {
   const errors = {}
+
+  if (options.requireSchedule && !form.payment_schedule_id) {
+    errors.payment_schedule_id = 'La cuota a pagar es obligatoria'
+  }
 
   if (!form.payment_date) {
     errors.payment_date = 'La fecha de pago es obligatoria'

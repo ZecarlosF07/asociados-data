@@ -7,6 +7,9 @@ import { AreaContactForm } from '../../../components/molecules/associates/AreaCo
 import { MembershipList } from '../../../components/molecules/financial/MembershipList'
 import { MembershipForm } from '../../../components/molecules/financial/MembershipForm'
 import { ScheduleTable } from '../../../components/molecules/financial/ScheduleTable'
+import { AssociateFinancialSummary } from '../../../components/molecules/financial/AssociateFinancialSummary'
+import { AssociatePaymentsTab } from '../../../components/molecules/financial/AssociatePaymentsTab'
+import { AssociateCollectionsTab } from '../../../components/molecules/financial/AssociateCollectionsTab'
 import { DocumentUploadForm } from '../../../components/molecules/documents/DocumentUploadForm'
 import { DocumentList } from '../../../components/molecules/documents/DocumentList'
 import { Button } from '../../../components/atoms/Button'
@@ -17,6 +20,8 @@ const TABS = [
   { key: 'people', label: 'Personas' },
   { key: 'contacts', label: 'Contactos' },
   { key: 'memberships', label: 'Membresías' },
+  { key: 'payments', label: 'Pagos' },
+  { key: 'collections', label: 'Cobranza' },
   { key: 'documents', label: 'Documentos' },
 ]
 
@@ -26,6 +31,8 @@ export function AssociateDetailTabs({
   areaContacts,
   memberships,
   schedules,
+  payments,
+  collectionActions,
   documents,
   canEdit,
   actionLoading,
@@ -39,6 +46,8 @@ export function AssociateDetailTabs({
   onMembershipDelete,
   onMembershipCancel,
   onMembershipRenew,
+  onPaymentSubmit,
+  onCollectionSubmit,
   onDocumentUpload,
   onDocumentDownload,
   onDocumentDelete,
@@ -119,6 +128,13 @@ export function AssociateDetailTabs({
           </button>
         ))}
       </div>
+
+      <AssociateFinancialSummary
+        associate={associate}
+        schedules={schedules}
+        payments={payments}
+        collectionActions={collectionActions}
+      />
 
       {/* Info */}
       {activeTab === 'info' && (
@@ -264,6 +280,28 @@ export function AssociateDetailTabs({
             </div>
           )}
         </div>
+      )}
+
+      {/* Pagos */}
+      {activeTab === 'payments' && (
+        <AssociatePaymentsTab
+          schedules={schedules}
+          payments={payments}
+          canEdit={canEdit}
+          actionLoading={actionLoading}
+          onPaymentSubmit={onPaymentSubmit}
+        />
+      )}
+
+      {/* Cobranza */}
+      {activeTab === 'collections' && (
+        <AssociateCollectionsTab
+          schedules={schedules}
+          collectionActions={collectionActions}
+          canEdit={canEdit}
+          actionLoading={actionLoading}
+          onCollectionSubmit={onCollectionSubmit}
+        />
       )}
 
       {/* Documentos */}

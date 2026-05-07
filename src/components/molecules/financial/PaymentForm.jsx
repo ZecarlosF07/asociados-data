@@ -10,11 +10,15 @@ export function PaymentForm({
   onSubmit,
   onCancel,
   loading,
+  requireSchedule = false,
 }) {
+  const initialSchedule = schedules.length === 1 ? schedules[0] : null
   const [form, setForm] = useState({
-    payment_schedule_id: '',
+    payment_schedule_id: initialSchedule?.id || '',
     payment_date: new Date().toISOString().split('T')[0],
-    amount_paid: '',
+    amount_paid: initialSchedule?.expected_amount
+      ? String(initialSchedule.expected_amount)
+      : '',
     operation_code: '',
     payment_method_id: '',
     reference_notes: '',
@@ -42,7 +46,7 @@ export function PaymentForm({
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    const validationErrors = validatePaymentForm(form)
+    const validationErrors = validatePaymentForm(form, { requireSchedule })
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors)
@@ -64,6 +68,7 @@ export function PaymentForm({
         {pendingSchedules.length > 0 && (
           <FormField label="Cuota a pagar" name="payment_schedule_id"
             helpText="Selecciona la cuota correspondiente."
+            error={errors.payment_schedule_id}
           >
             <select
               name="payment_schedule_id"
@@ -71,7 +76,9 @@ export function PaymentForm({
               onChange={handleChange}
               className="w-full px-3 py-2 border rounded-md text-sm text-slate-900 bg-white border-slate-300 outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
             >
-              <option value="">Sin cuota específica</option>
+              <option value="">
+                {requireSchedule ? 'Seleccionar cuota...' : 'Sin cuota específica'}
+              </option>
               {pendingSchedules.map((s) => {
                 const label = s.period_month
                   ? `${String(s.period_month).padStart(2, '0')}/${s.period_year}`
