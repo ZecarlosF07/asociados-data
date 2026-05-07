@@ -26,6 +26,7 @@ export function ProspectDetailPage() {
   const detail = useProspectDetail(id)
   const [statusModal, setStatusModal] = useState(false)
   const [convertModal, setConvertModal] = useState(false)
+  const [convertError, setConvertError] = useState(null)
   const [actionLoading, setActionLoading] = useState(false)
 
   const handleStatusChange = async ({ newStatusId, reason }) => {
@@ -93,16 +94,17 @@ export function ProspectDetailPage() {
 
   const handleConvert = async (conversionData) => {
     setActionLoading(true)
+    setConvertError(null)
     try {
       const associate = await associatesService.convertFromProspect({
         prospect: detail.prospect,
         conversionData,
-        userId: profile?.id,
       })
       notify.success('Prospecto convertido a asociado')
       setConvertModal(false)
       navigate(`${ROUTES.ASOCIADOS}/${associate.id}`)
     } catch (error) {
+      setConvertError(error.message)
       notify.error('Error: ' + error.message)
     } finally {
       setActionLoading(false)
@@ -140,7 +142,10 @@ export function ProspectDetailPage() {
         canEdit={canEdit}
         onEdit={() => navigate(`${ROUTES.PROSPECTOS}/${id}/editar`)}
         onStatusChange={() => setStatusModal(true)}
-        onConvert={() => setConvertModal(true)}
+        onConvert={() => {
+          setConvertError(null)
+          setConvertModal(true)
+        }}
         onBack={() => navigate(ROUTES.PROSPECTOS)}
       />
 
@@ -167,9 +172,13 @@ export function ProspectDetailPage() {
       <ConvertProspectModal
         isOpen={convertModal}
         prospect={detail.prospect}
-        onClose={() => setConvertModal(false)}
+        onClose={() => {
+          setConvertError(null)
+          setConvertModal(false)
+        }}
         onSubmit={handleConvert}
         loading={actionLoading}
+        submitError={convertError}
       />
     </div>
   )

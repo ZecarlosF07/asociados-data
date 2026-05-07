@@ -85,60 +85,25 @@ export const associatesService = {
     return data
   },
 
-  async generateCode() {
-    const year = new Date().getFullYear()
-    const { count, error } = await supabase
-      .from('associates')
-      .select('*', { count: 'exact', head: true })
+  async convertFromProspect({ prospect, conversionData }) {
+    const { data: created, error } = await supabase.rpc(
+      'convert_prospect_to_associate',
+      {
+        p_prospect_id: prospect.id,
+        p_ruc: conversionData.ruc,
+        p_associate_status_id: conversionData.statusId,
+        p_association_date: conversionData.associationDate,
+        p_responsible_user_id: conversionData.responsibleUserId || null,
+        p_notes: conversionData.notes || null,
+      }
+    )
 
-    if (error) throw error
-    const seq = String((count || 0) + 1).padStart(4, '0')
-    return `ASO-${year}-${seq}`
-  },
-
-  async convertFromProspect({ prospect, conversionData, userId }) {
-    const code = await associatesService.generateCode()
-
-    const associate = {
-      internal_code: code,
-      ruc: prospect.ruc,
-      company_name: prospect.company_name,
-      trade_name: prospect.trade_name,
-      economic_activity: prospect.economic_activity,
-      activity_type_id: prospect.activity_type_id,
-      company_size_id: prospect.company_size_id,
-      corporate_email: prospect.primary_email,
-      category_id: prospect.current_category_id,
-      captador_id: prospect.captador_id,
-      prospect_origin_id: prospect.id,
-      associate_status_id: conversionData.statusId,
-      association_date: conversionData.associationDate,
-      affiliation_responsible_user_id: conversionData.responsibleUserId || userId,
-      notes: conversionData.notes || null,
-      created_by: userId,
+    if (error) throw new Error(getConversionErrorMessage(error))
+    if (!created?.id) {
+      throw new Error('La conversión no retornó el asociado creado.')
     }
 
-    const { data: created, error: createError } = await supabase
-      .from('associates')
-      .insert(associate)
-      .select(ASSOCIATE_SELECT)
-      .single()
-
-    if (createError) throw createError
-
-    const { error: updateError } = await supabase
-      .from('prospects')
-      .update({
-        converted_to_associate_id: created.id,
-        converted_at: new Date().toISOString(),
-        updated_by: userId,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', prospect.id)
-
-    if (updateError) throw updateError
-
-    return created
+    return associatesService.getById(created.id)
   },
 
   // ---- Personas vinculadas ----
@@ -246,4 +211,22 @@ export const associatesService = {
 
     if (error) throw error
   },
+}
+
+function getConversionErrorMessage(error) {
+  const message = error?.message || 'No se pudo convertir el prospecto.'
+
+  if (error?.code === '42501') {
+    return 'No tienes permisos para convertir prospectos en asociados.'
+  }
+
+  if (error?.code === '23505') {
+    if (message.includes('RUC')) {
+      return 'Ya existe un asociado activo con este RUC.'
+    }
+
+    return 'Este prospecto ya fue convertido o ya tiene un asociado activo.'
+  }
+
+  return message
 }

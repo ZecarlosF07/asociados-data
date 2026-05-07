@@ -12,6 +12,7 @@ export function ConvertProspectModal({
   onClose,
   onSubmit,
   loading,
+  submitError,
 }) {
   const [form, setForm] = useState({
     ruc: prospect?.ruc || '',
@@ -62,6 +63,12 @@ export function ConvertProspectModal({
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
+            {submitError && (
+              <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-4">
+                {submitError}
+              </div>
+            )}
+
             <FormField
               label="RUC"
               name="ruc"
