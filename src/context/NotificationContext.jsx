@@ -1,7 +1,6 @@
-import { createContext, useState, useCallback } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { NotificationContext } from './notification-context-value'
 import { NOTIFICATION_DURATION } from '../utils/constants'
-
-export const NotificationContext = createContext(null)
 
 export function NotificationProvider({ children }) {
   const [notifications, setNotifications] = useState([])
@@ -24,12 +23,15 @@ export function NotificationProvider({ children }) {
     [removeNotification]
   )
 
-  const notify = {
-    success: (message) => addNotification({ type: 'success', message }),
-    error: (message) => addNotification({ type: 'error', message }),
-    warning: (message) => addNotification({ type: 'warning', message }),
-    info: (message) => addNotification({ type: 'info', message }),
-  }
+  const notify = useMemo(
+    () => ({
+      success: (message) => addNotification({ type: 'success', message }),
+      error: (message) => addNotification({ type: 'error', message }),
+      warning: (message) => addNotification({ type: 'warning', message }),
+      info: (message) => addNotification({ type: 'info', message }),
+    }),
+    [addNotification]
+  )
 
   return (
     <NotificationContext.Provider

@@ -321,7 +321,6 @@ export function PendingPaymentsPage() {
               }}
               onPaymentSubmit={handlePaymentSubmit}
               onCollectionSubmit={handleCollectionSubmit}
-              schedules={schedules}
             />
           )}
 
@@ -345,7 +344,6 @@ export function PendingPaymentsPage() {
               }}
               onPaymentSubmit={handlePaymentSubmit}
               onCollectionSubmit={handleCollectionSubmit}
-              schedules={schedules}
             />
           )}
         </div>
@@ -376,7 +374,6 @@ function ScheduleSection({
   onCollectionClick,
   onPaymentSubmit,
   onCollectionSubmit,
-  schedules,
 }) {
   const borderColor =
     variant === 'danger' ? 'border-red-200' : 'border-amber-200'
@@ -441,7 +438,6 @@ function ScheduleSection({
                   onCollectionClick={onCollectionClick}
                   onPaymentSubmit={onPaymentSubmit}
                   onCollectionSubmit={onCollectionSubmit}
-                  schedules={schedules}
                 />
               )
             })}
@@ -465,7 +461,6 @@ function ScheduleRow({
   onCollectionClick,
   onPaymentSubmit,
   onCollectionSubmit,
-  schedules,
 }) {
   return (
     <>

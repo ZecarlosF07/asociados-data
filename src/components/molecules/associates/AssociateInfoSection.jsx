@@ -1,5 +1,5 @@
 import { Badge } from '../../atoms/Badge'
-import { formatDate, formatCurrency } from '../../../utils/helpers'
+import { formatDate } from '../../../utils/helpers'
 import {
   ASSOCIATE_STATUS_VARIANT,
   PAYMENT_HEALTH_VARIANT,

@@ -1,6 +1,6 @@
 import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
-import { formatDate, formatCurrency } from './helpers'
+import { formatDate } from './helpers'
 
 /**
  * Exporta datos tabulares a un archivo Excel (.xlsx)

@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom'
 import { useAssociates } from '../../hooks/useAssociates'
-import { usePermissions } from '../../hooks/usePermissions'
 import { AssociateFilters } from '../../components/molecules/associates/AssociateFilters'
 import { AssociateCard } from '../../components/molecules/associates/AssociateCard'
 import { Loader } from '../../components/atoms/Loader'
@@ -10,7 +9,6 @@ import { ROUTES } from '../../router/routes'
 export function AssociatesPage() {
   const navigate = useNavigate()
   const { associates, loading, filters, updateFilters } = useAssociates()
-  const { canCreate } = usePermissions()
 
   const handleClearFilters = () => {
     updateFilters({ search: '', statusId: '', categoryId: '' })

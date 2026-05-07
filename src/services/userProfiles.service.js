@@ -75,11 +75,9 @@ export const userProfilesService = {
     return data
   },
 
-  async updateLastLogin(profileId) {
+  async updateLastLogin() {
     const { error } = await supabase
-      .from('user_profiles')
-      .update({ last_login_at: new Date().toISOString() })
-      .eq('id', profileId)
+      .rpc('touch_current_user_last_login')
 
     if (error) throw error
   },

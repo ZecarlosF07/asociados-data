@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { catalogsService } from '../../services/catalogs.service'
 import { useNotification } from '../../hooks/useNotification'
 import { DataTable } from '../../components/organisms/DataTable'
@@ -43,11 +43,7 @@ export function CatalogsPage() {
   const [loadingItems, setLoadingItems] = useState(false)
   const { notify } = useNotification()
 
-  useEffect(() => {
-    loadGroups()
-  }, [])
-
-  const loadGroups = async () => {
+  const loadGroups = useCallback(async () => {
     setLoadingGroups(true)
     try {
       const data = await catalogsService.getAllGroups()
@@ -57,7 +53,11 @@ export function CatalogsPage() {
     } finally {
       setLoadingGroups(false)
     }
-  }
+  }, [notify])
+
+  useEffect(() => {
+    loadGroups()
+  }, [loadGroups])
 
   const handleGroupClick = async (group) => {
     setSelectedGroup(group)

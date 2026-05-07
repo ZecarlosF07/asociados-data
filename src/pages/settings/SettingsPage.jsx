@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { settingsService } from '../../services/settings.service'
 import { useNotification } from '../../hooks/useNotification'
@@ -49,11 +49,7 @@ export function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const { notify } = useNotification()
 
-  useEffect(() => {
-    loadSettings()
-  }, [])
-
-  const loadSettings = async () => {
+  const loadSettings = useCallback(async () => {
     setLoading(true)
     try {
       const data = await settingsService.getAll()
@@ -63,7 +59,11 @@ export function SettingsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [notify])
+
+  useEffect(() => {
+    loadSettings()
+  }, [loadSettings])
 
   return (
     <div className="max-w-5xl">

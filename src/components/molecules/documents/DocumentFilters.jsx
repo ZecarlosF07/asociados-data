@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useMemo, useState } from 'react'
 import { Input } from '../../atoms/Input'
 import { CatalogSelect } from '../CatalogSelect'
 import { DOCUMENT_CATALOG_GROUPS } from '../../../utils/documentConstants'
@@ -9,10 +9,8 @@ export function DocumentFilters({ onFilterChange }) {
   const [categoryId, setCategoryId] = useState('')
   const [typeId, setTypeId] = useState('')
 
-  const emitChange = useCallback(
-    debounce((filters) => {
-      onFilterChange(filters)
-    }, 300),
+  const emitChange = useMemo(
+    () => debounce((filters) => onFilterChange(filters), 300),
     [onFilterChange]
   )
 

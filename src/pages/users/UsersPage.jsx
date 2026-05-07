@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { userProfilesService } from '../../services/userProfiles.service'
 import { useNotification } from '../../hooks/useNotification'
 import { DataTable } from '../../components/organisms/DataTable'
@@ -33,11 +33,7 @@ export function UsersPage() {
   const [loading, setLoading] = useState(true)
   const { notify } = useNotification()
 
-  useEffect(() => {
-    loadUsers()
-  }, [])
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     setLoading(true)
     try {
       const data = await userProfilesService.getAll()
@@ -47,7 +43,11 @@ export function UsersPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [notify])
+
+  useEffect(() => {
+    loadUsers()
+  }, [loadUsers])
 
   return (
     <div className="max-w-5xl">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { categoriesService } from '../../services/categories.service'
 import { useNotification } from '../../hooks/useNotification'
 import { DataTable } from '../../components/organisms/DataTable'
@@ -41,11 +41,7 @@ export function CategoriesPage() {
   const [loading, setLoading] = useState(true)
   const { notify } = useNotification()
 
-  useEffect(() => {
-    loadCategories()
-  }, [])
-
-  const loadCategories = async () => {
+  const loadCategories = useCallback(async () => {
     setLoading(true)
     try {
       const data = await categoriesService.getAll()
@@ -55,7 +51,11 @@ export function CategoriesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [notify])
+
+  useEffect(() => {
+    loadCategories()
+  }, [loadCategories])
 
   return (
     <div className="max-w-5xl">

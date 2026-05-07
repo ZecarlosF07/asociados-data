@@ -1,8 +1,7 @@
-import { createContext, useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { UserProfileContext } from './user-profile-context-value'
 import { useAuth } from '../hooks/useAuth'
 import { userProfilesService } from '../services/userProfiles.service'
-
-export const UserProfileContext = createContext(null)
 
 export function UserProfileProvider({ children }) {
   const { user, isAuthenticated } = useAuth()
