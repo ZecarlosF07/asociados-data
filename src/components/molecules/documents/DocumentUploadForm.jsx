@@ -6,14 +6,21 @@ import { Button } from '../../atoms/Button'
 import { DOCUMENT_CATALOG_GROUPS, formatFileSize, getFileIcon } from '../../../utils/documentConstants'
 import { validateDocumentUpload } from '../../../utils/documentValidation'
 
-export function DocumentUploadForm({ associateId, onSubmit, onCancel, loading }) {
+export function DocumentUploadForm({
+  associateId,
+  initialData,
+  submitLabel = 'Subir documento',
+  onSubmit,
+  onCancel,
+  loading,
+}) {
   const fileInputRef = useRef(null)
 
   const [form, setForm] = useState({
-    title: '',
-    document_type_id: '',
-    document_category_id: '',
-    notes: '',
+    title: initialData?.title || '',
+    document_type_id: initialData?.document_type_id || '',
+    document_category_id: initialData?.document_category_id || '',
+    notes: initialData?.notes || '',
   })
 
   const [file, setFile] = useState(null)
@@ -145,7 +152,7 @@ export function DocumentUploadForm({ associateId, onSubmit, onCancel, loading })
           Cancelar
         </Button>
         <Button type="submit" size="sm" loading={loading}>
-          Subir documento
+          {submitLabel}
         </Button>
       </div>
     </form>

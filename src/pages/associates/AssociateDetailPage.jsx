@@ -173,6 +173,10 @@ export function AssociateDetailPage() {
     }
   }
 
+  const handleDocumentView = (document) => {
+    navigate(ROUTES.DOCUMENTOS_DETALLE.replace(':id', document.id))
+  }
+
   if (detail.loading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -230,6 +234,7 @@ export function AssociateDetailPage() {
         onPaymentSubmit={handlePaymentSubmit}
         onCollectionSubmit={handleCollectionSubmit}
         onDocumentUpload={handleDocumentUpload}
+        onDocumentView={handleDocumentView}
         onDocumentDownload={handleDocumentDownload}
         onDocumentDelete={handleDocumentDelete}
       />

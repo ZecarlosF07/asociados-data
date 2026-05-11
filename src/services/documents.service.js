@@ -6,7 +6,8 @@ const DOCUMENT_SELECT = `
   document_type:document_type_id(id, code, label),
   associate:associate_id(id, company_name, ruc, internal_code),
   prospect:prospect_id(id, company_name, ruc),
-  storage_node:storage_node_id(id, name, slug)
+  storage_node:storage_node_id(id, name, slug, year_number, month_number, parent_id),
+  replaces_document:replaces_document_id(id, title, original_filename, version_number)
 `
 
 const STORAGE_BUCKET = 'documents'
@@ -67,6 +68,34 @@ export const documentsService = {
 
     if (error) throw error
     return data
+  },
+
+  /**
+   * Obtiene la cadena de versiones desde el documento actual hacia atras.
+   */
+  async getVersionHistory(documentId) {
+    const versions = []
+    let current = await documentsService.getById(documentId)
+
+    while (current) {
+      versions.push(current)
+
+      if (!current.replaces_document_id) break
+
+      const { data, error } = await supabase
+        .from('documents')
+        .select(DOCUMENT_SELECT)
+        .eq('id', current.replaces_document_id)
+        .eq('is_deleted', false)
+        .maybeSingle()
+
+      if (error) throw error
+      current = data
+    }
+
+    return versions.sort(
+      (a, b) => Number(b.version_number || 0) - Number(a.version_number || 0)
+    )
   },
 
   /**
@@ -142,20 +171,21 @@ export const documentsService = {
     return data
   },
 
+  async updateMetadata(id, updates) {
+    return documentsService.update(id, {
+      document_category_id: updates.document_category_id || null,
+      document_type_id: updates.document_type_id || null,
+      storage_node_id: updates.storage_node_id || null,
+      title: updates.title,
+      notes: updates.notes || null,
+      updated_by: updates.updated_by || null,
+    })
+  },
+
   /**
    * Reemplaza un documento con una nueva versión
    */
   async replaceVersion({ documentId, file, metadata, userId }) {
-    // Marcar el anterior como no más reciente
-    await supabase
-      .from('documents')
-      .update({
-        is_latest_version: false,
-        updated_at: new Date().toISOString(),
-        updated_by: userId,
-      })
-      .eq('id', documentId)
-
     // Obtener el documento actual para versión
     const current = await documentsService.getById(documentId)
     const newVersion = (current?.version_number || 1) + 1
@@ -165,6 +195,10 @@ export const documentsService = {
       file,
       metadata: {
         ...metadata,
+        document_category_id: metadata.document_category_id || current?.document_category_id,
+        document_type_id: metadata.document_type_id || current?.document_type_id,
+        title: metadata.title || current?.title,
+        notes: metadata.notes ?? current?.notes,
         associate_id: current?.associate_id,
         prospect_id: current?.prospect_id,
         storage_node_id: current?.storage_node_id,
@@ -185,6 +219,17 @@ export const documentsService = {
       .single()
 
     if (error) throw error
+
+    // Marcar el anterior como no más reciente solo cuando la nueva versión quedó registrada.
+    await supabase
+      .from('documents')
+      .update({
+        is_latest_version: false,
+        updated_at: new Date().toISOString(),
+        updated_by: userId,
+      })
+      .eq('id', documentId)
+
     return data
   },
 

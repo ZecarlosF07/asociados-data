@@ -1,4 +1,4 @@
-import { Button } from '../../atoms/Button'
+import { ReportExportButton } from './ReportExportButton'
 
 /**
  * Sección de reporte con tabla, conteo e botón de exportación
@@ -18,9 +18,10 @@ export function ReportSection({ title, subtitle, count, onExport, exportLabel, c
             </span>
           )}
           {onExport && (
-            <Button variant="secondary" size="sm" onClick={onExport}>
-              📥 {exportLabel || 'Exportar Excel'}
-            </Button>
+            <ReportExportButton
+              label={`📥 ${exportLabel || 'Exportar Excel'}`}
+              onExport={onExport}
+            />
           )}
         </div>
       </div>

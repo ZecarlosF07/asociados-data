@@ -3,12 +3,21 @@ import { Button } from '../../atoms/Button'
 import { formatFileSize, getFileIcon } from '../../../utils/documentConstants'
 import { formatDateTime } from '../../../utils/helpers'
 
-export function DocumentCard({ document, canEdit, onDownload, onDelete }) {
+export function DocumentCard({
+  document,
+  canEdit,
+  onView,
+  onDownload,
+  onDelete,
+}) {
   const ext = document.file_extension || ''
   const icon = getFileIcon(ext)
 
   return (
-    <div className="border border-slate-200 rounded-lg p-4 hover:border-slate-300 transition-colors">
+    <div
+      className="border border-slate-200 rounded-lg p-4 hover:border-slate-300 transition-colors cursor-pointer"
+      onClick={() => onView?.(document)}
+    >
       <div className="flex items-start gap-3">
         <span className="text-2xl mt-0.5 shrink-0">{icon}</span>
 
@@ -58,13 +67,23 @@ export function DocumentCard({ document, canEdit, onDownload, onDelete }) {
         </div>
 
         <div className="flex gap-1 shrink-0">
-          <Button variant="ghost" size="sm" onClick={() => onDownload(document)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(event) => {
+              event.stopPropagation()
+              onDownload(document)
+            }}
+          >
             ↓
           </Button>
           {canEdit && (
             <Button variant="ghost" size="sm"
               className="text-red-500 hover:text-red-700"
-              onClick={() => onDelete(document)}
+              onClick={(event) => {
+                event.stopPropagation()
+                onDelete(document)
+              }}
             >
               ✕
             </Button>

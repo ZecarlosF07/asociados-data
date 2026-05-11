@@ -1,5 +1,3 @@
-import * as XLSX from 'xlsx'
-import { saveAs } from 'file-saver'
 import { formatDate } from './helpers'
 
 /**
@@ -11,7 +9,8 @@ import { formatDate } from './helpers'
  * @param {Array<Object>} options.data - Datos a exportar
  * @param {Array<{key: string, label: string, format?: 'date'|'currency'|'number'}>} options.columns - Definición de columnas
  */
-export function exportToExcel({ filename, sheetName, data, columns }) {
+export async function exportToExcel({ filename, sheetName, data, columns }) {
+  const { XLSX, saveAs } = await loadExcelDependencies()
   const headers = columns.map((c) => c.label)
 
   const rows = data.map((row) =>
@@ -49,7 +48,8 @@ export function exportToExcel({ filename, sheetName, data, columns }) {
 /**
  * Exporta múltiples hojas a un mismo archivo Excel
  */
-export function exportMultiSheetExcel({ filename, sheets }) {
+export async function exportMultiSheetExcel({ filename, sheets }) {
+  const { XLSX, saveAs } = await loadExcelDependencies()
   const workbook = XLSX.utils.book_new()
 
   sheets.forEach(({ sheetName, data, columns }) => {
@@ -78,6 +78,18 @@ export function exportMultiSheetExcel({ filename, sheets }) {
   })
 
   saveAs(blob, `${filename || 'export'}.xlsx`)
+}
+
+async function loadExcelDependencies() {
+  const [xlsxModule, fileSaverModule] = await Promise.all([
+    import('xlsx'),
+    import('file-saver'),
+  ])
+
+  return {
+    XLSX: xlsxModule,
+    saveAs: fileSaverModule.saveAs,
+  }
 }
 
 /**
@@ -145,6 +157,16 @@ export const EXPORT_COLUMNS = {
     { key: 'collection_status.label', label: 'Estado cobranza' },
     { key: 'period_year', label: 'Año', format: 'number' },
     { key: 'period_month', label: 'Mes', format: 'number' },
+  ],
+
+  collections: [
+    { key: 'associate.internal_code', label: 'Código asociado' },
+    { key: 'associate.company_name', label: 'Razón social' },
+    { key: 'action_date', label: 'Fecha de gestión', format: 'date' },
+    { key: 'subject', label: 'Asunto' },
+    { key: 'contact_type.label', label: 'Tipo de contacto' },
+    { key: 'action_result.label', label: 'Resultado' },
+    { key: 'managed_by.full_name', label: 'Responsable' },
   ],
 
   documents: [

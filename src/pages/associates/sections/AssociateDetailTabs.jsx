@@ -49,6 +49,7 @@ export function AssociateDetailTabs({
   onPaymentSubmit,
   onCollectionSubmit,
   onDocumentUpload,
+  onDocumentView,
   onDocumentDownload,
   onDocumentDelete,
 }) {
@@ -335,6 +336,7 @@ export function AssociateDetailTabs({
           <DocumentList
             documents={documents || []}
             canEdit={canEdit}
+            onView={onDocumentView}
             onDownload={onDocumentDownload}
             onDelete={onDocumentDelete}
           />

@@ -1,7 +1,13 @@
 import { EmptyState } from '../../atoms/EmptyState'
 import { DocumentCard } from './DocumentCard'
 
-export function DocumentList({ documents, canEdit, onDownload, onDelete }) {
+export function DocumentList({
+  documents,
+  canEdit,
+  onView,
+  onDownload,
+  onDelete,
+}) {
   if (!documents?.length) {
     return (
       <EmptyState
@@ -19,6 +25,7 @@ export function DocumentList({ documents, canEdit, onDownload, onDelete }) {
           key={doc.id}
           document={doc}
           canEdit={canEdit}
+          onView={onView}
           onDownload={onDownload}
           onDelete={onDelete}
         />

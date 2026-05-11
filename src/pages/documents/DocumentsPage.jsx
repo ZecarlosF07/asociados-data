@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useDocuments } from '../../hooks/useDocuments'
 import { useNotification } from '../../hooks/useNotification'
 import { useUserProfile } from '../../hooks/useUserProfile'
@@ -9,8 +10,10 @@ import { DocumentList } from '../../components/molecules/documents/DocumentList'
 import { DocumentUploadForm } from '../../components/molecules/documents/DocumentUploadForm'
 import { Button } from '../../components/atoms/Button'
 import { Loader } from '../../components/atoms/Loader'
+import { ROUTES } from '../../router/routes'
 
 export function DocumentsPage() {
+  const navigate = useNavigate()
   const { notify } = useNotification()
   const { profile } = useUserProfile()
   const { canEdit } = usePermissions()
@@ -62,6 +65,10 @@ export function DocumentsPage() {
     }
   }
 
+  const handleView = (document) => {
+    navigate(ROUTES.DOCUMENTOS_DETALLE.replace(':id', document.id))
+  }
+
   return (
     <div className="max-w-5xl">
       <div className="flex items-center justify-between mb-6">
@@ -100,6 +107,7 @@ export function DocumentsPage() {
         <DocumentList
           documents={documents}
           canEdit={canEdit}
+          onView={handleView}
           onDownload={handleDownload}
           onDelete={handleDelete}
         />

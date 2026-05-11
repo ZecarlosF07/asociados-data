@@ -1,32 +1,37 @@
+import { Suspense, lazy } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ROUTES } from './routes'
 import { ProtectedRoute } from './ProtectedRoute'
 import { PermissionGuard } from './PermissionGuard'
 import { MainLayout } from '../layouts/MainLayout'
 import { AuthLayout } from '../layouts/AuthLayout'
-import { LoginPage } from '../pages/auth/LoginPage'
-import { DashboardPage } from '../pages/dashboard/DashboardPage'
-import { UsersPage } from '../pages/users/UsersPage'
-import { SettingsPage } from '../pages/settings/SettingsPage'
-import { CatalogsPage } from '../pages/settings/CatalogsPage'
-import { CategoriesPage } from '../pages/settings/CategoriesPage'
-import { ProspectsPage } from '../pages/prospects/ProspectsPage'
-import { ProspectCreatePage } from '../pages/prospects/ProspectCreatePage'
-import { ProspectDetailPage } from '../pages/prospects/ProspectDetailPage'
-import { ProspectEditPage } from '../pages/prospects/ProspectEditPage'
-import { AssociatesPage } from '../pages/associates/AssociatesPage'
-import { AssociateDetailPage } from '../pages/associates/AssociateDetailPage'
-import { AssociateEditPage } from '../pages/associates/AssociateEditPage'
-import { MembershipsPage } from '../pages/financial/MembershipsPage'
-import { PendingPaymentsPage } from '../pages/financial/PendingPaymentsPage'
-import { DocumentsPage } from '../pages/documents/DocumentsPage'
-import { ReportsPage } from '../pages/reports/ReportsPage'
-import { NotFoundPage } from '../pages/NotFoundPage'
+import { Loader } from '../components/atoms/Loader'
+
+const LoginPage = lazyPage(() => import('../pages/auth/LoginPage'), 'LoginPage')
+const DashboardPage = lazyPage(() => import('../pages/dashboard/DashboardPage'), 'DashboardPage')
+const UsersPage = lazyPage(() => import('../pages/users/UsersPage'), 'UsersPage')
+const SettingsPage = lazyPage(() => import('../pages/settings/SettingsPage'), 'SettingsPage')
+const CatalogsPage = lazyPage(() => import('../pages/settings/CatalogsPage'), 'CatalogsPage')
+const CategoriesPage = lazyPage(() => import('../pages/settings/CategoriesPage'), 'CategoriesPage')
+const ProspectsPage = lazyPage(() => import('../pages/prospects/ProspectsPage'), 'ProspectsPage')
+const ProspectCreatePage = lazyPage(() => import('../pages/prospects/ProspectCreatePage'), 'ProspectCreatePage')
+const ProspectDetailPage = lazyPage(() => import('../pages/prospects/ProspectDetailPage'), 'ProspectDetailPage')
+const ProspectEditPage = lazyPage(() => import('../pages/prospects/ProspectEditPage'), 'ProspectEditPage')
+const AssociatesPage = lazyPage(() => import('../pages/associates/AssociatesPage'), 'AssociatesPage')
+const AssociateDetailPage = lazyPage(() => import('../pages/associates/AssociateDetailPage'), 'AssociateDetailPage')
+const AssociateEditPage = lazyPage(() => import('../pages/associates/AssociateEditPage'), 'AssociateEditPage')
+const MembershipsPage = lazyPage(() => import('../pages/financial/MembershipsPage'), 'MembershipsPage')
+const PendingPaymentsPage = lazyPage(() => import('../pages/financial/PendingPaymentsPage'), 'PendingPaymentsPage')
+const DocumentsPage = lazyPage(() => import('../pages/documents/DocumentsPage'), 'DocumentsPage')
+const DocumentDetailPage = lazyPage(() => import('../pages/documents/DocumentDetailPage'), 'DocumentDetailPage')
+const ReportsPage = lazyPage(() => import('../pages/reports/ReportsPage'), 'ReportsPage')
+const NotFoundPage = lazyPage(() => import('../pages/NotFoundPage'), 'NotFoundPage')
 
 export function AppRouter() {
   return (
     <BrowserRouter>
-      <Routes>
+      <Suspense fallback={<RouteLoader />}>
+        <Routes>
         {/* Rutas de autenticación */}
         <Route element={<AuthLayout />}>
           <Route path={ROUTES.LOGIN} element={<LoginPage />} />
@@ -131,6 +136,14 @@ export function AppRouter() {
               </PermissionGuard>
             }
           />
+          <Route
+            path={ROUTES.DOCUMENTOS_DETALLE}
+            element={
+              <PermissionGuard module="documentos">
+                <DocumentDetailPage />
+              </PermissionGuard>
+            }
+          />
 
           {/* Reportes */}
           <Route
@@ -184,7 +197,22 @@ export function AppRouter() {
         {/* Redirecciones y fallbacks */}
         <Route path="/" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
         <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
+  )
+}
+
+function lazyPage(loader, exportName) {
+  return lazy(() =>
+    loader().then((module) => ({ default: module[exportName] }))
+  )
+}
+
+function RouteLoader() {
+  return (
+    <div className="flex items-center justify-center py-24">
+      <Loader />
+    </div>
   )
 }
