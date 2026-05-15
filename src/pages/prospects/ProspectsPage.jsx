@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useProspects } from '../../hooks/useProspects'
 import { usePermissions } from '../../hooks/usePermissions'
 import { ProspectFilters } from '../../components/molecules/prospects/ProspectFilters'
-import { ProspectCard } from '../../components/molecules/prospects/ProspectCard'
+import { ProspectListItem } from '../../components/molecules/prospects/ProspectListItem'
 import { Button } from '../../components/atoms/Button'
 import { Loader } from '../../components/atoms/Loader'
 import { EmptyState } from '../../components/atoms/EmptyState'
@@ -10,14 +10,14 @@ import { ROUTES } from '../../router/routes'
 
 export function ProspectsPage() {
   const navigate = useNavigate()
-  const { prospects, loading, filters, updateFilters } = useProspects()
+  const { prospects, loading, error, filters, updateFilters } = useProspects()
   const { canCreate } = usePermissions()
 
   const handleClearFilters = () => {
-    updateFilters({ search: '', statusId: '', categoryId: '' })
+    updateFilters({ search: '', statusId: '', categoryId: '', captadorId: '' })
   }
 
-  const handleCardClick = (prospect) => {
+  const handleProspectClick = (prospect) => {
     navigate(`${ROUTES.PROSPECTOS}/${prospect.id}`)
   }
 
@@ -47,6 +47,12 @@ export function ProspectsPage() {
         <div className="flex items-center justify-center py-16">
           <Loader />
         </div>
+      ) : error ? (
+        <EmptyState
+          icon="!"
+          title="No se pudo cargar"
+          description={error}
+        />
       ) : prospects.length === 0 ? (
         <EmptyState
           icon="🎯"
@@ -61,12 +67,12 @@ export function ProspectsPage() {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="space-y-3">
           {prospects.map((prospect) => (
-            <ProspectCard
+            <ProspectListItem
               key={prospect.id}
               prospect={prospect}
-              onClick={handleCardClick}
+              onClick={handleProspectClick}
             />
           ))}
         </div>

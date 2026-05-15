@@ -1,7 +1,9 @@
+import { compareDateOnly } from './dateOnly'
+
 /**
  * Validación del formulario de membresía
  */
-export function validateMembershipForm(form) {
+export function validateMembershipForm(form, options = {}) {
   const errors = {}
 
   if (!form.membership_type_id) {
@@ -14,6 +16,24 @@ export function validateMembershipForm(form) {
 
   if (!form.start_date) {
     errors.start_date = 'La fecha de inicio es obligatoria'
+  }
+
+  if (
+    form.start_date &&
+    form.end_date &&
+    compareDateOnly(form.end_date, form.start_date) < 0
+  ) {
+    errors.end_date = 'La fecha de fin no puede ser anterior al inicio'
+  }
+
+  if (options.isMonthly) {
+    const billingDay = Number(form.monthly_billing_day)
+
+    if (!form.monthly_billing_day) {
+      errors.monthly_billing_day = 'El día de cobro es obligatorio'
+    } else if (!Number.isInteger(billingDay) || billingDay < 1 || billingDay > 28) {
+      errors.monthly_billing_day = 'El día de cobro debe estar entre 1 y 28'
+    }
   }
 
   if (!form.membership_status_id) {

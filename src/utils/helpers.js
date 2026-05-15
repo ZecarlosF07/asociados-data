@@ -1,5 +1,9 @@
+import { formatDateOnly, isDateOnly } from './dateOnly'
+
 export function formatDate(date) {
   if (!date) return ''
+  if (isDateOnly(date)) return formatDateOnly(date)
+
   return new Intl.DateTimeFormat('es-PE', {
     day: '2-digit',
     month: '2-digit',

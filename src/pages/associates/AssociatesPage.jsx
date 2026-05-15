@@ -1,13 +1,16 @@
 import { useNavigate } from 'react-router-dom'
 import { useAssociates } from '../../hooks/useAssociates'
+import { usePermissions } from '../../hooks/usePermissions'
 import { AssociateFilters } from '../../components/molecules/associates/AssociateFilters'
 import { AssociateCard } from '../../components/molecules/associates/AssociateCard'
+import { Button } from '../../components/atoms/Button'
 import { Loader } from '../../components/atoms/Loader'
 import { EmptyState } from '../../components/atoms/EmptyState'
 import { ROUTES } from '../../router/routes'
 
 export function AssociatesPage() {
   const navigate = useNavigate()
+  const { canCreate } = usePermissions()
   const { associates, loading, filters, updateFilters } = useAssociates()
 
   const handleClearFilters = () => {
@@ -27,6 +30,11 @@ export function AssociatesPage() {
             Gestión de empresas asociadas y su ficha institucional.
           </p>
         </div>
+        {canCreate && (
+          <Button onClick={() => navigate(ROUTES.ASOCIADOS_NUEVO)}>
+            + Nuevo asociado
+          </Button>
+        )}
       </div>
 
       <AssociateFilters

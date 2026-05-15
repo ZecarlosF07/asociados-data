@@ -10,7 +10,7 @@ const PROSPECT_SELECT = `
 `
 
 export const prospectsService = {
-  async getAll({ search, statusId, categoryId } = {}) {
+  async getAll({ search, statusId, categoryId, captadorId } = {}) {
     let query = supabase
       .from('prospects')
       .select(PROSPECT_SELECT)
@@ -25,6 +25,7 @@ export const prospectsService = {
 
     if (statusId) query = query.eq('prospect_status_id', statusId)
     if (categoryId) query = query.eq('current_category_id', categoryId)
+    if (captadorId) query = query.eq('captador_id', captadorId)
 
     const { data, error } = await query
     if (error) throw error

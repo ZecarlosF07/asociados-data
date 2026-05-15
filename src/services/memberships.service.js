@@ -1,4 +1,11 @@
 import { supabase } from '../lib/supabaseClient'
+import {
+  addDaysToDateOnly,
+  addYearsToDateOnly,
+  buildDateOnly,
+  getDateOnlyParts,
+  todayDateOnly,
+} from '../utils/dateOnly'
 
 const MEMBERSHIP_SELECT = `
   *,
@@ -111,7 +118,7 @@ export const membershipsService = {
       .update({
         membership_status_id: cancelStatus.id,
         is_current: false,
-        end_date: new Date().toISOString().split('T')[0],
+        end_date: todayDateOnly(),
         updated_at: new Date().toISOString(),
         updated_by: userId,
       })
@@ -152,7 +159,7 @@ export const membershipsService = {
         .update({
           membership_status_id: renewedStatus.id,
           is_current: false,
-          end_date: new Date().toISOString().split('T')[0],
+          end_date: todayDateOnly(),
           updated_at: new Date().toISOString(),
           updated_by: userId,
         })
@@ -190,38 +197,56 @@ export const membershipsService = {
    */
   async generateSchedule({ membership, defaultStatusId, userId }) {
     const schedules = []
-    const startDate = new Date(membership.start_date)
-    const year = startDate.getFullYear()
+    const startDate = getDateOnlyParts(membership.start_date)
 
     const isMensual = membership.membership_type?.code === 'MENSUAL'
 
     if (isMensual) {
-      const billingDay = membership.monthly_billing_day || startDate.getDate()
-      const startMonth = startDate.getMonth()
+      const billingDay = Number(membership.monthly_billing_day || startDate.day)
+      const firstDueOffset = billingDay >= startDate.day ? 0 : 1
       const monthlyAmount = Math.round((membership.fee_amount / 12) * 100) / 100
 
       for (let i = 0; i < 12; i++) {
-        const month = (startMonth + i) % 12
-        const scheduleYear = year + Math.floor((startMonth + i) / 12)
-        const dueDate = new Date(scheduleYear, month, billingDay)
+        const dueDate = buildDateOnly(
+          startDate.year,
+          startDate.month + firstDueOffset + i,
+          billingDay
+        )
+        const dueParts = getDateOnlyParts(dueDate)
 
         schedules.push({
           membership_id: membership.id,
           associate_id: membership.associate_id,
-          due_date: dueDate.toISOString().split('T')[0],
-          period_year: scheduleYear,
-          period_month: month + 1,
+          due_date: dueDate,
+          period_year: dueParts.year,
+          period_month: dueParts.month,
           expected_amount: monthlyAmount,
           collection_status_id: defaultStatusId,
           created_by: userId,
         })
       }
     } else {
+      if (!membership.end_date) {
+        const endDate = addDaysToDateOnly(
+          addYearsToDateOnly(membership.start_date, 1),
+          -1
+        )
+
+        await supabase
+          .from('memberships')
+          .update({
+            end_date: endDate,
+            updated_at: new Date().toISOString(),
+            updated_by: userId,
+          })
+          .eq('id', membership.id)
+      }
+
       schedules.push({
         membership_id: membership.id,
         associate_id: membership.associate_id,
         due_date: membership.start_date,
-        period_year: year,
+        period_year: startDate.year,
         period_month: null,
         expected_amount: membership.fee_amount,
         collection_status_id: defaultStatusId,

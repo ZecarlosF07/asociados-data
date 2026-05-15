@@ -1,5 +1,10 @@
 import { Badge } from '../../atoms/Badge'
 import { formatCurrency, formatDate, formatDateTime } from '../../../utils/helpers'
+import {
+  compareDateOnly,
+  isBeforeDateOnly,
+  todayDateOnly,
+} from '../../../utils/dateOnly'
 
 export function AssociateFinancialSummary({
   associate,
@@ -7,8 +12,7 @@ export function AssociateFinancialSummary({
   payments = [],
   collectionActions = [],
 }) {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const today = todayDateOnly()
 
   const paidBySchedule = payments
     .filter((payment) => !payment.is_reversed)
@@ -26,11 +30,11 @@ export function AssociateFinancialSummary({
   )
 
   const overdueSchedules = activeSchedules.filter(
-    (schedule) => new Date(schedule.due_date) < today
+    (schedule) => isBeforeDateOnly(schedule.due_date, today)
   )
   const upcomingSchedules = activeSchedules
-    .filter((schedule) => new Date(schedule.due_date) >= today)
-    .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
+    .filter((schedule) => !isBeforeDateOnly(schedule.due_date, today))
+    .sort((a, b) => compareDateOnly(a.due_date, b.due_date))
 
   const totalPending = activeSchedules.reduce(
     (sum, schedule) => sum + getOutstanding(schedule),

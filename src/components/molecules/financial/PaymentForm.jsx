@@ -4,6 +4,7 @@ import { CatalogSelect } from '../CatalogSelect'
 import { Button } from '../../atoms/Button'
 import { FINANCIAL_CATALOG_GROUPS } from '../../../utils/financialConstants'
 import { validatePaymentForm } from '../../../utils/financialValidation'
+import { todayDateOnly } from '../../../utils/dateOnly'
 
 export function PaymentForm({
   schedules = [],
@@ -15,7 +16,7 @@ export function PaymentForm({
   const initialSchedule = schedules.length === 1 ? schedules[0] : null
   const [form, setForm] = useState({
     payment_schedule_id: initialSchedule?.id || '',
-    payment_date: new Date().toISOString().split('T')[0],
+    payment_date: todayDateOnly(),
     amount_paid: initialSchedule?.expected_amount
       ? String(initialSchedule.expected_amount)
       : '',

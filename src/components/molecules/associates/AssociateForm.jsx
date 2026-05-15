@@ -10,6 +10,7 @@ import { ASSOCIATE_CATALOG_GROUPS } from '../../../utils/associateConstants'
 import { validateAssociateForm } from '../../../utils/associateValidation'
 
 export function AssociateForm({ initialData, onSubmit, onCancel, loading }) {
+  const isEdit = !!initialData?.id
   const [form, setForm] = useState({
     company_name: initialData?.company_name || '',
     trade_name: initialData?.trade_name || '',
@@ -67,7 +68,12 @@ export function AssociateForm({ initialData, onSubmit, onCancel, loading }) {
           <FormField label="Libro / Padrón" name="book_registry"
             value={form.book_registry} onChange={handleChange}
           />
-          <FormField label="Estado" name="associate_status_id" required>
+          <FormField
+            label="Estado"
+            name="associate_status_id"
+            required
+            error={errors.associate_status_id}
+          >
             <CatalogSelect
               groupCode={ASSOCIATE_CATALOG_GROUPS.STATUS}
               value={form.associate_status_id}
@@ -167,8 +173,9 @@ export function AssociateForm({ initialData, onSubmit, onCancel, loading }) {
           <FormField label="Celular 2" name="mobile_phone_2"
             value={form.mobile_phone_2} onChange={handleChange}
           />
-          <FormField label="Fecha de asociación" name="association_date" type="date"
+          <FormField label="Fecha de asociación" name="association_date" type="date" required
             value={form.association_date} onChange={handleChange}
+            error={errors.association_date}
           />
           <FormField label="Fecha de aniversario" name="anniversary_date" type="date"
             value={form.anniversary_date} onChange={handleChange}
@@ -187,7 +194,7 @@ export function AssociateForm({ initialData, onSubmit, onCancel, loading }) {
           Cancelar
         </Button>
         <Button type="submit" loading={loading}>
-          Guardar cambios
+          {isEdit ? 'Guardar cambios' : 'Crear asociado'}
         </Button>
       </div>
     </form>

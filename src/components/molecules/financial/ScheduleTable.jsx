@@ -1,6 +1,7 @@
 import { Badge } from '../../atoms/Badge'
 import { formatDate, formatCurrency } from '../../../utils/helpers'
 import { COLLECTION_STATUS_VARIANT } from '../../../utils/financialConstants'
+import { isBeforeDateOnly, todayDateOnly } from '../../../utils/dateOnly'
 
 export function ScheduleTable({ schedules }) {
   if (schedules.length === 0) {
@@ -42,7 +43,7 @@ export function ScheduleTable({ schedules }) {
               : String(s.period_year)
 
             const isOverdue =
-              !s.is_paid && new Date(s.due_date) < new Date()
+              !s.is_paid && isBeforeDateOnly(s.due_date, todayDateOnly())
 
             return (
               <tr

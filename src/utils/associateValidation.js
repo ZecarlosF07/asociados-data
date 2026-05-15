@@ -8,6 +8,14 @@ export function validateAssociateForm(form) {
     errors.company_name = 'La razón social es obligatoria'
   }
 
+  if (!form.associate_status_id) {
+    errors.associate_status_id = 'El estado del asociado es obligatorio'
+  }
+
+  if (!form.association_date) {
+    errors.association_date = 'La fecha de asociación es obligatoria'
+  }
+
   if (!form.ruc?.trim()) {
     errors.ruc = 'El RUC es obligatorio'
   } else if (!/^\d{11}$/.test(form.ruc.trim())) {

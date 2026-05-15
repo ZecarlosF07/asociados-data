@@ -15,6 +15,11 @@ import { PaymentForm } from '../../components/molecules/financial/PaymentForm'
 import { CollectionActionForm } from '../../components/molecules/financial/CollectionActionForm'
 import { formatDate, formatCurrency } from '../../utils/helpers'
 import { COLLECTION_STATUS_VARIANT } from '../../utils/financialConstants'
+import {
+  getDateOnlyParts,
+  isBeforeDateOnly,
+  todayDateOnly,
+} from '../../utils/dateOnly'
 import { ROUTES } from '../../router/routes'
 
 const MONTH_NAMES = [
@@ -63,10 +68,10 @@ export function PendingPaymentsPage() {
     // Filtrar por mes/año (salvo si está en modo "todos los meses")
     if (!showAllMonths) {
       result = result.filter((s) => {
-        const due = new Date(s.due_date)
+        const due = getDateOnlyParts(s.due_date)
         return (
-          due.getMonth() + 1 === selectedMonth &&
-          due.getFullYear() === selectedYear
+          due.month === selectedMonth &&
+          due.year === selectedYear
         )
       })
     }
@@ -86,10 +91,9 @@ export function PendingPaymentsPage() {
   }, [schedules, selectedMonth, selectedYear, showAllMonths, search])
 
   // Separar vencidos y próximos
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const overdue = filtered.filter((s) => new Date(s.due_date) < today)
-  const upcoming = filtered.filter((s) => new Date(s.due_date) >= today)
+  const today = todayDateOnly()
+  const overdue = filtered.filter((s) => isBeforeDateOnly(s.due_date, today))
+  const upcoming = filtered.filter((s) => !isBeforeDateOnly(s.due_date, today))
 
   // Totales del mes filtrado
   const totalPending = filtered.reduce(

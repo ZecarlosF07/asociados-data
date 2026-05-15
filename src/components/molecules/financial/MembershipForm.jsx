@@ -6,9 +6,13 @@ import { CategorySelect } from '../CategorySelect'
 import { Button } from '../../atoms/Button'
 import { FINANCIAL_CATALOG_GROUPS } from '../../../utils/financialConstants'
 import { validateMembershipForm } from '../../../utils/financialValidation'
+import { useCatalog } from '../../../hooks/useCatalog'
 
 export function MembershipForm({ initialData, onSubmit, onCancel, loading }) {
   const isEdit = !!initialData?.id
+  const { items: membershipTypes } = useCatalog(
+    FINANCIAL_CATALOG_GROUPS.MEMBERSHIP_TYPE
+  )
 
   const [form, setForm] = useState({
     membership_type_id: initialData?.membership_type_id || '',
@@ -34,7 +38,11 @@ export function MembershipForm({ initialData, onSubmit, onCancel, loading }) {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    const validationErrors = validateMembershipForm(form)
+    const membershipType = membershipTypes.find(
+      (item) => item.id === form.membership_type_id
+    )
+    const isMonthly = membershipType?.code === 'MENSUAL'
+    const validationErrors = validateMembershipForm(form, { isMonthly })
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors)
@@ -95,12 +103,14 @@ export function MembershipForm({ initialData, onSubmit, onCancel, loading }) {
 
         <FormField label="Fecha de fin" name="end_date" type="date"
           value={form.end_date} onChange={handleChange}
+          error={errors.end_date}
           helpText="Opcional. Se calcula automáticamente para anuales."
         />
 
         <FormField label="Día de cobro mensual" name="monthly_billing_day"
           type="number" min={1} max={28}
           value={form.monthly_billing_day} onChange={handleChange}
+          error={errors.monthly_billing_day}
           helpText="Día del mes para cobro (1-28). Solo membresías mensuales."
         />
 

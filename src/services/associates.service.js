@@ -57,6 +57,43 @@ export const associatesService = {
     return data
   },
 
+  async createDirectAssociate(associate) {
+    const { data: created, error } = await supabase.rpc(
+      'create_direct_associate',
+      {
+        p_company_name: associate.company_name,
+        p_ruc: associate.ruc,
+        p_associate_status_id: associate.associate_status_id,
+        p_association_date: associate.association_date,
+        p_trade_name: associate.trade_name || null,
+        p_economic_activity: associate.economic_activity || null,
+        p_activity_type_id: associate.activity_type_id || null,
+        p_company_size_id: associate.company_size_id || null,
+        p_address: associate.address || null,
+        p_corporate_email: associate.corporate_email || null,
+        p_landline_phone: associate.landline_phone || null,
+        p_mobile_phone_1: associate.mobile_phone_1 || null,
+        p_mobile_phone_2: associate.mobile_phone_2 || null,
+        p_website: associate.website || null,
+        p_anniversary_date: associate.anniversary_date || null,
+        p_category_id: associate.category_id || null,
+        p_affiliation_responsible_user_id:
+          associate.affiliation_responsible_user_id || null,
+        p_captador_id: associate.captador_id || null,
+        p_book_registry: associate.book_registry || null,
+        p_welcome_status: associate.welcome_status || false,
+        p_notes: associate.notes || null,
+      }
+    )
+
+    if (error) throw new Error(getAssociateCreationErrorMessage(error))
+    if (!created?.id) {
+      throw new Error('El alta directa no retornó el asociado creado.')
+    }
+
+    return associatesService.getById(created.id)
+  },
+
   async update(id, updates) {
     const { data, error } = await supabase
       .from('associates')
@@ -226,6 +263,28 @@ function getConversionErrorMessage(error) {
     }
 
     return 'Este prospecto ya fue convertido o ya tiene un asociado activo.'
+  }
+
+  return message
+}
+
+function getAssociateCreationErrorMessage(error) {
+  const message = error?.message || 'No se pudo crear el asociado.'
+
+  if (error?.code === '42501') {
+    return 'No tienes permisos para crear asociados.'
+  }
+
+  if (error?.code === '23505') {
+    if (message.includes('RUC')) {
+      return 'Ya existe un asociado activo con este RUC.'
+    }
+
+    if (message.includes('código') || message.includes('codigo')) {
+      return 'Ya existe un asociado activo con el código interno calculado.'
+    }
+
+    return 'Ya existe un asociado activo con estos datos.'
   }
 
   return message

@@ -5,6 +5,7 @@ import { UserProfileSelect } from '../UserProfileSelect'
 import { Button } from '../../atoms/Button'
 import { ASSOCIATE_CATALOG_GROUPS } from '../../../utils/associateConstants'
 import { validateConversionForm } from '../../../utils/associateValidation'
+import { todayDateOnly } from '../../../utils/dateOnly'
 
 export function ConvertProspectModal({
   isOpen,
@@ -17,7 +18,7 @@ export function ConvertProspectModal({
   const [form, setForm] = useState({
     ruc: prospect?.ruc || '',
     statusId: '',
-    associationDate: new Date().toISOString().split('T')[0],
+    associationDate: todayDateOnly(),
     responsibleUserId: '',
     notes: '',
   })

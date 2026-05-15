@@ -10,6 +10,7 @@ export const ROUTES = {
 
   // Asociados
   ASOCIADOS: '/asociados',
+  ASOCIADOS_NUEVO: '/asociados/nuevo',
   ASOCIADOS_DETALLE: '/asociados/:id',
   ASOCIADOS_EDITAR: '/asociados/:id/editar',
   MEMBRESIAS: '/membresias',

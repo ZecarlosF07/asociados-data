@@ -7,6 +7,7 @@ import { useReportData } from '../../../hooks/useReportData'
 import { exportToExcel, EXPORT_COLUMNS } from '../../../utils/exportUtils'
 import { formatCurrency, formatDate } from '../../../utils/helpers'
 import { REPORT_TABLE_COLUMNS, reportFilename } from '../../../utils/reportConfigs'
+import { isBeforeDateOnly, todayDateOnly } from '../../../utils/dateOnly'
 
 export function PaymentsCollectionsReportTab() {
   const { data: payments, loading: loadingP } = useReportData('payments')
@@ -42,7 +43,10 @@ export function PaymentsCollectionsReportTab() {
   const totalPaid = payments?.reduce((s, p) => s + Number(p.amount_paid || 0), 0) || 0
   const pendingSchedules = schedules?.filter((s) => !s.is_paid) || []
   const totalPending = pendingSchedules.reduce((s, r) => s + Number(r.expected_amount || 0), 0)
-  const overdueSchedules = pendingSchedules.filter((s) => new Date(s.due_date) < new Date())
+  const today = todayDateOnly()
+  const overdueSchedules = pendingSchedules.filter((s) =>
+    isBeforeDateOnly(s.due_date, today)
+  )
   const totalOverdue = overdueSchedules.reduce((s, r) => s + Number(r.expected_amount || 0), 0)
 
   const byMethod = {}

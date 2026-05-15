@@ -9,6 +9,7 @@ export function useProspects() {
     search: '',
     statusId: '',
     categoryId: '',
+    captadorId: '',
   })
 
   const fetchProspects = useCallback(async () => {

@@ -18,6 +18,7 @@ const ProspectCreatePage = lazyPage(() => import('../pages/prospects/ProspectCre
 const ProspectDetailPage = lazyPage(() => import('../pages/prospects/ProspectDetailPage'), 'ProspectDetailPage')
 const ProspectEditPage = lazyPage(() => import('../pages/prospects/ProspectEditPage'), 'ProspectEditPage')
 const AssociatesPage = lazyPage(() => import('../pages/associates/AssociatesPage'), 'AssociatesPage')
+const AssociateCreatePage = lazyPage(() => import('../pages/associates/AssociateCreatePage'), 'AssociateCreatePage')
 const AssociateDetailPage = lazyPage(() => import('../pages/associates/AssociateDetailPage'), 'AssociateDetailPage')
 const AssociateEditPage = lazyPage(() => import('../pages/associates/AssociateEditPage'), 'AssociateEditPage')
 const MembershipsPage = lazyPage(() => import('../pages/financial/MembershipsPage'), 'MembershipsPage')
@@ -87,6 +88,14 @@ export function AppRouter() {
             element={
               <PermissionGuard module="asociados">
                 <AssociatesPage />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path={ROUTES.ASOCIADOS_NUEVO}
+            element={
+              <PermissionGuard module="asociados">
+                <AssociateCreatePage />
               </PermissionGuard>
             }
           />

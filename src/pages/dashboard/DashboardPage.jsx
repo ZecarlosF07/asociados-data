@@ -4,6 +4,10 @@ import { supabase } from '../../lib/supabaseClient'
 import { Loader } from '../../components/atoms/Loader'
 import { Badge } from '../../components/atoms/Badge'
 import { formatCurrency, formatDate } from '../../utils/helpers'
+import {
+  startOfCurrentMonthDateOnly,
+  todayDateOnly,
+} from '../../utils/dateOnly'
 import { ROUTES } from '../../router/routes'
 
 export function DashboardPage() {
@@ -18,8 +22,8 @@ export function DashboardPage() {
   async function fetchDashboard() {
     setLoading(true)
     try {
-      const now = new Date()
-      const todayStr = now.toISOString().split('T')[0]
+      const todayStr = todayDateOnly()
+      const monthStart = startOfCurrentMonthDateOnly()
 
       const [
         prospectsRes,
@@ -44,7 +48,7 @@ export function DashboardPage() {
         supabase.from('payment_schedules').select('expected_amount').eq('is_deleted', false).eq('is_paid', false).lt('due_date', todayStr),
         // Pagos del mes
         supabase.from('payments').select('amount_paid').eq('is_deleted', false).eq('is_reversed', false)
-          .gte('payment_date', `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`),
+          .gte('payment_date', monthStart),
         // Últimos prospectos
         supabase.from('prospects')
           .select('id, company_name, prospect_status:prospect_status_id(code, label), created_at')
