@@ -116,9 +116,13 @@ Resultado:
 - `yarn build` pasó correctamente.
 - El build mantiene el warning existente de chunk mayor a 500 kB.
 
-## Pendiente operativo
+## Validación operativa
 
-Aplicar la migración S3 en Supabase y luego ejecutar el audit:
+Migración S3 aplicada y audit S3 validado por SQL Editor. Se confirmó:
+
+- RPCs financieros de registro de pago y recalculo
+- catálogos de cobranza, salud de pago y métodos de pago
+- policies RLS de pagos, cronogramas y acciones de cobranza
 
 ```sql
 -- contenido de supabase/audits/hito_s3_financial_audit.sql

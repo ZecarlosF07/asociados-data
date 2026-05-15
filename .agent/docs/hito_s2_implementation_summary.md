@@ -84,21 +84,16 @@ Resultado:
 - `yarn build` pasó correctamente.
 - El build mantiene el warning existente de chunk mayor a 500 kB.
 
-## Validación pendiente de base de datos
+## Validación de base de datos
 
-No se aplicó ni empujó la migración a Supabase desde Codex.
+La migración S2 fue aplicada por el responsable de BD y el audit fue validado por SQL Editor. Se confirmó:
 
-Queda pendiente ejecutar por el responsable de BD:
+- contador `ASSOCIATES` operativo
+- RPC `convert_prospect_to_associate`
+- RPC `next_entity_code`
+- índices únicos de integridad para asociados y conversión
 
-```bash
-supabase db push
-```
-
-Luego de aplicar la migración, se recomienda ejecutar:
-
-```bash
-supabase db query --linked --output json -f supabase/audits/hito_s2_conversion_audit.sql
-```
+Audit usado: `supabase/audits/hito_s2_conversion_audit.sql`.
 
 ## Pruebas funcionales recomendadas
 

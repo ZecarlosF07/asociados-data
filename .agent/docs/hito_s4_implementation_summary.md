@@ -100,9 +100,9 @@ Resultado:
 - `yarn build` pasó correctamente.
 - El build mantiene el warning existente de chunk mayor a 500 kB, asignado a S5.
 
-## Pendiente operativo
+## Validación operativa
 
-Ejecutar el audit S4 en SQL Editor para confirmar bucket y policies:
+Audit S4 ejecutado y validado por SQL Editor. Se confirmó bucket privado `documents`, policies de Storage y policies públicas del módulo documental:
 
 ```sql
 -- contenido de supabase/audits/hito_s4_documents_audit.sql

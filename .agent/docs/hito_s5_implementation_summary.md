@@ -132,6 +132,6 @@ Resultado:
 - `yarn build` pasó correctamente.
 - no queda warning de chunk grande.
 
-## Pendiente operativo
+## Validación operativa
 
-Aplicar la migración S5 en Supabase y ejecutar el audit S5 en SQL Editor.
+Migración S5 aplicada y audit S5 validado por SQL Editor. Se confirmó la existencia de tablas de automatización, vistas de reportes, RLS y jobs candidatos pausados.
