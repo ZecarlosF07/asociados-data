@@ -18,6 +18,7 @@ export const ROUTES = {
   DOCUMENTOS: '/documentos',
   DOCUMENTOS_DETALLE: '/documentos/:id',
   REPORTES: '/reportes',
+  AUDITORIA: '/auditoria',
   USUARIOS: '/usuarios',
   CONFIGURACION: '/configuracion',
   CATALOGOS: '/configuracion/catalogos',

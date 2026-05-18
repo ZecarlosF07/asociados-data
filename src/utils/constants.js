@@ -10,6 +10,7 @@ export const NAVIGATION_ITEMS = [
   { label: 'Cobranza', path: ROUTES.COBRANZA, icon: '💰' },
   { label: 'Documentos', path: ROUTES.DOCUMENTOS, icon: '📁' },
   { label: 'Reportes', path: ROUTES.REPORTES, icon: '📈' },
+  { label: 'Auditoría', path: ROUTES.AUDITORIA, icon: '🔎' },
   { label: 'Usuarios', path: ROUTES.USUARIOS, icon: '👥' },
   { label: 'Configuración', path: ROUTES.CONFIGURACION, icon: '⚙️' },
 ]

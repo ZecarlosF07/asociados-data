@@ -26,6 +26,7 @@ const PendingPaymentsPage = lazyPage(() => import('../pages/financial/PendingPay
 const DocumentsPage = lazyPage(() => import('../pages/documents/DocumentsPage'), 'DocumentsPage')
 const DocumentDetailPage = lazyPage(() => import('../pages/documents/DocumentDetailPage'), 'DocumentDetailPage')
 const ReportsPage = lazyPage(() => import('../pages/reports/ReportsPage'), 'ReportsPage')
+const AuditPage = lazyPage(() => import('../pages/audit/AuditPage'), 'AuditPage')
 const NotFoundPage = lazyPage(() => import('../pages/NotFoundPage'), 'NotFoundPage')
 
 export function AppRouter() {
@@ -160,6 +161,16 @@ export function AppRouter() {
             element={
               <PermissionGuard module="reportes">
                 <ReportsPage />
+              </PermissionGuard>
+            }
+          />
+
+          {/* Auditoría */}
+          <Route
+            path={ROUTES.AUDITORIA}
+            element={
+              <PermissionGuard module="auditoria">
+                <AuditPage />
               </PermissionGuard>
             }
           />

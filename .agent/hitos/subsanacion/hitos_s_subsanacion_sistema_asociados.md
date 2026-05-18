@@ -110,6 +110,35 @@ Agrega un camino operativo para cargar asociados existentes sin crear prospectos
 - auditoría de origen histórico/directo
 - ficha de asociado funcionando sin `prospect_origin_id`
 
+### S10. Mejora post-release del Hito 2: módulo de auditoría operativa
+
+Convierte la infraestructura de auditoría existente en una pantalla administrativa usable:
+
+- ruta `/auditoria`
+- listado de eventos de `audit_logs`
+- filtros por usuario, entidad, acción y rango de fechas
+- detalle de `previous_data`, `new_data` y `extra_meta`
+- acceso restringido por permiso `auditoria`
+- estrategia de retención de 6 meses
+
+### S11. Mejora post-release del Hito 5: asociados en lista operativa
+
+Mejora la consulta operativa de asociados:
+
+- listado vertical de asociados en lugar de grilla de tarjetas
+- lectura rápida de razón social, código interno, RUC, estado y categoría
+- acceso directo a ficha del asociado desde cada fila
+- conservación de filtros existentes y alta directa
+
+### S12. Corrección post-release del Hito 6: vencimiento de membresía anual
+
+Corrige una regla financiera del cronograma anual:
+
+- una membresía anual debe generar una sola cuota
+- la cuota anual debe vencer al día siguiente de la fecha de fin de la membresía
+- el vencimiento no debe usar la fecha de inicio de la membresía
+- las membresías mensuales no deben cambiar
+
 ## Orden recomendado de ejecución
 
 1. S0 - Calidad transversal.
@@ -122,11 +151,17 @@ Agrega un camino operativo para cargar asociados existentes sin crear prospectos
 8. S7 - Corrección post-release de fechas de membresía y cronograma.
 9. S9 - Alta directa de asociados históricos.
 10. S8 - Mejora post-release de listado y filtros de prospectos.
+11. S10 - Módulo de auditoría operativa.
+12. S11 - Asociados en lista operativa.
+13. S12 - Corrección de vencimiento de membresía anual.
 
 S0 debe hacerse primero porque reduce fricción técnica. S6 debe hacerse al final porque valida todo el sistema integrado.
 S7 se ejecuta después de S6 porque nace de un bug funcional detectado durante validación posterior al release interno.
 S9 se ejecuta después de S6 porque responde a la carga operativa real de datos históricos sin alterar el flujo normal de conversión.
 S8 se ejecuta después de S9 porque mejora una experiencia operativa ya funcional y no bloquea la carga inicial de asociados reales.
+S10 se ejecuta después de los flujos operativos principales porque aprovecha los eventos ya generados por los módulos estabilizados.
+S11 se ejecuta después de S10 porque es una mejora de experiencia sobre un flujo ya estable.
+S12 puede adelantarse a S11 si se van a seguir creando membresías anuales, porque corrige una regla financiera de cronograma.
 
 ## Criterio global de cierre
 
@@ -153,3 +188,6 @@ La subsanación completa queda cerrada cuando:
 - [S7 - Corrección de fechas de membresías y cronograma](./hito_s7_correccion_fechas_membresias_cronograma.md)
 - [S8 - Prospectos en lista y filtros operativos](./hito_s8_mejora_prospectos_lista_filtros_captador.md)
 - [S9 - Alta directa de asociados históricos](./hito_s9_alta_directa_asociados_historicos.md)
+- [S10 - Módulo de auditoría operativa](./hito_s10_modulo_auditoria_operativa.md)
+- [S11 - Asociados en lista operativa](./hito_s11_asociados_lista_operativa.md)
+- [S12 - Corrección de vencimiento de membresía anual](./hito_s12_correccion_vencimiento_membresia_anual.md)
