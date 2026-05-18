@@ -1,4 +1,9 @@
 import { supabase } from '../lib/supabaseClient'
+import {
+  addDaysToDateOnly,
+  compareDateOnly,
+  todayDateOnly,
+} from '../utils/dateOnly'
 
 const ASSOCIATE_SELECT = `
   *,
@@ -31,7 +36,7 @@ export const associatesService = {
 
     const { data, error } = await query
     if (error) throw error
-    return data
+    return attachComputedPaymentHealth(data)
   },
 
   async getById(id) {
@@ -248,6 +253,67 @@ export const associatesService = {
 
     if (error) throw error
   },
+}
+
+async function attachComputedPaymentHealth(associates) {
+  const associateIds = associates.map((associate) => associate.id).filter(Boolean)
+  if (associateIds.length === 0) return associates
+
+  const { data, error } = await supabase
+    .from('payment_schedules')
+    .select(`
+      associate_id,
+      due_date
+    `)
+    .in('associate_id', associateIds)
+    .eq('is_deleted', false)
+    .eq('is_paid', false)
+
+  if (error) throw error
+
+  const today = todayDateOnly()
+  const soonLimit = addDaysToDateOnly(today, 7)
+  const schedulesByAssociate = new Map()
+
+  for (const schedule of data || []) {
+    const schedules = schedulesByAssociate.get(schedule.associate_id) || []
+    schedules.push(schedule)
+    schedulesByAssociate.set(schedule.associate_id, schedules)
+  }
+
+  return associates.map((associate) => {
+    if (associate.payment_health) return associate
+
+    const schedules = schedulesByAssociate.get(associate.id) || []
+    const overdueCount = schedules.filter(
+      (schedule) => compareDateOnly(schedule.due_date, today) < 0
+    ).length
+    const nextDue = schedules
+      .map((schedule) => schedule.due_date)
+      .filter((dueDate) => compareDateOnly(dueDate, today) >= 0)
+      .sort(compareDateOnly)[0]
+
+    let healthCode = 'AL_DIA'
+    if (overdueCount >= 3) {
+      healthCode = 'CRITICO'
+    } else if (overdueCount > 0) {
+      healthCode = 'MOROSO'
+    } else if (nextDue && compareDateOnly(nextDue, soonLimit) <= 0) {
+      healthCode = 'POR_VENCER'
+    }
+
+    return {
+      ...associate,
+      payment_health: PAYMENT_HEALTH_BY_CODE[healthCode],
+    }
+  })
+}
+
+const PAYMENT_HEALTH_BY_CODE = {
+  AL_DIA: { code: 'AL_DIA', label: 'Al día' },
+  POR_VENCER: { code: 'POR_VENCER', label: 'Por vencer' },
+  MOROSO: { code: 'MOROSO', label: 'Moroso' },
+  CRITICO: { code: 'CRITICO', label: 'Crítico' },
 }
 
 function getConversionErrorMessage(error) {

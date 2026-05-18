@@ -193,7 +193,7 @@ export const membershipsService = {
   /**
    * Genera el cronograma de pagos para una membresía.
    * - MENSUAL: 12 cuotas con el día de cobro configurado
-   * - ANUAL: 1 cuota en la fecha de inicio
+   * - ANUAL: 1 cuota con vencimiento al día siguiente de la fecha de fin
    */
   async generateSchedule({ membership, defaultStatusId, userId }) {
     const schedules = []
@@ -226,26 +226,32 @@ export const membershipsService = {
         })
       }
     } else {
+      let effectiveEndDate = membership.end_date
+
       if (!membership.end_date) {
-        const endDate = addDaysToDateOnly(
+        effectiveEndDate = addDaysToDateOnly(
           addYearsToDateOnly(membership.start_date, 1),
           -1
         )
 
-        await supabase
+        const { error: updateError } = await supabase
           .from('memberships')
           .update({
-            end_date: endDate,
+            end_date: effectiveEndDate,
             updated_at: new Date().toISOString(),
             updated_by: userId,
           })
           .eq('id', membership.id)
+
+        if (updateError) throw updateError
       }
+
+      const annualDueDate = addDaysToDateOnly(effectiveEndDate, 1)
 
       schedules.push({
         membership_id: membership.id,
         associate_id: membership.associate_id,
-        due_date: membership.start_date,
+        due_date: annualDueDate,
         period_year: startDate.year,
         period_month: null,
         expected_amount: membership.fee_amount,

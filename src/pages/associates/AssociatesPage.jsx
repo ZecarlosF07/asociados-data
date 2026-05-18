@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAssociates } from '../../hooks/useAssociates'
 import { usePermissions } from '../../hooks/usePermissions'
 import { AssociateFilters } from '../../components/molecules/associates/AssociateFilters'
-import { AssociateCard } from '../../components/molecules/associates/AssociateCard'
+import { AssociateListItem } from '../../components/molecules/associates/AssociateListItem'
 import { Button } from '../../components/atoms/Button'
 import { Loader } from '../../components/atoms/Loader'
 import { EmptyState } from '../../components/atoms/EmptyState'
@@ -11,13 +11,13 @@ import { ROUTES } from '../../router/routes'
 export function AssociatesPage() {
   const navigate = useNavigate()
   const { canCreate } = usePermissions()
-  const { associates, loading, filters, updateFilters } = useAssociates()
+  const { associates, loading, error, filters, updateFilters } = useAssociates()
 
   const handleClearFilters = () => {
     updateFilters({ search: '', statusId: '', categoryId: '' })
   }
 
-  const handleCardClick = (associate) => {
+  const handleAssociateClick = (associate) => {
     navigate(`${ROUTES.ASOCIADOS}/${associate.id}`)
   }
 
@@ -47,19 +47,32 @@ export function AssociatesPage() {
         <div className="flex items-center justify-center py-16">
           <Loader />
         </div>
+      ) : error ? (
+        <EmptyState
+          icon="!"
+          title="No se pudo cargar"
+          description={error}
+        />
       ) : associates.length === 0 ? (
         <EmptyState
           icon="🏢"
           title="Sin asociados"
           description="No se encontraron asociados con los filtros aplicados."
+          action={
+            canCreate && (
+              <Button size="sm" onClick={() => navigate(ROUTES.ASOCIADOS_NUEVO)}>
+                Registrar primer asociado
+              </Button>
+            )
+          }
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="space-y-3">
           {associates.map((associate) => (
-            <AssociateCard
+            <AssociateListItem
               key={associate.id}
               associate={associate}
-              onClick={handleCardClick}
+              onClick={handleAssociateClick}
             />
           ))}
         </div>

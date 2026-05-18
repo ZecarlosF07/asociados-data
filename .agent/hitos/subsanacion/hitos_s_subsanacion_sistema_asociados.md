@@ -139,6 +139,16 @@ Corrige una regla financiera del cronograma anual:
 - el vencimiento no debe usar la fecha de inicio de la membresía
 - las membresías mensuales no deben cambiar
 
+### S13. Mejora post-release del Hito 2: generación de usuarios y roles operativos
+
+Completa la administración real de usuarios internos:
+
+- creación de usuarios Auth + perfil interno desde `/usuarios`
+- roles nuevos `CAPTACION`, `FACTURACION` y `FIDELIZACION`
+- matriz de permisos frontend/backend alineada
+- protección de Dashboard para roles sin acceso
+- redirección inicial según rol permitido
+
 ## Orden recomendado de ejecución
 
 1. S0 - Calidad transversal.
@@ -154,6 +164,7 @@ Corrige una regla financiera del cronograma anual:
 11. S10 - Módulo de auditoría operativa.
 12. S11 - Asociados en lista operativa.
 13. S12 - Corrección de vencimiento de membresía anual.
+14. S13 - Generación de usuarios y roles operativos.
 
 S0 debe hacerse primero porque reduce fricción técnica. S6 debe hacerse al final porque valida todo el sistema integrado.
 S7 se ejecuta después de S6 porque nace de un bug funcional detectado durante validación posterior al release interno.
@@ -162,6 +173,7 @@ S8 se ejecuta después de S9 porque mejora una experiencia operativa ya funciona
 S10 se ejecuta después de los flujos operativos principales porque aprovecha los eventos ya generados por los módulos estabilizados.
 S11 se ejecuta después de S10 porque es una mejora de experiencia sobre un flujo ya estable.
 S12 puede adelantarse a S11 si se van a seguir creando membresías anuales, porque corrige una regla financiera de cronograma.
+S13 se ejecuta después de estabilizar auditoría y roles base porque introduce usuarios reales por perfil operativo y debe quedar trazado.
 
 ## Criterio global de cierre
 
@@ -191,3 +203,4 @@ La subsanación completa queda cerrada cuando:
 - [S10 - Módulo de auditoría operativa](./hito_s10_modulo_auditoria_operativa.md)
 - [S11 - Asociados en lista operativa](./hito_s11_asociados_lista_operativa.md)
 - [S12 - Corrección de vencimiento de membresía anual](./hito_s12_correccion_vencimiento_membresia_anual.md)
+- [S13 - Generación de usuarios y roles operativos](./hito_s13_generacion_usuarios_roles_operativos.md)

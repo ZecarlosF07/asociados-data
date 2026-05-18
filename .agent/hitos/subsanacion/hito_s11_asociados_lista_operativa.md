@@ -69,8 +69,9 @@ El servicio ya devuelve informacion suficiente para una lista operativa:
 - `ruc`
 - `association_date`
 - `corporate_email`
-- `phone`
-- `mobile_phone`
+- `landline_phone`
+- `mobile_phone_1`
+- `mobile_phone_2`
 - `associate_status`
 - `category`
 - `captador`
@@ -104,7 +105,7 @@ Cada asociado debe ocupar una fila o bloque horizontal con informacion jerarquiz
 - fecha de asociacion
 - captador si existe
 - correo corporativo si existe
-- telefono o celular si existe
+- telefono fijo o celular si existe
 
 El listado debe permitir escanear rapidamente muchos asociados sin entrar a cada ficha.
 

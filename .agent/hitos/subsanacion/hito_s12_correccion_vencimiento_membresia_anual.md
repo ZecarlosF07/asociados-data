@@ -274,7 +274,7 @@ from public.memberships m
 join public.associates a on a.id = m.associate_id
 join public.catalog_items mt on mt.id = m.membership_type_id
 left join public.payment_schedules ps on ps.membership_id = m.id
-where mt.item_code = 'ANUAL'
+where mt.code = 'ANUAL'
   and coalesce(m.is_deleted, false) = false
 order by m.start_date desc;
 ```
