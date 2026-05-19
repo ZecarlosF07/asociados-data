@@ -109,15 +109,17 @@ export const REPORT_TABLE_COLUMNS = {
     { key: 'associate.company_name', label: 'Asociado' },
     { key: 'due_date', label: 'Vencimiento', format: 'date' },
     { key: 'expected_amount', label: 'Monto', format: 'currency', align: 'right' },
-    { key: 'is_paid', label: 'Pagado', format: 'boolean', align: 'center' },
     {
-      key: 'collection_status.label',
+      key: 'schedule_status.label',
       label: 'Estado',
       format: 'badge',
-      badgeVariant: (val) => {
-        if (val === 'Pagado') return 'success'
-        if (val === 'Vencido') return 'danger'
-        if (val === 'Pendiente') return 'warning'
+      badgeVariant: (val, row) => {
+        const code = row.schedule_status?.code
+        if (code === 'PAGADO') return 'success'
+        if (code === 'VENCIDO') return 'danger'
+        if (code === 'PENDIENTE') return 'default'
+        if (code === 'POR_VENCER' || code === 'PARCIAL') return 'warning'
+        if (code === 'EN_GESTION') return 'info'
         return 'default'
       },
     },

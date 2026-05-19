@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient'
+import { addDaysToDateOnly, isBeforeDateOnly, todayDateOnly } from '../utils/dateOnly'
 
 export const reportsService = {
   async getProspectsSummary() {
@@ -169,6 +170,7 @@ function mapScheduleReport(row) {
     period_year: row.period_year,
     period_month: row.period_month,
     collection_status: buildCatalog(row.collection_status_code, row.collection_status_label),
+    schedule_status: buildScheduleStatus(row),
     associate: buildAssociate(row),
   }
 }
@@ -222,4 +224,33 @@ function buildAssociate(row) {
     ruc: row.associate_ruc,
     internal_code: row.associate_internal_code,
   }
+}
+
+function buildScheduleStatus(row) {
+  if (row.collection_status_code === 'ANULADO') {
+    return buildCatalog(row.collection_status_code, row.collection_status_label)
+  }
+
+  if (row.is_paid || row.collection_status_code === 'PAGADO') {
+    return { code: 'PAGADO', label: 'Pagado' }
+  }
+
+  if (
+    row.collection_status_code === 'PARCIAL' ||
+    row.collection_status_code === 'EN_GESTION'
+  ) {
+    return buildCatalog(row.collection_status_code, row.collection_status_label)
+  }
+
+  const today = todayDateOnly()
+  if (isBeforeDateOnly(row.due_date, today)) {
+    return { code: 'VENCIDO', label: 'Vencido' }
+  }
+
+  const soonLimit = addDaysToDateOnly(today, 7)
+  if (!isBeforeDateOnly(soonLimit, row.due_date)) {
+    return { code: 'POR_VENCER', label: 'Por vencer' }
+  }
+
+  return { code: 'PENDIENTE', label: 'Pendiente' }
 }

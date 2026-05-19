@@ -1,11 +1,23 @@
+import { useEffect, useMemo, useState } from 'react'
 import { Badge } from '../../atoms/Badge'
 import { formatDate, formatCurrency } from '../../../utils/helpers'
 
 /**
  * Tabla de datos para reportes con formato y truncamiento automático
  */
-export function ReportTable({ columns, data, maxRows = 100, onRowClick }) {
-  const displayData = data?.slice(0, maxRows) || []
+export function ReportTable({ columns, data, pageSize = 25, onRowClick }) {
+  const [page, setPage] = useState(1)
+  const totalRows = data?.length || 0
+  const totalPages = Math.max(1, Math.ceil(totalRows / pageSize))
+
+  useEffect(() => {
+    setPage(1)
+  }, [totalRows, pageSize])
+
+  const displayData = useMemo(() => {
+    const start = (page - 1) * pageSize
+    return data?.slice(start, start + pageSize) || []
+  }, [data, page, pageSize])
 
   if (!displayData.length) {
     return (
@@ -56,10 +68,34 @@ export function ReportTable({ columns, data, maxRows = 100, onRowClick }) {
         </tbody>
       </table>
 
-      {data?.length > maxRows && (
-        <p className="text-xs text-slate-400 text-center py-3 border-t border-slate-100">
-          Mostrando {maxRows} de {data.length} registros. Exporte a Excel para ver todos.
-        </p>
+      {totalRows > pageSize && (
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-slate-100">
+          <p className="text-xs text-slate-400">
+            Mostrando {(page - 1) * pageSize + 1}-
+            {Math.min(page * pageSize, totalRows)} de {totalRows} registros
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="px-3 py-1.5 text-xs font-semibold text-slate-600 border border-slate-200 rounded-md disabled:opacity-40"
+              disabled={page === 1}
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+            >
+              Anterior
+            </button>
+            <span className="text-xs text-slate-500">
+              Página {page} de {totalPages}
+            </span>
+            <button
+              type="button"
+              className="px-3 py-1.5 text-xs font-semibold text-slate-600 border border-slate-200 rounded-md disabled:opacity-40"
+              disabled={page === totalPages}
+              onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )

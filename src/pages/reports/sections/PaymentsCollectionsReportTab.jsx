@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { DistributionChart } from '../../../components/molecules/reports/DistributionChart'
+import { ReportFilters } from '../../../components/molecules/reports/ReportFilters'
 import { ReportKpiCard } from '../../../components/molecules/reports/ReportKpiCard'
 import { ReportSection } from '../../../components/molecules/reports/ReportSection'
 import { ReportTable } from '../../../components/molecules/reports/ReportTable'
@@ -8,19 +10,63 @@ import { exportToExcel, EXPORT_COLUMNS } from '../../../utils/exportUtils'
 import { formatCurrency, formatDate } from '../../../utils/helpers'
 import { REPORT_TABLE_COLUMNS, reportFilename } from '../../../utils/reportConfigs'
 import { isBeforeDateOnly, todayDateOnly } from '../../../utils/dateOnly'
+import {
+  buildYearOptions,
+  filterByPeriod,
+  matchesSearch,
+} from '../../../utils/reportFilterUtils'
 
 export function PaymentsCollectionsReportTab() {
+  const [filters, setFilters] = useState({ search: '', year: '', month: '' })
   const { data: payments, loading: loadingP } = useReportData('payments')
   const { data: schedules, loading: loadingS } = useReportData('schedules')
   const { data: collections, loading: loadingC } = useReportData('collections')
 
   if (loadingP || loadingS || loadingC) return <LoadingState />
 
+  const years = [
+    ...new Set([
+      ...buildYearOptions(payments, 'payment_date'),
+      ...buildYearOptions(schedules, 'due_date'),
+      ...buildYearOptions(collections, 'action_date'),
+    ]),
+  ].sort((a, b) => b - a)
+
+  const filteredPayments = (payments || []).filter(
+    (row) =>
+      matchesSearch(row, filters.search, [
+        'associate.company_name',
+        'associate.ruc',
+        'associate.internal_code',
+      ]) &&
+      filterByPeriod(row, 'payment_date', filters)
+  )
+
+  const filteredSchedules = (schedules || []).filter(
+    (row) =>
+      matchesSearch(row, filters.search, [
+        'associate.company_name',
+        'associate.ruc',
+        'associate.internal_code',
+      ]) &&
+      filterByPeriod(row, 'due_date', filters)
+  )
+
+  const filteredCollections = (collections || []).filter(
+    (row) =>
+      matchesSearch(row, filters.search, [
+        'associate.company_name',
+        'associate.ruc',
+        'associate.internal_code',
+      ]) &&
+      filterByPeriod(row, 'action_date', filters)
+  )
+
   const handleExportPayments = () =>
     exportToExcel({
       filename: reportFilename('pagos', formatDate(new Date())),
       sheetName: 'Pagos',
-      data: payments || [],
+      data: filteredPayments,
       columns: EXPORT_COLUMNS.payments,
     })
 
@@ -28,7 +74,7 @@ export function PaymentsCollectionsReportTab() {
     exportToExcel({
       filename: reportFilename('cronograma', formatDate(new Date())),
       sheetName: 'Cronograma',
-      data: schedules || [],
+      data: filteredSchedules,
       columns: EXPORT_COLUMNS.schedules,
     })
 
@@ -36,12 +82,12 @@ export function PaymentsCollectionsReportTab() {
     exportToExcel({
       filename: reportFilename('gestiones_cobranza', formatDate(new Date())),
       sheetName: 'Gestiones',
-      data: collections || [],
+      data: filteredCollections,
       columns: EXPORT_COLUMNS.collections,
     })
 
-  const totalPaid = payments?.reduce((s, p) => s + Number(p.amount_paid || 0), 0) || 0
-  const pendingSchedules = schedules?.filter((s) => !s.is_paid) || []
+  const totalPaid = filteredPayments.reduce((s, p) => s + Number(p.amount_paid || 0), 0) || 0
+  const pendingSchedules = filteredSchedules.filter((s) => !s.is_paid)
   const totalPending = pendingSchedules.reduce((s, r) => s + Number(r.expected_amount || 0), 0)
   const today = todayDateOnly()
   const overdueSchedules = pendingSchedules.filter((s) =>
@@ -50,25 +96,35 @@ export function PaymentsCollectionsReportTab() {
   const totalOverdue = overdueSchedules.reduce((s, r) => s + Number(r.expected_amount || 0), 0)
 
   const byMethod = {}
-  payments?.forEach((p) => {
+  filteredPayments.forEach((p) => {
     const method = p.payment_method?.label || 'Sin método'
     byMethod[method] = (byMethod[method] || 0) + 1
   })
 
   const byCollectionStatus = {}
-  schedules?.forEach((s) => {
+  filteredSchedules.forEach((s) => {
     const status = s.collection_status?.label || 'Sin estado'
     byCollectionStatus[status] = (byCollectionStatus[status] || 0) + 1
   })
 
   const byCollectionResult = {}
-  collections?.forEach((action) => {
+  filteredCollections.forEach((action) => {
     const result = action.action_result?.label || 'Sin resultado'
     byCollectionResult[result] = (byCollectionResult[result] || 0) + 1
   })
 
   return (
     <div className="space-y-6">
+      <ReportFilters
+        search={filters.search}
+        year={filters.year}
+        month={filters.month}
+        years={years}
+        onSearchChange={(search) => setFilters((prev) => ({ ...prev, search }))}
+        onYearChange={(year) => setFilters((prev) => ({ ...prev, year }))}
+        onMonthChange={(month) => setFilters((prev) => ({ ...prev, month }))}
+        onClear={() => setFilters({ search: '', year: '', month: '' })}
+      />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <ReportKpiCard
           icon="💵"
@@ -76,7 +132,7 @@ export function PaymentsCollectionsReportTab() {
           value={formatCurrency(totalPaid)}
           accent="text-emerald-700"
         />
-        <ReportKpiCard icon="🧾" title="Pagos registrados" value={payments?.length || 0} />
+        <ReportKpiCard icon="🧾" title="Pagos registrados" value={filteredPayments.length} />
         <ReportKpiCard
           icon="📊"
           title="Pendiente de cobro"
@@ -97,20 +153,20 @@ export function PaymentsCollectionsReportTab() {
 
       <DistributionChart title="Gestiones por resultado" data={byCollectionResult} />
 
-      <ReportSection title="Pagos registrados" count={payments?.length} onExport={handleExportPayments}>
-        <ReportTable columns={REPORT_TABLE_COLUMNS.payments} data={payments} />
+      <ReportSection title="Pagos registrados" count={filteredPayments.length} onExport={handleExportPayments}>
+        <ReportTable columns={REPORT_TABLE_COLUMNS.payments} data={filteredPayments} />
       </ReportSection>
 
-      <ReportSection title="Cronograma de cuotas" count={schedules?.length} onExport={handleExportSchedules}>
-        <ReportTable columns={REPORT_TABLE_COLUMNS.schedules} data={schedules} />
+      <ReportSection title="Cronograma de cuotas" count={filteredSchedules.length} onExport={handleExportSchedules}>
+        <ReportTable columns={REPORT_TABLE_COLUMNS.schedules} data={filteredSchedules} />
       </ReportSection>
 
       <ReportSection
         title="Gestiones de cobranza"
-        count={collections?.length}
+        count={filteredCollections.length}
         onExport={handleExportCollections}
       >
-        <ReportTable columns={REPORT_TABLE_COLUMNS.collections} data={collections} />
+        <ReportTable columns={REPORT_TABLE_COLUMNS.collections} data={filteredCollections} />
       </ReportSection>
     </div>
   )
