@@ -4,8 +4,9 @@ import { useAuth } from '../../hooks/useAuth'
 import { useNotification } from '../../hooks/useNotification'
 import { FormField } from '../../components/molecules/FormField'
 import { Button } from '../../components/atoms/Button'
+import { userProfilesService } from '../../services/userProfiles.service'
 import { APP_NAME } from '../../utils/constants'
-import { ROUTES } from '../../router/routes'
+import { getRoleLandingRoute } from '../../utils/roleLandingRoutes'
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
@@ -25,8 +26,13 @@ export function LoginPage() {
 
     setLoading(true)
     try {
-      await signIn({ email, password })
-      navigate(ROUTES.DASHBOARD, { replace: true })
+      const data = await signIn({ email, password })
+      try {
+        const profile = await userProfilesService.getMyProfile(data.user.id)
+        navigate(getRoleLandingRoute(profile.roles?.code), { replace: true })
+      } catch {
+        navigate('/', { replace: true })
+      }
     } catch (error) {
       notify.error(error.message || 'Error al iniciar sesión')
     } finally {

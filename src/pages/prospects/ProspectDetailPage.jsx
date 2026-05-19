@@ -22,6 +22,7 @@ export function ProspectDetailPage() {
   const { notify } = useNotification()
   const { profile } = useUserProfile()
   const { canEdit } = usePermissions()
+  const canEditProspect = canEdit('prospectos')
   const { categories } = useCategories()
   const detail = useProspectDetail(id)
   const [statusModal, setStatusModal] = useState(false)
@@ -139,7 +140,7 @@ export function ProspectDetailPage() {
     <div className="max-w-5xl">
       <ProspectDetailHeader
         prospect={detail.prospect}
-        canEdit={canEdit}
+        canEdit={canEditProspect}
         onEdit={() => navigate(`${ROUTES.PROSPECTOS}/${id}/editar`)}
         onStatusChange={() => setStatusModal(true)}
         onConvert={() => {
@@ -155,7 +156,7 @@ export function ProspectDetailPage() {
         quotes={detail.quotes}
         statusHistory={detail.statusHistory}
         categories={categories}
-        canEdit={canEdit}
+        canEdit={canEditProspect}
         actionLoading={actionLoading}
         onEvaluationSubmit={handleEvaluationSubmit}
         onQuoteSubmit={handleQuoteSubmit}

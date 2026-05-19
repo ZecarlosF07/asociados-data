@@ -9,6 +9,8 @@ export function UserProfileProvider({ children }) {
   const [loadingProfile, setLoadingProfile] = useState(true)
 
   const fetchProfile = useCallback(async () => {
+    setLoadingProfile(true)
+
     if (!user?.id) {
       setProfile(null)
       setLoadingProfile(false)

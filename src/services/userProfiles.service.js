@@ -6,6 +6,7 @@ export const userProfilesService = {
       .from('user_profiles')
       .select('*, roles(*)')
       .eq('auth_user_id', authUserId)
+      .eq('is_active', true)
       .eq('is_deleted', false)
       .single()
 
@@ -44,6 +45,28 @@ export const userProfilesService = {
       .single()
 
     if (error) throw error
+    return data
+  },
+
+  async createInternalUser(payload) {
+    const { data, error } = await supabase.functions.invoke(
+      'create-internal-user',
+      { body: payload }
+    )
+
+    if (error) throw error
+    if (data?.error) throw new Error(data.error)
+    return data.profile
+  },
+
+  async resetInternalUserPassword(payload) {
+    const { data, error } = await supabase.functions.invoke(
+      'reset-internal-user-password',
+      { body: payload }
+    )
+
+    if (error) throw error
+    if (data?.error) throw new Error(data.error)
     return data
   },
 

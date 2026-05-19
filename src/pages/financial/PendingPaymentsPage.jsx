@@ -31,7 +31,9 @@ export function PendingPaymentsPage() {
   const navigate = useNavigate()
   const { profile } = useUserProfile()
   const { notify } = useNotification()
-  const { canEdit } = usePermissions()
+  const { canCreate, canEdit } = usePermissions()
+  const canManageCollections =
+    canCreate('cobranza') && canEdit('cobranza')
   const [schedules, setSchedules] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -308,7 +310,7 @@ export function PendingPaymentsPage() {
               title={`Vencidas (${overdue.length})`}
               items={overdue}
               variant="danger"
-              canEdit={canEdit}
+              canEdit={canManageCollections}
               activePaymentRow={activePaymentRow}
               activeCollectionRow={activeCollectionRow}
               actionLoading={actionLoading}
@@ -331,7 +333,7 @@ export function PendingPaymentsPage() {
               title={`Próximas (${upcoming.length})`}
               items={upcoming}
               variant="warning"
-              canEdit={canEdit}
+              canEdit={canManageCollections}
               activePaymentRow={activePaymentRow}
               activeCollectionRow={activeCollectionRow}
               actionLoading={actionLoading}

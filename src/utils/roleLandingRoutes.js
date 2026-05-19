@@ -1,0 +1,14 @@
+import { ROUTES } from '../router/routes'
+import { ROLES } from './permissions'
+
+const ROLE_LANDING_ROUTES = {
+  [ROLES.ADMIN]: ROUTES.DASHBOARD,
+  [ROLES.CAPTACION]: ROUTES.PROSPECTOS,
+  [ROLES.FACTURACION]: ROUTES.COBRANZA,
+  [ROLES.FIDELIZACION]: ROUTES.ASOCIADOS,
+  [ROLES.ALTA_DIRECCION]: ROUTES.REPORTES,
+}
+
+export function getRoleLandingRoute(roleCode) {
+  return ROLE_LANDING_ROUTES[roleCode] || ROUTES.LOGIN
+}

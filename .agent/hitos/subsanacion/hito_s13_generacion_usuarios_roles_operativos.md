@@ -7,6 +7,7 @@ Implementar la generacion operativa de usuarios internos desde el sistema y ampl
 - `CAPTACION`
 - `FACTURACION`
 - `FIDELIZACION`
+- `ALTA_DIRECCION`
 
 Este hito completa una brecha pendiente del **Hito 2: Usuarios, roles y configuracion base**, porque actualmente existe la estructura de perfiles y roles, pero la pantalla de usuarios no permite crear usuarios reales del sistema.
 
@@ -33,6 +34,7 @@ La brecha actual es que:
 - crear un perfil interno no crea necesariamente un usuario de Auth
 - el frontend conserva permisos hardcodeados en `src/utils/permissions.js`
 - los roles actuales son demasiado generales para la operacion real
+- los roles `OPERADOR` y `CONSULTA` deben ser reemplazados por roles operativos definidos por area
 
 ## 3. Estado actual detectado
 
@@ -156,7 +158,34 @@ De lo contrario, un usuario de `CAPTACION`, `FACTURACION` o `FIDELIZACION` podri
 
 ## 5. Roles nuevos requeridos
 
-### 5.1 CAPTACION
+### 5.1 ADMIN
+
+Rol administrador del sistema.
+
+Acceso funcional:
+
+```txt
+Todos los modulos
+```
+
+Permisos esperados:
+
+- `read`
+- `create`
+- `update`
+- `delete`
+- `admin`
+
+Reglas:
+
+- es el unico rol que puede ver y operar `/usuarios`
+- es el unico rol que puede crear usuarios internos
+- es el unico rol que puede cambiar roles
+- es el unico rol que puede activar/desactivar usuarios
+- es el unico rol que puede cambiar/restablecer contrasenas de otros usuarios
+- es el unico rol con permisos `delete` y `admin`
+
+### 5.2 CAPTACION
 
 Rol orientado al equipo de captacion comercial.
 
@@ -183,9 +212,10 @@ Restricciones:
 - no Usuarios
 - no Configuracion
 - no Auditoria
-- no eliminacion salvo confirmacion posterior del negocio
+- no `delete`
+- no `admin`
 
-### 5.2 FACTURACION
+### 5.3 FACTURACION
 
 Rol orientado al equipo responsable de cobranza/facturacion.
 
@@ -193,6 +223,7 @@ Acceso funcional visible:
 
 ```txt
 Cobranza
+Membresias
 ```
 
 Permisos esperados:
@@ -200,30 +231,35 @@ Permisos esperados:
 - `cobranza:read`
 - `cobranza:create`
 - `cobranza:update`
+- `membresias:read`
 
 Restricciones:
 
 - no Dashboard
 - no Prospectos
 - no Asociados como modulo visible
-- no Membresias como modulo visible
 - no Documentos
 - no Reportes
 - no Usuarios
 - no Configuracion
 - no Auditoria
-- no eliminacion salvo confirmacion posterior del negocio
+- no crear membresias
+- no editar membresias
+- no cancelar membresias
+- no renovar membresias
+- no eliminar membresias
+- no `delete`
+- no `admin`
 
 Nota tecnica:
 
-El modulo de cobranza puede necesitar leer datos relacionados de asociados, membresias y cronogramas para mostrar razon social, RUC, periodo y monto. Si las policies RLS actuales exigen permisos de esos modulos para joins, se debe resolver con una de estas opciones:
+El modulo global `/membresias` en la estructura actual es una vista de consulta, filtros y exportacion. No tiene accion directa para crear o eliminar membresias.
 
-- otorgar permisos tecnicos de lectura minima sin mostrar esos modulos en el menu, o
-- crear vistas/RPC de cobranza que expongan solo los datos necesarios bajo permiso `cobranza:read`.
+Las acciones de crear, cancelar, renovar o eliminar membresias existen dentro de la ficha del asociado, en el tab de membresias. Para `FACTURACION`, esas acciones no deben mostrarse ni ejecutarse.
 
-La opcion recomendada es usar vistas/RPC especificas de cobranza para no abrir acceso completo a fichas de asociados o membresias.
+El modulo de cobranza puede leer datos relacionados de asociados, membresias y cronogramas para mostrar razon social, RUC, periodo y monto. Esa lectura debe resolverse sin abrir operaciones de escritura sobre la ficha del asociado.
 
-### 5.3 FIDELIZACION
+### 5.4 FIDELIZACION
 
 Rol orientado al seguimiento y operacion de asociados existentes.
 
@@ -233,6 +269,8 @@ Restricciones explicitas del negocio:
 NO Dashboard
 NO Reportes
 NO Usuarios
+NO Auditoria
+NO Configuracion
 ```
 
 Acceso operativo permitido:
@@ -249,7 +287,7 @@ Permisos esperados:
 - `create`
 - `update`
 
-Restricciones adicionales recomendadas:
+Restricciones:
 
 - no `delete`
 - no `admin`
@@ -257,9 +295,36 @@ Restricciones adicionales recomendadas:
 - no administracion de roles
 - no configuracion critica
 
-Nota de decision:
+### 5.5 ALTA_DIRECCION
 
-Aunque el requerimiento dice "todo lo demas", por seguridad este hito debe tratar `auditoria`, `usuarios` y administracion critica como funciones administrativas. Si el negocio confirma que Fidelizacion tambien debe administrar configuracion, se debe agregar explicitamente en una iteracion posterior.
+Rol orientado a supervision ejecutiva.
+
+Acceso funcional:
+
+```txt
+Reportes
+Auditoria
+```
+
+Permisos esperados:
+
+- `reportes:read`
+- `auditoria:read`
+
+Restricciones:
+
+- no Dashboard
+- no Prospectos
+- no Asociados
+- no Membresias
+- no Cobranza
+- no Documentos
+- no Usuarios
+- no Configuracion
+- no `create`
+- no `update`
+- no `delete`
+- no `admin`
 
 ## 6. Alcance funcional
 
@@ -296,25 +361,20 @@ El usuario creado debe poder iniciar sesion.
 
 ### 6.3 Metodo de activacion
 
-El hito debe implementar uno de estos modelos:
-
-Opcion recomendada:
-
-```txt
-Invitacion por correo
-```
-
-El Administrador registra el usuario y el sistema envia invitacion para definir clave.
-
-Opcion alternativa:
+El hito debe implementar el siguiente modelo:
 
 ```txt
 Clave temporal
 ```
 
-El Administrador define o genera una clave temporal y el usuario la cambia despues.
+El Administrador escribe manualmente la clave temporal al crear el usuario.
 
-Por seguridad, se recomienda invitacion por correo mediante Admin API.
+Reglas:
+
+- la clave temporal se envia a Supabase Auth desde una capa segura
+- la clave temporal no se guarda en `user_profiles`
+- la clave temporal no se guarda en auditoria
+- no es obligatorio forzar cambio de contrasena en el primer inicio de sesion
 
 ### 6.4 Gestion basica de usuarios
 
@@ -325,8 +385,11 @@ La pantalla debe permitir:
 - editar datos del perfil
 - cambiar rol
 - activar/desactivar usuario
+- cambiar/restablecer contrasena de cualquier usuario
 
 Desactivar usuario debe impedir acceso funcional aunque el usuario Auth exista.
+
+Si un usuario autenticado no tiene perfil interno activo en `user_profiles`, el sistema debe mostrar acceso denegado y no permitir operar modulos internos.
 
 ### 6.5 Reglas administrativas
 
@@ -335,6 +398,7 @@ Solo `ADMIN` puede:
 - crear usuarios
 - editar roles
 - activar/desactivar usuarios
+- cambiar/restablecer contrasenas
 - ver el modulo `usuarios`
 
 Ningun rol operativo debe ver `/usuarios`.
@@ -351,12 +415,19 @@ supabase/migrations/YYYYMMDDHHMMSS_s13_user_generation_operational_roles.sql
 
 Debe:
 
-- insertar roles `CAPTACION`, `FACTURACION`, `FIDELIZACION`
-- mantener `ADMIN`, `OPERADOR`, `CONSULTA`
+- insertar roles `CAPTACION`, `FACTURACION`, `FIDELIZACION`, `ALTA_DIRECCION`
+- mantener `ADMIN`
+- eliminar los roles `OPERADOR` y `CONSULTA`
+- retirar permisos activos asociados a `OPERADOR` y `CONSULTA`
 - insertar/actualizar `role_permissions`
 - no duplicar roles si ya existen
 - dejar `is_active = true`
-- definir `is_system = true` para roles base/operativos del sistema
+- definir `is_system = true` para roles base/operativos del sistema que quedan vigentes
+
+Condicion previa:
+
+- no deben existir perfiles activos asociados a `OPERADOR` o `CONSULTA`
+- si la migracion detecta perfiles asociados a esos roles, debe fallar con un mensaje claro para corregir la data antes de continuar
 
 ### 7.2 Matriz de permisos BD
 
@@ -365,17 +436,23 @@ Matriz esperada:
 | Rol | dashboard | prospectos | asociados | membresias | cobranza | documentos | reportes | usuarios | configuracion | auditoria |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | ADMIN | total | total | total | total | total | total | total | total | total | total |
-| OPERADOR | read | r/c/u | r/c/u | r/c/u | r/c/u | r/c/u | read | no | no | no |
-| CONSULTA | read | read | read | read | read | read | read | no | read | no |
 | CAPTACION | no | r/c/u | no | no | no | no | no | no | no | no |
-| FACTURACION | no | no | no* | no* | r/c/u | no | no | no | no | no |
+| FACTURACION | no | no | no | read | r/c/u | no | no | no | no | no |
 | FIDELIZACION | no | r/c/u | r/c/u | r/c/u | r/c/u | r/c/u | no | no | no | no |
+| ALTA_DIRECCION | no | no | no | no | no | no | read | no | no | read |
 
 Leyenda:
 
 - `r/c/u`: read, create, update
 - `total`: read, create, update, delete, admin
-- `no*`: no visible como modulo; puede requerir lectura tecnica via vista/RPC de cobranza
+
+Reglas de accion:
+
+- solo `ADMIN` tiene `delete`
+- solo `ADMIN` tiene `admin`
+- `FACTURACION` tiene `membresias:read` porque el modulo global de membresias es de consulta/exportacion
+- `FACTURACION` no puede crear, editar, cancelar, renovar ni eliminar membresias
+- `ALTA_DIRECCION` solo tiene lectura en reportes y auditoria
 
 ### 7.3 Permisos frontend
 
@@ -387,13 +464,42 @@ src/utils/permissions.js
 
 Debe incluir:
 
+- `ADMIN`
 - `CAPTACION`
 - `FACTURACION`
 - `FIDELIZACION`
+- `ALTA_DIRECCION`
 
 Tambien debe reflejar las restricciones por modulo.
 
 Importante:
+
+El frontend actual usa permisos globales:
+
+```txt
+canCreate
+canEdit
+canDelete
+```
+
+Ese modelo no es suficiente para este hito, porque `FACTURACION` puede editar cobranza, pero no puede editar membresias.
+
+El hito debe reemplazar o extender esa logica con permisos por modulo y accion:
+
+```txt
+canAction('cobranza', 'update')
+canAction('membresias', 'read')
+canAction('membresias', 'update')
+```
+
+Reglas:
+
+- los botones de creacion deben validar `canAction(modulo, 'create')`
+- los botones de edicion deben validar `canAction(modulo, 'update')`
+- los botones de eliminacion deben validar `canAction(modulo, 'delete')`
+- `PermissionGuard` debe seguir validando acceso de lectura por modulo
+- el mapa local de `src/utils/permissions.js` debe representar la matriz por modulo y accion
+- el frontend y `role_permissions` deben quedar equivalentes
 
 El sistema ya tiene `role_permissions` en BD, pero el frontend aun usa un mapa local. Para este hito se acepta actualizar el mapa local, pero debe quedar documentado como deuda tecnica migrar `usePermissions` a permisos dinamicos desde BD.
 
@@ -413,6 +519,23 @@ PermissionGuard module="dashboard"
 
 Los roles sin dashboard no deben poder entrar escribiendo la URL.
 
+### 7.4.1 Bloqueo de perfil inexistente o inactivo
+
+Actualizar:
+
+```txt
+src/router/ProtectedRoute.jsx
+```
+
+o el punto equivalente donde se resuelve el perfil del usuario autenticado.
+
+Reglas:
+
+- si existe sesion Auth pero no existe `user_profiles` activo, mostrar `AccessDeniedPage`
+- no redirigir automaticamente a `/login` en este caso
+- no renderizar `MainLayout` ni rutas internas mientras el perfil este cargando
+- no permitir operar modulos con `roleCode = null`
+
 ### 7.5 Redireccion post-login
 
 Crear o ajustar una utilidad:
@@ -426,11 +549,10 @@ o equivalente.
 Debe resolver la ruta inicial segun permisos:
 
 - `ADMIN` -> `/dashboard`
-- `OPERADOR` -> `/dashboard`
-- `CONSULTA` -> `/dashboard`
 - `CAPTACION` -> `/prospectos`
 - `FACTURACION` -> `/cobranza`
 - `FIDELIZACION` -> `/asociados`
+- `ALTA_DIRECCION` -> `/reportes`
 
 La ruta raiz `/` y el post-login no deben asumir siempre `/dashboard`.
 
@@ -444,16 +566,35 @@ Implementar una capa segura de servidor:
 supabase/functions/create-internal-user/index.ts
 ```
 
+Tambien implementar una funcion separada:
+
+```txt
+supabase/functions/reset-internal-user-password/index.ts
+```
+
 Responsabilidades:
 
 - validar JWT del usuario solicitante
 - verificar que el solicitante tenga rol `ADMIN`
 - crear usuario en Supabase Auth usando Admin API
-- invitar usuario por correo o crear con clave temporal
+- crear usuario con clave temporal definida manualmente por el Administrador
 - insertar `user_profiles`
 - asignar `role_id`
 - retornar perfil creado
 - registrar auditoria
+
+Regla de consistencia:
+
+- si se crea el usuario en Supabase Auth pero falla la creacion de `user_profiles`, la funcion debe eliminar el usuario Auth recien creado antes de devolver error
+- el sistema no debe dejar usuarios Auth internos sin perfil asociado
+
+Responsabilidades de `reset-internal-user-password`:
+
+- validar JWT del usuario solicitante
+- verificar que el solicitante tenga rol `ADMIN`
+- recibir usuario objetivo y nueva clave temporal
+- actualizar la contrasena del usuario Auth usando Admin API
+- registrar auditoria sin guardar la clave
 
 Variables requeridas:
 
@@ -501,15 +642,31 @@ Debe reemplazar el mensaje de funcionalidad pendiente por un flujo real.
 
 ### 7.9 Auditoria
 
-La creacion, edicion, cambio de rol y desactivacion de usuarios debe quedar auditada.
+La creacion, edicion, cambio de rol, activacion/desactivacion y cambio/restablecimiento de contrasena debe quedar auditada.
 
-Eventos recomendados:
+Eventos requeridos:
 
 - `create_internal_user`
 - `update_user_profile`
 - `change_user_role`
 - `deactivate_user`
 - `reactivate_user`
+- `reset_internal_user_password`
+
+La auditoria debe registrar:
+
+- usuario administrador que ejecuta la accion
+- usuario afectado
+- tipo de accion
+- fecha/hora
+- cambios de campos no sensibles
+
+La auditoria no debe registrar:
+
+- contrasena temporal
+- contrasena nueva
+- hash de contrasena
+- tokens de sesion
 
 ## 8. Fuera de alcance
 
@@ -530,6 +687,7 @@ Este hito no incluye:
 ```txt
 supabase/migrations/YYYYMMDDHHMMSS_s13_user_generation_operational_roles.sql
 supabase/functions/create-internal-user/index.ts
+supabase/functions/reset-internal-user-password/index.ts
 supabase/audits/hito_s13_user_roles_audit.sql
 src/components/molecules/users/UserForm.jsx
 src/components/molecules/users/UserModal.jsx
@@ -565,12 +723,18 @@ supabase/audits/hito_s13_user_roles_audit.sql
 
 Debe validar:
 
-- existen roles `ADMIN`, `OPERADOR`, `CONSULTA`, `CAPTACION`, `FACTURACION`, `FIDELIZACION`
+- existen roles `ADMIN`, `CAPTACION`, `FACTURACION`, `FIDELIZACION`, `ALTA_DIRECCION`
+- no existen roles `OPERADOR` ni `CONSULTA`
 - los roles nuevos estan activos
+- no existen perfiles internos asociados a `OPERADOR` o `CONSULTA`
 - `CAPTACION` solo tiene permisos de `prospectos`
-- `FACTURACION` solo tiene permisos funcionales de `cobranza`
-- `FIDELIZACION` no tiene permisos sobre `dashboard`, `reportes`, `usuarios`, `auditoria`
+- `FACTURACION` tiene permisos `read/create/update` de `cobranza`
+- `FACTURACION` tiene solo `read` de `membresias`
+- `FACTURACION` no tiene `create`, `update`, `delete` ni `admin` de `membresias`
+- `FIDELIZACION` no tiene permisos sobre `dashboard`, `reportes`, `usuarios`, `auditoria` ni `configuracion`
+- `ALTA_DIRECCION` solo tiene `read` sobre `reportes` y `auditoria`
 - ningun rol operativo tiene `admin`
+- ningun rol operativo tiene `delete`
 - `ADMIN` mantiene acceso total
 - existe al menos un administrador activo
 
@@ -582,19 +746,29 @@ El hito queda aprobado cuando:
 - el usuario creado puede iniciar sesion
 - el perfil creado queda asociado al rol correcto
 - `CAPTACION` solo ve y accede a Prospectos
-- `FACTURACION` solo ve y accede a Cobranza
+- `FACTURACION` ve y accede a Cobranza
+- `FACTURACION` ve Membresias solo en modo consulta/exportacion
+- `FACTURACION` no puede crear, editar, cancelar, renovar ni eliminar membresias
 - `FIDELIZACION` no ve Dashboard, Reportes ni Usuarios
 - `FIDELIZACION` accede a modulos operativos permitidos
+- `ALTA_DIRECCION` solo ve Reportes y Auditoria
+- `OPERADOR` y `CONSULTA` no existen como roles disponibles
+- ningun perfil interno queda asociado a `OPERADOR` o `CONSULTA`
+- `ADMIN` puede cambiar/restablecer la contrasena de cualquier usuario
+- un usuario autenticado sin perfil interno activo ve acceso denegado
 - `/dashboard` esta protegido por permisos
 - el login redirige a una ruta valida para cada rol
 - el frontend y la BD tienen matrices de permisos coherentes
+- el frontend valida acciones con permisos por modulo y accion
 - no se expone service role key en frontend
-- la creacion/cambio de usuarios queda auditada
+- no quedan usuarios Auth internos huerfanos si falla la creacion del perfil
+- la creacion, cambio de rol, activacion/desactivacion y cambio/restablecimiento de contrasena queda auditada
+- la auditoria no guarda contrasenas ni tokens
 - el audit SQL pasa sin hallazgos criticos
 - `yarn lint` pasa sin errores
 - `yarn build` pasa sin errores
 
-## 12. Pruebas funcionales sugeridas
+## 12. Pruebas funcionales requeridas
 
 ### 12.1 ADMIN crea usuario CAPTACION
 
@@ -610,8 +784,10 @@ El hito queda aprobado cuando:
 1. Crear usuario con rol `FACTURACION`.
 2. Iniciar sesion.
 3. Confirmar que entra a Cobranza.
-4. Confirmar que no ve Prospectos, Asociados, Reportes ni Usuarios.
-5. Confirmar que puede registrar/actualizar acciones de cobranza segun permisos.
+4. Confirmar que ve Membresias como modulo de consulta.
+5. Confirmar que no ve Prospectos, Asociados, Reportes ni Usuarios.
+6. Confirmar que puede registrar/actualizar acciones de cobranza segun permisos.
+7. Confirmar que no puede crear, editar, cancelar, renovar ni eliminar membresias.
 
 ### 12.3 ADMIN crea usuario FIDELIZACION
 
@@ -622,19 +798,39 @@ El hito queda aprobado cuando:
 5. Confirmar que no ve Usuarios.
 6. Confirmar que puede operar Asociados, Membresias, Cobranza y Documentos.
 
-### 12.4 Usuario desactivado
+### 12.4 ADMIN crea usuario ALTA_DIRECCION
+
+1. Crear usuario con rol `ALTA_DIRECCION`.
+2. Iniciar sesion.
+3. Confirmar que entra a Reportes.
+4. Confirmar que ve Auditoria.
+5. Confirmar que no ve Dashboard, Prospectos, Asociados, Membresias, Cobranza, Documentos, Usuarios ni Configuracion.
+6. Confirmar que no puede crear, editar ni eliminar registros.
+
+### 12.5 Usuario desactivado
 
 1. Desactivar usuario desde `/usuarios`.
 2. Intentar iniciar sesion.
 3. Confirmar que no puede operar el sistema aunque Auth permita autenticacion.
 
-### 12.5 Auditoria
+### 12.6 Cambio de contrasena por ADMIN
+
+1. Iniciar sesion como `ADMIN`.
+2. Ir a `/usuarios`.
+3. Seleccionar un usuario.
+4. Ejecutar cambio/restablecimiento de contrasena.
+5. Iniciar sesion con la nueva contrasena.
+6. Revisar auditoria y confirmar que existe el evento sin valor de contrasena.
+
+### 12.7 Auditoria
 
 1. Crear usuario.
 2. Cambiar rol.
 3. Desactivar usuario.
-4. Revisar `/auditoria`.
-5. Confirmar eventos claros y trazables.
+4. Reactivar usuario.
+5. Cambiar/restablecer contrasena.
+6. Revisar `/auditoria`.
+7. Confirmar eventos claros y trazables.
 
 ## 13. Notas para el desarrollador
 

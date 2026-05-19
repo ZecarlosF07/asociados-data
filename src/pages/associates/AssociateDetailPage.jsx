@@ -19,6 +19,7 @@ export function AssociateDetailPage() {
   const { notify } = useNotification()
   const { profile } = useUserProfile()
   const { canEdit } = usePermissions()
+  const canEditAssociate = canEdit('asociados')
   const detail = useAssociateDetail(id)
   const [actionLoading, setActionLoading] = useState(false)
   const {
@@ -205,7 +206,7 @@ export function AssociateDetailPage() {
     <div className="max-w-5xl">
       <AssociateDetailHeader
         associate={detail.associate}
-        canEdit={canEdit}
+        canEdit={canEditAssociate}
         onEdit={() => navigate(`${ROUTES.ASOCIADOS}/${id}/editar`)}
         onBack={() => navigate(ROUTES.ASOCIADOS)}
       />
@@ -219,7 +220,7 @@ export function AssociateDetailPage() {
         payments={detail.payments}
         collectionActions={detail.collectionActions}
         documents={detail.documents}
-        canEdit={canEdit}
+        canEdit={canEditAssociate}
         actionLoading={isActionLoading}
         onPersonSubmit={handlePersonSubmit}
         onPersonUpdate={handlePersonUpdate}

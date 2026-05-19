@@ -5,6 +5,7 @@ import { getFileIcon } from '../../../utils/documentConstants'
 export function DocumentDetailHeader({
   document,
   canEdit,
+  canReplace,
   canDelete,
   onBack,
   onDownload,
@@ -51,14 +52,14 @@ export function DocumentDetailHeader({
             Copiar referencia
           </Button>
           {canEdit && (
-            <>
               <Button variant="secondary" size="sm" onClick={onEdit}>
                 Editar metadatos
               </Button>
+          )}
+          {canReplace && (
               <Button variant="secondary" size="sm" onClick={onReplace}>
                 Reemplazar versión
               </Button>
-            </>
           )}
           {canDelete && (
             <Button variant="danger" size="sm" onClick={onDelete}>

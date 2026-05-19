@@ -12,6 +12,7 @@ export function ProspectsPage() {
   const navigate = useNavigate()
   const { prospects, loading, error, filters, updateFilters } = useProspects()
   const { canCreate } = usePermissions()
+  const canCreateProspect = canCreate('prospectos')
 
   const handleClearFilters = () => {
     updateFilters({ search: '', statusId: '', categoryId: '', captadorId: '' })
@@ -30,7 +31,7 @@ export function ProspectsPage() {
             Gestión de empresas prospecto y su seguimiento comercial.
           </p>
         </div>
-        {canCreate && (
+        {canCreateProspect && (
           <Button onClick={() => navigate(ROUTES.PROSPECTOS_NUEVO)}>
             + Nuevo prospecto
           </Button>
@@ -59,7 +60,7 @@ export function ProspectsPage() {
           title="Sin prospectos"
           description="No se encontraron prospectos con los filtros aplicados."
           action={
-            canCreate && (
+            canCreateProspect && (
               <Button size="sm" onClick={() => navigate(ROUTES.PROSPECTOS_NUEVO)}>
                 Registrar primer prospecto
               </Button>

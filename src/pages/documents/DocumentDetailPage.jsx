@@ -22,7 +22,10 @@ export function DocumentDetailPage() {
   const navigate = useNavigate()
   const { notify } = useNotification()
   const { profile } = useUserProfile()
-  const { canEdit, canDelete } = usePermissions()
+  const { canCreate, canEdit, canDelete } = usePermissions()
+  const canCreateDocument = canCreate('documentos')
+  const canEditDocument = canEdit('documentos')
+  const canDeleteDocument = canDelete('documentos')
   const [document, setDocument] = useState(null)
   const [versions, setVersions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -152,8 +155,9 @@ export function DocumentDetailPage() {
     <div className="max-w-5xl">
       <DocumentDetailHeader
         document={document}
-        canEdit={canEdit}
-        canDelete={canDelete}
+        canEdit={canEditDocument}
+        canReplace={canCreateDocument}
+        canDelete={canDeleteDocument}
         onBack={() => navigate(ROUTES.DOCUMENTOS)}
         onDownload={handleDownload}
         onCopyReference={handleCopyReference}

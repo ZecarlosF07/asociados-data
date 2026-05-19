@@ -9,7 +9,9 @@ export const rolesService = {
       .order('name')
 
     if (error) throw error
-    return data
+    return (data || []).filter(
+      (role) => !['OPERADOR', 'CONSULTA'].includes(role.code)
+    )
   },
 
   async getById(id) {

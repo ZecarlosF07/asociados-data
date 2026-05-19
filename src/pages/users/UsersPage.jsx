@@ -1,75 +1,60 @@
-import { useCallback, useEffect, useState } from 'react'
-import { userProfilesService } from '../../services/userProfiles.service'
-import { useNotification } from '../../hooks/useNotification'
-import { DataTable } from '../../components/organisms/DataTable'
-import { Badge } from '../../components/atoms/Badge'
 import { Button } from '../../components/atoms/Button'
-
-const COLUMNS = [
-  { key: 'first_name', label: 'Nombres' },
-  { key: 'last_name', label: 'Apellidos' },
-  { key: 'institutional_email', label: 'Correo' },
-  { key: 'dni', label: 'DNI' },
-  {
-    key: 'roles',
-    label: 'Rol',
-    render: (value) => (
-      <Badge variant="info">{value?.name || '—'}</Badge>
-    ),
-  },
-  {
-    key: 'is_active',
-    label: 'Estado',
-    render: (value) => (
-      <Badge variant={value ? 'success' : 'danger'}>
-        {value ? 'Activo' : 'Inactivo'}
-      </Badge>
-    ),
-  },
-]
+import { DataTable } from '../../components/organisms/DataTable'
+import { PasswordResetModal } from '../../components/molecules/users/PasswordResetModal'
+import { UserModal } from '../../components/molecules/users/UserModal'
+import { buildUserColumns } from '../../components/molecules/users/userTableColumns'
+import { useUserManagement } from '../../hooks/useUserManagement'
 
 export function UsersPage() {
-  const [users, setUsers] = useState([])
-  const [loading, setLoading] = useState(true)
-  const { notify } = useNotification()
-
-  const loadUsers = useCallback(async () => {
-    setLoading(true)
-    try {
-      const data = await userProfilesService.getAll()
-      setUsers(data)
-    } catch (error) {
-      notify.error('Error al cargar usuarios: ' + error.message)
-    } finally {
-      setLoading(false)
-    }
-  }, [notify])
-
-  useEffect(() => {
-    loadUsers()
-  }, [loadUsers])
+  const manager = useUserManagement()
+  const columns = buildUserColumns({
+    onEdit: manager.openEditModal,
+    onResetPassword: manager.setPasswordUser,
+  })
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-6xl">
       <div className="mb-7">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 mb-1">Usuarios</h1>
             <p className="text-sm text-slate-400">
-              Gestión de usuarios y perfiles del sistema
+              Gestión de usuarios, roles y acceso interno.
             </p>
           </div>
-          <Button variant="primary" onClick={() => notify.info('Crear usuario: funcionalidad pendiente')}>
+          <Button variant="primary" onClick={manager.openCreateModal}>
             Nuevo usuario
           </Button>
         </div>
       </div>
 
       <DataTable
-        columns={COLUMNS}
-        data={users}
-        loading={loading}
+        columns={columns}
+        data={manager.users}
+        loading={manager.loading}
         emptyMessage="No hay usuarios registrados"
+      />
+
+      <UserModal
+        isOpen={!!manager.modalMode}
+        mode={manager.modalMode || 'create'}
+        user={manager.selectedUser}
+        roles={manager.roles}
+        loading={manager.actionLoading}
+        onClose={manager.closeUserModal}
+        onSubmit={
+          manager.modalMode === 'create'
+            ? manager.createUser
+            : manager.updateUser
+        }
+      />
+
+      <PasswordResetModal
+        isOpen={!!manager.passwordUser}
+        user={manager.passwordUser}
+        loading={manager.actionLoading}
+        onClose={() => manager.setPasswordUser(null)}
+        onSubmit={manager.resetPassword}
       />
     </div>
   )

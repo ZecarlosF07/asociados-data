@@ -144,10 +144,12 @@ Corrige una regla financiera del cronograma anual:
 Completa la administración real de usuarios internos:
 
 - creación de usuarios Auth + perfil interno desde `/usuarios`
-- roles nuevos `CAPTACION`, `FACTURACION` y `FIDELIZACION`
+- roles vigentes `ADMIN`, `CAPTACION`, `FACTURACION`, `FIDELIZACION` y `ALTA_DIRECCION`
+- retiro de roles generales `OPERADOR` y `CONSULTA`
 - matriz de permisos frontend/backend alineada
 - protección de Dashboard para roles sin acceso
 - redirección inicial según rol permitido
+- documentación operativa de roles, permisos y lecturas RLS de referencia
 
 ## Orden recomendado de ejecución
 
@@ -204,3 +206,4 @@ La subsanación completa queda cerrada cuando:
 - [S11 - Asociados en lista operativa](./hito_s11_asociados_lista_operativa.md)
 - [S12 - Corrección de vencimiento de membresía anual](./hito_s12_correccion_vencimiento_membresia_anual.md)
 - [S13 - Generación de usuarios y roles operativos](./hito_s13_generacion_usuarios_roles_operativos.md)
+- [Documento técnico S13 - Roles y permisos operativos](../../docs/hito_s13_roles_permisos_operativos.md)

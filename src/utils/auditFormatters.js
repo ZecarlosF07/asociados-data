@@ -23,6 +23,12 @@ export const AUDIT_ACTION_OPTIONS = [
   'create_direct_associate',
   'register_payment',
   'purge_old_audit_logs',
+  'create_internal_user',
+  'update_user_profile',
+  'change_user_role',
+  'deactivate_user',
+  'reactivate_user',
+  'reset_internal_user_password',
 ]
 
 const ENTITY_LABELS = {
@@ -51,6 +57,12 @@ const ACTION_LABELS = {
   create_direct_associate: 'Alta directa',
   register_payment: 'Registro de pago',
   purge_old_audit_logs: 'Purga de auditoría',
+  create_internal_user: 'Creación de usuario',
+  update_user_profile: 'Actualización de usuario',
+  change_user_role: 'Cambio de rol',
+  deactivate_user: 'Desactivación de usuario',
+  reactivate_user: 'Reactivación de usuario',
+  reset_internal_user_password: 'Cambio de contraseña',
 }
 
 const FIELD_LABELS = {

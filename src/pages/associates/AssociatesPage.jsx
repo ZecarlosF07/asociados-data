@@ -11,6 +11,7 @@ import { ROUTES } from '../../router/routes'
 export function AssociatesPage() {
   const navigate = useNavigate()
   const { canCreate } = usePermissions()
+  const canCreateAssociate = canCreate('asociados')
   const { associates, loading, error, filters, updateFilters } = useAssociates()
 
   const handleClearFilters = () => {
@@ -30,7 +31,7 @@ export function AssociatesPage() {
             Gestión de empresas asociadas y su ficha institucional.
           </p>
         </div>
-        {canCreate && (
+        {canCreateAssociate && (
           <Button onClick={() => navigate(ROUTES.ASOCIADOS_NUEVO)}>
             + Nuevo asociado
           </Button>
@@ -59,7 +60,7 @@ export function AssociatesPage() {
           title="Sin asociados"
           description="No se encontraron asociados con los filtros aplicados."
           action={
-            canCreate && (
+            canCreateAssociate && (
               <Button size="sm" onClick={() => navigate(ROUTES.ASOCIADOS_NUEVO)}>
                 Registrar primer asociado
               </Button>

@@ -6,6 +6,8 @@ import { PermissionGuard } from './PermissionGuard'
 import { MainLayout } from '../layouts/MainLayout'
 import { AuthLayout } from '../layouts/AuthLayout'
 import { Loader } from '../components/atoms/Loader'
+import { useUserProfile } from '../hooks/useUserProfile'
+import { getRoleLandingRoute } from '../utils/roleLandingRoutes'
 
 const LoginPage = lazyPage(() => import('../pages/auth/LoginPage'), 'LoginPage')
 const DashboardPage = lazyPage(() => import('../pages/dashboard/DashboardPage'), 'DashboardPage')
@@ -47,7 +49,15 @@ export function AppRouter() {
             </ProtectedRoute>
           }
         >
-          <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
+          <Route path="/" element={<LandingRedirect />} />
+          <Route
+            path={ROUTES.DASHBOARD}
+            element={
+              <PermissionGuard module="dashboard">
+                <DashboardPage />
+              </PermissionGuard>
+            }
+          />
 
           {/* Prospectos */}
           <Route
@@ -215,12 +225,16 @@ export function AppRouter() {
         </Route>
 
         {/* Redirecciones y fallbacks */}
-        <Route path="/" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
         <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
     </BrowserRouter>
   )
+}
+
+function LandingRedirect() {
+  const { roleCode } = useUserProfile()
+  return <Navigate to={getRoleLandingRoute(roleCode)} replace />
 }
 
 function lazyPage(loader, exportName) {

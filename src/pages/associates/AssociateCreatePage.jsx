@@ -11,6 +11,7 @@ export function AssociateCreatePage() {
   const navigate = useNavigate()
   const { notify } = useNotification()
   const { canCreate } = usePermissions()
+  const canCreateAssociate = canCreate('asociados')
   const [saving, setSaving] = useState(false)
 
   const handleSubmit = async (formData) => {
@@ -26,7 +27,7 @@ export function AssociateCreatePage() {
     }
   }
 
-  if (!canCreate) return <AccessDeniedPage />
+  if (!canCreateAssociate) return <AccessDeniedPage />
 
   return (
     <div className="max-w-3xl">

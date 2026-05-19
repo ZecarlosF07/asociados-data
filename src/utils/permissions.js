@@ -1,65 +1,70 @@
 export const ROLES = {
   ADMIN: 'ADMIN',
-  OPERADOR: 'OPERADOR',
-  CONSULTA: 'CONSULTA',
+  CAPTACION: 'CAPTACION',
+  FACTURACION: 'FACTURACION',
+  FIDELIZACION: 'FIDELIZACION',
+  ALTA_DIRECCION: 'ALTA_DIRECCION',
 }
 
+export const ACTIONS = {
+  READ: 'read',
+  CREATE: 'create',
+  UPDATE: 'update',
+  DELETE: 'delete',
+  ADMIN: 'admin',
+}
+
+export const MODULES = {
+  DASHBOARD: 'dashboard',
+  PROSPECTOS: 'prospectos',
+  ASOCIADOS: 'asociados',
+  MEMBRESIAS: 'membresias',
+  COBRANZA: 'cobranza',
+  DOCUMENTOS: 'documentos',
+  REPORTES: 'reportes',
+  USUARIOS: 'usuarios',
+  CONFIGURACION: 'configuracion',
+  AUDITORIA: 'auditoria',
+}
+
+const ALL_ACTIONS = Object.values(ACTIONS)
+const OPERATIVE_ACTIONS = [ACTIONS.READ, ACTIONS.CREATE, ACTIONS.UPDATE]
+
 export const PERMISSIONS = {
-  [ROLES.ADMIN]: {
-    dashboard: true,
-    prospectos: true,
-    asociados: true,
-    membresias: true,
-    cobranza: true,
-    documentos: true,
-    reportes: true,
-    usuarios: true,
-    configuracion: true,
-    auditoria: true,
-    canCreate: true,
-    canEdit: true,
-    canDelete: true,
+  [ROLES.ADMIN]: grantAll(),
+  [ROLES.CAPTACION]: {
+    [MODULES.PROSPECTOS]: OPERATIVE_ACTIONS,
   },
-  [ROLES.OPERADOR]: {
-    dashboard: true,
-    prospectos: true,
-    asociados: true,
-    membresias: true,
-    cobranza: true,
-    documentos: true,
-    reportes: true,
-    usuarios: false,
-    configuracion: false,
-    auditoria: false,
-    canCreate: true,
-    canEdit: true,
-    canDelete: false,
+  [ROLES.FACTURACION]: {
+    [MODULES.MEMBRESIAS]: [ACTIONS.READ],
+    [MODULES.COBRANZA]: OPERATIVE_ACTIONS,
   },
-  [ROLES.CONSULTA]: {
-    dashboard: true,
-    prospectos: true,
-    asociados: true,
-    membresias: true,
-    cobranza: true,
-    documentos: true,
-    reportes: true,
-    usuarios: false,
-    configuracion: false,
-    auditoria: false,
-    canCreate: false,
-    canEdit: false,
-    canDelete: false,
+  [ROLES.FIDELIZACION]: {
+    [MODULES.PROSPECTOS]: OPERATIVE_ACTIONS,
+    [MODULES.ASOCIADOS]: OPERATIVE_ACTIONS,
+    [MODULES.MEMBRESIAS]: OPERATIVE_ACTIONS,
+    [MODULES.COBRANZA]: OPERATIVE_ACTIONS,
+    [MODULES.DOCUMENTOS]: OPERATIVE_ACTIONS,
+  },
+  [ROLES.ALTA_DIRECCION]: {
+    [MODULES.REPORTES]: [ACTIONS.READ],
+    [MODULES.AUDITORIA]: [ACTIONS.READ],
   },
 }
 
 export function hasPermission(roleCode, module) {
-  const rolePermissions = PERMISSIONS[roleCode]
-  if (!rolePermissions) return false
-  return rolePermissions[module] === true
+  return canAction(roleCode, module, ACTIONS.READ)
 }
 
-export function canAction(roleCode, action) {
-  const rolePermissions = PERMISSIONS[roleCode]
-  if (!rolePermissions) return false
-  return rolePermissions[action] === true
+export function canAction(roleCode, module, action) {
+  const modulePermissions = PERMISSIONS[roleCode]?.[module]
+  if (!modulePermissions) return false
+  return modulePermissions.includes(action)
+}
+
+function grantAll() {
+  return Object.values(MODULES).reduce((acc, module) => {
+    acc[module] = ALL_ACTIONS
+    return acc
+  }, {})
 }

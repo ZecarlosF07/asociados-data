@@ -16,7 +16,9 @@ export function DocumentsPage() {
   const navigate = useNavigate()
   const { notify } = useNotification()
   const { profile } = useUserProfile()
-  const { canEdit } = usePermissions()
+  const { canCreate, canDelete } = usePermissions()
+  const canCreateDocument = canCreate('documentos')
+  const canDeleteDocument = canDelete('documentos')
   const [filters, setFilters] = useState({})
   const [showUploadForm, setShowUploadForm] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
@@ -78,7 +80,7 @@ export function DocumentsPage() {
             Repositorio documental del sistema
           </p>
         </div>
-        {canEdit && !showUploadForm && (
+        {canCreateDocument && !showUploadForm && (
           <Button size="sm" onClick={() => setShowUploadForm(true)}>
             + Subir documento
           </Button>
@@ -106,10 +108,10 @@ export function DocumentsPage() {
       ) : (
         <DocumentList
           documents={documents}
-          canEdit={canEdit}
+          canEdit={canDeleteDocument}
           onView={handleView}
           onDownload={handleDownload}
-          onDelete={handleDelete}
+          onDelete={canDeleteDocument ? handleDelete : undefined}
         />
       )}
     </div>
