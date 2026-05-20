@@ -40,6 +40,7 @@ export function PendingPaymentsPage() {
   const [activePaymentRow, setActivePaymentRow] = useState(null)
   const [activeCollectionRow, setActiveCollectionRow] = useState(null)
   const [actionLoading, setActionLoading] = useState(false)
+  const [viewMode, setViewMode] = useState('pending')
 
   // Filtro de mes: por defecto mes actual
   const now = new Date()
@@ -47,21 +48,23 @@ export function PendingPaymentsPage() {
   const [selectedYear, setSelectedYear] = useState(now.getFullYear())
   const [showAllMonths, setShowAllMonths] = useState(false)
 
-  const fetchPending = useCallback(async () => {
+  const fetchSchedules = useCallback(async () => {
     setLoading(true)
     try {
-      const data = await paymentSchedulesService.getPending()
+      const data = await paymentSchedulesService.getForCollection({
+        isPaid: viewMode === 'paid',
+      })
       setSchedules(data)
     } catch (err) {
       console.error(err)
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [viewMode])
 
   useEffect(() => {
-    fetchPending()
-  }, [fetchPending])
+    fetchSchedules()
+  }, [fetchSchedules])
 
   // Filtrar por búsqueda + mes
   const filtered = useMemo(() => {
@@ -92,13 +95,14 @@ export function PendingPaymentsPage() {
     return result
   }, [schedules, selectedMonth, selectedYear, showAllMonths, search])
 
-  // Separar vencidos y próximos
+  // Separar vencidos, próximos y pagados
   const today = todayDateOnly()
   const overdue = filtered.filter((s) => isBeforeDateOnly(s.due_date, today))
   const upcoming = filtered.filter((s) => !isBeforeDateOnly(s.due_date, today))
+  const paid = filtered
 
   // Totales del mes filtrado
-  const totalPending = filtered.reduce(
+  const totalAmount = filtered.reduce(
     (sum, s) => sum + Number(s.expected_amount || 0), 0
   )
   const totalOverdue = overdue.reduce(
@@ -145,7 +149,7 @@ export function PendingPaymentsPage() {
 
       notify.success('Pago registrado y cronograma actualizado')
       setActivePaymentRow(null)
-      fetchPending()
+      fetchSchedules()
     } catch (error) {
       notify.error('Error: ' + error.message)
     } finally {
@@ -174,7 +178,7 @@ export function PendingPaymentsPage() {
 
       notify.success('Gestión de cobranza registrada')
       setActiveCollectionRow(null)
-      fetchPending()
+      fetchSchedules()
     } catch (error) {
       notify.error('Error: ' + error.message)
     } finally {
@@ -187,7 +191,7 @@ export function PendingPaymentsPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-slate-900 mb-1">Cobranza</h1>
         <p className="text-sm text-slate-400">
-          Cuotas pendientes de cobro, ordenadas por fecha de vencimiento.
+          Cuotas pendientes y pagadas, filtradas por vencimiento mensual.
         </p>
       </div>
 
@@ -240,6 +244,20 @@ export function PendingPaymentsPage() {
           >
             Ver todo
           </button>
+          <button
+            className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+              viewMode === 'paid'
+                ? 'bg-emerald-700 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+            onClick={() => {
+              setViewMode((current) => current === 'paid' ? 'pending' : 'paid')
+              setActivePaymentRow(null)
+              setActiveCollectionRow(null)
+            }}
+          >
+            {viewMode === 'paid' ? 'Ver pendientes' : 'Ver pagadas'}
+          </button>
         </div>
 
         <div className="flex-1 min-w-[180px] ml-auto">
@@ -263,26 +281,53 @@ export function PendingPaymentsPage() {
       {/* Resumen del mes */}
       {!loading && filtered.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <SummaryCard
-            label={showAllMonths ? 'Total pendiente' : `Pendiente ${MONTH_NAMES[selectedMonth - 1]}`}
-            value={formatCurrency(totalPending)}
-            accent="text-slate-900"
-          />
-          <SummaryCard
-            label="Cuotas"
-            value={String(filtered.length)}
-            accent="text-slate-900"
-          />
-          <SummaryCard
-            label="Vencidas"
-            value={String(overdue.length)}
-            accent="text-red-600"
-          />
-          <SummaryCard
-            label="Monto vencido"
-            value={formatCurrency(totalOverdue)}
-            accent="text-red-600"
-          />
+          {viewMode === 'paid' ? (
+            <>
+              <SummaryCard
+                label={showAllMonths ? 'Total pagado' : `Pagado ${MONTH_NAMES[selectedMonth - 1]}`}
+                value={formatCurrency(totalAmount)}
+                accent="text-emerald-700"
+              />
+              <SummaryCard
+                label="Cuotas pagadas"
+                value={String(paid.length)}
+                accent="text-slate-900"
+              />
+              <SummaryCard
+                label="Filtro"
+                value={showAllMonths ? 'Todos' : `${MONTH_NAMES[selectedMonth - 1]} ${selectedYear}`}
+                accent="text-slate-900"
+              />
+              <SummaryCard
+                label="Vista"
+                value="Pagadas"
+                accent="text-emerald-700"
+              />
+            </>
+          ) : (
+            <>
+              <SummaryCard
+                label={showAllMonths ? 'Total pendiente' : `Pendiente ${MONTH_NAMES[selectedMonth - 1]}`}
+                value={formatCurrency(totalAmount)}
+                accent="text-slate-900"
+              />
+              <SummaryCard
+                label="Cuotas"
+                value={String(filtered.length)}
+                accent="text-slate-900"
+              />
+              <SummaryCard
+                label="Vencidas"
+                value={String(overdue.length)}
+                accent="text-red-600"
+              />
+              <SummaryCard
+                label="Monto vencido"
+                value={formatCurrency(totalOverdue)}
+                accent="text-red-600"
+              />
+            </>
+          )}
         </div>
       )}
 
@@ -294,23 +339,26 @@ export function PendingPaymentsPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           icon="✅"
-          title="Sin cuotas pendientes"
+          title={viewMode === 'paid' ? 'Sin cuotas pagadas' : 'Sin cuotas pendientes'}
           description={
             showAllMonths
               ? search
                 ? 'No se encontraron cuotas para esa búsqueda.'
-                : 'Todos los asociados están al día.'
-              : `No hay cuotas pendientes en ${MONTH_NAMES[selectedMonth - 1]} ${selectedYear}.`
+                : viewMode === 'paid'
+                  ? 'No hay cuotas pagadas registradas.'
+                  : 'Todos los asociados están al día.'
+              : `No hay cuotas ${viewMode === 'paid' ? 'pagadas' : 'pendientes'} en ${MONTH_NAMES[selectedMonth - 1]} ${selectedYear}.`
           }
         />
       ) : (
         <div className="space-y-6">
-          {overdue.length > 0 && (
+          {viewMode === 'paid' ? (
             <ScheduleSection
-              title={`Vencidas (${overdue.length})`}
-              items={overdue}
-              variant="danger"
-              canEdit={canManageCollections}
+              title={`Pagadas (${paid.length})`}
+              items={paid}
+              variant="success"
+              canEdit={false}
+              showPaidAt
               activePaymentRow={activePaymentRow}
               activeCollectionRow={activeCollectionRow}
               actionLoading={actionLoading}
@@ -326,29 +374,54 @@ export function PendingPaymentsPage() {
               onPaymentSubmit={handlePaymentSubmit}
               onCollectionSubmit={handleCollectionSubmit}
             />
-          )}
+          ) : (
+            <>
+              {overdue.length > 0 && (
+                <ScheduleSection
+                  title={`Vencidas (${overdue.length})`}
+                  items={overdue}
+                  variant="danger"
+                  canEdit={canManageCollections}
+                  activePaymentRow={activePaymentRow}
+                  activeCollectionRow={activeCollectionRow}
+                  actionLoading={actionLoading}
+                  onNavigate={(id) => navigate(`${ROUTES.ASOCIADOS}/${id}`)}
+                  onPayClick={(id) => {
+                    setActivePaymentRow(activePaymentRow === id ? null : id)
+                    setActiveCollectionRow(null)
+                  }}
+                  onCollectionClick={(id) => {
+                    setActiveCollectionRow(activeCollectionRow === id ? null : id)
+                    setActivePaymentRow(null)
+                  }}
+                  onPaymentSubmit={handlePaymentSubmit}
+                  onCollectionSubmit={handleCollectionSubmit}
+                />
+              )}
 
-          {upcoming.length > 0 && (
-            <ScheduleSection
-              title={`Próximas (${upcoming.length})`}
-              items={upcoming}
-              variant="warning"
-              canEdit={canManageCollections}
-              activePaymentRow={activePaymentRow}
-              activeCollectionRow={activeCollectionRow}
-              actionLoading={actionLoading}
-              onNavigate={(id) => navigate(`${ROUTES.ASOCIADOS}/${id}`)}
-              onPayClick={(id) => {
-                setActivePaymentRow(activePaymentRow === id ? null : id)
-                setActiveCollectionRow(null)
-              }}
-              onCollectionClick={(id) => {
-                setActiveCollectionRow(activeCollectionRow === id ? null : id)
-                setActivePaymentRow(null)
-              }}
-              onPaymentSubmit={handlePaymentSubmit}
-              onCollectionSubmit={handleCollectionSubmit}
-            />
+              {upcoming.length > 0 && (
+                <ScheduleSection
+                  title={`Próximas (${upcoming.length})`}
+                  items={upcoming}
+                  variant="warning"
+                  canEdit={canManageCollections}
+                  activePaymentRow={activePaymentRow}
+                  activeCollectionRow={activeCollectionRow}
+                  actionLoading={actionLoading}
+                  onNavigate={(id) => navigate(`${ROUTES.ASOCIADOS}/${id}`)}
+                  onPayClick={(id) => {
+                    setActivePaymentRow(activePaymentRow === id ? null : id)
+                    setActiveCollectionRow(null)
+                  }}
+                  onCollectionClick={(id) => {
+                    setActiveCollectionRow(activeCollectionRow === id ? null : id)
+                    setActivePaymentRow(null)
+                  }}
+                  onPaymentSubmit={handlePaymentSubmit}
+                  onCollectionSubmit={handleCollectionSubmit}
+                />
+              )}
+            </>
           )}
         </div>
       )}
@@ -373,23 +446,36 @@ function ScheduleSection({
   activePaymentRow,
   activeCollectionRow,
   actionLoading,
+  showPaidAt = false,
   onNavigate,
   onPayClick,
   onCollectionClick,
   onPaymentSubmit,
   onCollectionSubmit,
 }) {
-  const borderColor =
-    variant === 'danger' ? 'border-red-200' : 'border-amber-200'
-  const bgColor =
-    variant === 'danger' ? 'bg-red-50/40' : 'bg-amber-50/40'
-  const titleColor =
-    variant === 'danger' ? 'text-red-700' : 'text-amber-700'
+  const sectionStyles = {
+    danger: {
+      borderColor: 'border-red-200',
+      bgColor: 'bg-red-50/40',
+      titleColor: 'text-red-700',
+    },
+    success: {
+      borderColor: 'border-emerald-200',
+      bgColor: 'bg-emerald-50/40',
+      titleColor: 'text-emerald-700',
+    },
+    warning: {
+      borderColor: 'border-amber-200',
+      bgColor: 'bg-amber-50/40',
+      titleColor: 'text-amber-700',
+    },
+  }
+  const colors = sectionStyles[variant] || sectionStyles.warning
 
   return (
-    <div className={`border ${borderColor} ${bgColor} rounded-lg overflow-hidden`}>
+    <div className={`border ${colors.borderColor} ${colors.bgColor} rounded-lg overflow-hidden`}>
       <div className="px-4 py-3">
-        <h2 className={`text-sm font-bold ${titleColor}`}>{title}</h2>
+        <h2 className={`text-sm font-bold ${colors.titleColor}`}>{title}</h2>
       </div>
 
       <div className="overflow-x-auto">
@@ -411,6 +497,11 @@ function ScheduleSection({
               <th className="text-center py-2 px-4 text-xs font-semibold text-slate-500">
                 Estado
               </th>
+              {showPaidAt && (
+                <th className="text-left py-2 px-4 text-xs font-semibold text-slate-500">
+                  Pagado el
+                </th>
+              )}
               {canEdit && (
                 <th className="text-center py-2 px-4 text-xs font-semibold text-slate-500">
                   Acciones
@@ -420,9 +511,12 @@ function ScheduleSection({
           </thead>
           <tbody>
             {items.map((s) => {
-              const statusCode = s.collection_status?.code
+              const statusCode = s.is_paid ? 'PAGADO' : s.collection_status?.code
               const badgeVariant =
                 COLLECTION_STATUS_VARIANT[statusCode] || 'default'
+              const statusLabel = s.is_paid
+                ? 'Pagado'
+                : s.collection_status?.label || '—'
               const periodLabel = s.period_month
                 ? `${String(s.period_month).padStart(2, '0')}/${s.period_year}`
                 : String(s.period_year)
@@ -433,7 +527,9 @@ function ScheduleSection({
                   schedule={s}
                   periodLabel={periodLabel}
                   badgeVariant={badgeVariant}
+                  statusLabel={statusLabel}
                   canEdit={canEdit}
+                  showPaidAt={showPaidAt}
                   isPayOpen={activePaymentRow === s.id}
                   isCollectionOpen={activeCollectionRow === s.id}
                   actionLoading={actionLoading}
@@ -456,7 +552,9 @@ function ScheduleRow({
   schedule: s,
   periodLabel,
   badgeVariant,
+  statusLabel,
   canEdit,
+  showPaidAt,
   isPayOpen,
   isCollectionOpen,
   actionLoading,
@@ -488,10 +586,13 @@ function ScheduleRow({
           {formatCurrency(s.expected_amount)}
         </td>
         <td className="py-2 px-4 text-center">
-          <Badge variant={badgeVariant}>
-            {s.collection_status?.label || '—'}
-          </Badge>
+          <Badge variant={badgeVariant}>{statusLabel}</Badge>
         </td>
+        {showPaidAt && (
+          <td className="py-2 px-4 text-slate-600">
+            {s.paid_at ? formatDate(s.paid_at) : '—'}
+          </td>
+        )}
         {canEdit && (
           <td className="py-2 px-4 text-center">
             <div className="flex gap-1 justify-center">
@@ -516,7 +617,10 @@ function ScheduleRow({
 
       {isPayOpen && (
         <tr>
-          <td colSpan={canEdit ? 6 : 5} className="px-4 py-3 bg-blue-50/50">
+          <td
+            colSpan={getScheduleColSpan({ canEdit, showPaidAt })}
+            className="px-4 py-3 bg-blue-50/50"
+          >
             <div className="max-w-2xl">
               <h4 className="text-xs font-bold text-slate-700 mb-2">
                 Registrar pago — {s.associate?.company_name} — {periodLabel}
@@ -535,7 +639,10 @@ function ScheduleRow({
 
       {isCollectionOpen && (
         <tr>
-          <td colSpan={canEdit ? 6 : 5} className="px-4 py-3 bg-amber-50/50">
+          <td
+            colSpan={getScheduleColSpan({ canEdit, showPaidAt })}
+            className="px-4 py-3 bg-amber-50/50"
+          >
             <div className="max-w-2xl">
               <h4 className="text-xs font-bold text-slate-700 mb-2">
                 Registrar gestión — {s.associate?.company_name} — {periodLabel}
@@ -552,4 +659,8 @@ function ScheduleRow({
       )}
     </>
   )
+}
+
+function getScheduleColSpan({ canEdit, showPaidAt }) {
+  return 5 + (showPaidAt ? 1 : 0) + (canEdit ? 1 : 0)
 }

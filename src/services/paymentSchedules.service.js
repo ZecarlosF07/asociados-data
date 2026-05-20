@@ -31,7 +31,7 @@ export const paymentSchedulesService = {
     return data
   },
 
-  async getPending({ associateId } = {}) {
+  async getForCollection({ associateId, isPaid = false } = {}) {
     let query = supabase
       .from('payment_schedules')
       .select(`
@@ -39,7 +39,7 @@ export const paymentSchedulesService = {
         associate:associate_id(id, company_name, ruc, internal_code)
       `)
       .eq('is_deleted', false)
-      .eq('is_paid', false)
+      .eq('is_paid', isPaid)
       .order('due_date', { ascending: true })
 
     if (associateId) query = query.eq('associate_id', associateId)
@@ -47,6 +47,10 @@ export const paymentSchedulesService = {
     const { data, error } = await query
     if (error) throw error
     return data
+  },
+
+  async getPending({ associateId } = {}) {
+    return paymentSchedulesService.getForCollection({ associateId, isPaid: false })
   },
 
   async markAsPaid(id, { paidAt, userId }) {
