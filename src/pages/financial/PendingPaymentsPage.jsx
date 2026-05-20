@@ -13,7 +13,7 @@ import { Loader } from '../../components/atoms/Loader'
 import { EmptyState } from '../../components/atoms/EmptyState'
 import { PaymentForm } from '../../components/molecules/financial/PaymentForm'
 import { CollectionActionForm } from '../../components/molecules/financial/CollectionActionForm'
-import { formatDate, formatCurrency } from '../../utils/helpers'
+import { formatDate, formatDateFromDatePart, formatCurrency } from '../../utils/helpers'
 import { COLLECTION_STATUS_VARIANT } from '../../utils/financialConstants'
 import {
   getDateOnlyParts,
@@ -590,7 +590,7 @@ function ScheduleRow({
         </td>
         {showPaidAt && (
           <td className="py-2 px-4 text-slate-600">
-            {s.paid_at ? formatDate(s.paid_at) : '—'}
+            {s.paid_at ? formatDateFromDatePart(s.paid_at) : '—'}
           </td>
         )}
         {canEdit && (

@@ -143,6 +143,7 @@ export const EXPORT_COLUMNS = {
     { key: 'associate.internal_code', label: 'Código asociado' },
     { key: 'associate.company_name', label: 'Razón social' },
     { key: 'payment_date', label: 'Fecha de pago', format: 'date' },
+    { key: 'payment_schedule_period', label: 'Cuota' },
     { key: 'amount_paid', label: 'Monto pagado', format: 'currency' },
     { key: 'operation_code', label: 'Código operación' },
     { key: 'payment_method.label', label: 'Método de pago' },

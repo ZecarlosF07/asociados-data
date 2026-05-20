@@ -1,5 +1,7 @@
 import { formatDateOnly, isDateOnly } from './dateOnly'
 
+const DATE_PART_RE = /^(\d{4}-\d{2}-\d{2})/
+
 export function formatDate(date) {
   if (!date) return ''
   if (isDateOnly(date)) return formatDateOnly(date)
@@ -9,6 +11,18 @@ export function formatDate(date) {
     month: '2-digit',
     year: 'numeric',
   }).format(new Date(date))
+}
+
+export function formatDateFromDatePart(date) {
+  if (!date) return ''
+  if (isDateOnly(date)) return formatDateOnly(date)
+
+  if (typeof date === 'string') {
+    const match = date.match(DATE_PART_RE)
+    if (match) return formatDateOnly(match[1])
+  }
+
+  return formatDate(date)
 }
 
 export function formatDateTime(date) {

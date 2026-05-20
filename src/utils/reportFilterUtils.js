@@ -1,3 +1,5 @@
+import { getDateOnlyParts, isDateOnly, todayDateOnly } from './dateOnly'
+
 export const MONTH_OPTIONS = [
   { value: '1', label: 'Enero' },
   { value: '2', label: 'Febrero' },
@@ -32,11 +34,11 @@ export function filterByPeriod(row, datePath, period) {
   const dateValue = getNestedValue(row, datePath)
   if (!dateValue) return false
 
-  const date = parseDate(dateValue)
-  if (!date) return false
+  const dateParts = getPeriodParts(dateValue)
+  if (!dateParts) return false
 
-  if (period.year && date.getFullYear() !== Number(period.year)) return false
-  if (period.month && date.getMonth() + 1 !== Number(period.month)) return false
+  if (period.year && dateParts.year !== Number(period.year)) return false
+  if (period.month && dateParts.month !== Number(period.month)) return false
 
   return true
 }
@@ -44,9 +46,31 @@ export function filterByPeriod(row, datePath, period) {
 export function buildYearOptions(rows, datePath) {
   return [...new Set(
     (rows || [])
-      .map((row) => parseDate(getNestedValue(row, datePath))?.getFullYear())
+      .map((row) => getPeriodParts(getNestedValue(row, datePath))?.year)
       .filter(Boolean)
   )].sort((a, b) => b - a)
+}
+
+export function buildPeriodYearOptions(rows, datePath, selectedYear = currentPeriod().year) {
+  return [...new Set([Number(selectedYear), ...buildYearOptions(rows, datePath)])]
+    .filter(Boolean)
+    .sort((a, b) => b - a)
+}
+
+export function currentPeriod() {
+  const now = getDateOnlyParts(todayDateOnly())
+  return {
+    year: String(now.year),
+    month: String(now.month),
+  }
+}
+
+export function defaultPeriodFilters(extra = {}) {
+  return {
+    search: '',
+    ...currentPeriod(),
+    ...extra,
+  }
 }
 
 export function buildCategoryOptions(rows) {
@@ -67,10 +91,10 @@ export function groupByMonth(rows, datePath) {
   const counts = {}
 
   ;(rows || []).forEach((row) => {
-    const date = parseDate(getNestedValue(row, datePath))
-    if (!date) return
+    const dateParts = getPeriodParts(getNestedValue(row, datePath))
+    if (!dateParts) return
 
-    const label = `${MONTH_OPTIONS[date.getMonth()].label} ${date.getFullYear()}`
+    const label = `${MONTH_OPTIONS[dateParts.month - 1].label} ${dateParts.year}`
     counts[label] = (counts[label] || 0) + 1
   })
 
@@ -81,9 +105,18 @@ export function getNestedValue(obj, path) {
   return path.split('.').reduce((acc, key) => acc?.[key], obj)
 }
 
-function parseDate(value) {
+function getPeriodParts(value) {
   if (!value) return null
 
+  if (isDateOnly(value)) {
+    return getDateOnlyParts(value)
+  }
+
   const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? null : date
+  if (Number.isNaN(date.getTime())) return null
+
+  return {
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+  }
 }

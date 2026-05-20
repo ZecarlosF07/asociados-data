@@ -10,19 +10,20 @@ import { exportToExcel, EXPORT_COLUMNS } from '../../../utils/exportUtils'
 import { formatDate } from '../../../utils/helpers'
 import { REPORT_TABLE_COLUMNS, reportFilename } from '../../../utils/reportConfigs'
 import {
-  buildYearOptions,
+  buildPeriodYearOptions,
+  defaultPeriodFilters,
   filterByPeriod,
   groupByMonth,
   matchesSearch,
 } from '../../../utils/reportFilterUtils'
 
 export function AssociatesReportTab({ navigate }) {
-  const [filters, setFilters] = useState({ search: '', year: '', month: '' })
+  const [filters, setFilters] = useState(defaultPeriodFilters)
   const { data, loading } = useReportData('associates')
 
   if (loading) return <LoadingState />
 
-  const years = buildYearOptions(data, 'association_date')
+  const years = buildPeriodYearOptions(data, 'association_date', filters.year)
   const filteredData = (data || []).filter(
     (row) =>
       matchesSearch(row, filters.search, ['company_name', 'ruc', 'internal_code']) &&
@@ -57,7 +58,7 @@ export function AssociatesReportTab({ navigate }) {
         onSearchChange={(search) => setFilters((prev) => ({ ...prev, search }))}
         onYearChange={(year) => setFilters((prev) => ({ ...prev, year }))}
         onMonthChange={(month) => setFilters((prev) => ({ ...prev, month }))}
-        onClear={() => setFilters({ search: '', year: '', month: '' })}
+        onClear={() => setFilters(defaultPeriodFilters())}
       />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <DistributionChart title="Por estado" data={byStatus} />

@@ -28,3 +28,8 @@
 - La UI debe ser minimalista. Nada de agregar muchos colores.
 - Las migraciones de supabase se crean en la carpeta supabase para ejecutarlas con el CLI
 - Usar siempre YARN para compilar
+- Fechas de negocio tipo calendario (`date`, valores `YYYY-MM-DD`: `start_date`, `end_date`, `due_date`, `payment_date`, `association_date`, cumpleaños, periodos, vencimientos) nunca deben parsearse con `new Date('YYYY-MM-DD')` ni transformarse con `toISOString()` para calcular, filtrar o mostrar, porque en zonas horarias como America/Lima puede retroceder un día. Usar siempre utilidades de `src/utils/dateOnly.js` (`formatDateOnly`, `getDateOnlyParts`, `compareDateOnly`, `todayDateOnly`, etc.).
+- Timestamps reales (`created_at`, `updated_at`, `deleted_at`, `event_at`, `uploaded_at`, auditoría y eventos con hora) sí pueden formatearse como fecha/hora local con `formatDateTime` o `Intl.DateTimeFormat`.
+- Si un `timestamptz` representa una fecha de negocio elegida por el usuario, como `payment_schedules.paid_at`, no debe mostrarse convirtiéndolo directamente con `new Date(...)`. Mostrar la parte calendario `YYYY-MM-DD` con una utilidad explícita como `formatDateFromDatePart`, o preferir que la BD exponga un campo `date` separado.
+- En SQL, no castear un parámetro `date` de negocio directamente a `timestamptz` con `p_fecha::timestamptz` si luego será visto como fecha calendario local. Usar un campo `date` cuando sea posible; si el esquema exige `timestamptz`, convertir explícitamente con la zona del negocio (`p_fecha::timestamp at time zone 'America/Lima'`) y documentar la razón.
+- Los filtros por año/mes y agrupaciones mensuales de reportes deben extraer año/mes con utilidades calendar-safe; no usar `new Date(value).getMonth()` sobre strings `YYYY-MM-DD`.

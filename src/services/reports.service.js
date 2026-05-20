@@ -149,6 +149,17 @@ function mapMembershipReport(row) {
 }
 
 function mapPaymentReport(row) {
+  const paymentSchedule = row.payment_schedule_id
+    ? {
+        id: row.payment_schedule_id,
+        due_date: row.schedule_due_date,
+        period_year: row.schedule_period_year,
+        period_month: row.schedule_period_month,
+        expected_amount: row.schedule_expected_amount,
+        is_paid: row.schedule_is_paid,
+      }
+    : null
+
   return {
     id: row.id,
     payment_date: row.payment_date,
@@ -156,6 +167,8 @@ function mapPaymentReport(row) {
     operation_code: row.operation_code,
     is_reversed: row.is_reversed,
     payment_method: buildCatalog(row.payment_method_code, row.payment_method_label),
+    payment_schedule: paymentSchedule,
+    payment_schedule_period: formatSchedulePeriod(paymentSchedule),
     associate: buildAssociate(row),
   }
 }
@@ -166,7 +179,7 @@ function mapScheduleReport(row) {
     due_date: row.due_date,
     expected_amount: row.expected_amount,
     is_paid: row.is_paid,
-    paid_at: row.paid_at,
+    paid_at: toDatePart(row.paid_at),
     period_year: row.period_year,
     period_month: row.period_month,
     collection_status: buildCatalog(row.collection_status_code, row.collection_status_label),
@@ -253,4 +266,15 @@ function buildScheduleStatus(row) {
   }
 
   return { code: 'PENDIENTE', label: 'Pendiente' }
+}
+
+function toDatePart(value) {
+  if (!value || typeof value !== 'string') return value
+  return value.slice(0, 10)
+}
+
+function formatSchedulePeriod(schedule) {
+  if (!schedule?.period_year) return null
+  if (!schedule.period_month) return String(schedule.period_year)
+  return `${String(schedule.period_month).padStart(2, '0')}/${schedule.period_year}`
 }
