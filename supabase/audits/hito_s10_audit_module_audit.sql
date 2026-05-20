@@ -30,7 +30,7 @@ where schemaname = 'public'
   and tablename = 'audit_logs'
   and policyname in (
     'audit_logs_read',
-    'audit_logs_insert',
+    -- 'audit_logs_insert', -- Removido en S14 por Hardening
     'audit_logs_admin_delete'
   )
 order by policyname;

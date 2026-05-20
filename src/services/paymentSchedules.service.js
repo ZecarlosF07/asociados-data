@@ -53,23 +53,6 @@ export const paymentSchedulesService = {
     return paymentSchedulesService.getForCollection({ associateId, isPaid: false })
   },
 
-  async markAsPaid(id, { paidAt, userId }) {
-    const { data, error } = await supabase
-      .from('payment_schedules')
-      .update({
-        is_paid: true,
-        paid_at: paidAt || new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        updated_by: userId,
-      })
-      .eq('id', id)
-      .select(SCHEDULE_SELECT)
-      .single()
-
-    if (error) throw error
-    return data
-  },
-
   async update(id, updates) {
     const { data, error } = await supabase
       .from('payment_schedules')

@@ -430,3 +430,44 @@ Crear en `.agent/docs`:
 - `yarn lint`
 - `yarn build`
 
+## S14 - Hardening preproduccion: auditoria confiable y fechas de pago
+
+### Estado actual
+
+Pendiente. Nace de QA preproduccion posterior a S13.
+
+### Evidencia en codigo
+
+Auditoria:
+
+- `supabase/migrations/20260507010000_s1_permissions_rls.sql`
+- `src/services/audit.service.js`
+- `src/utils/userAudit.js`
+- `src/hooks/useAuditLogs.js`
+
+Fechas de pago:
+
+- `src/services/paymentSchedules.service.js`
+- `supabase/migrations/20260520090000_fix_payment_paid_at_lima_date.sql`
+
+### Riesgos detectados
+
+- `audit_logs_insert` permite insercion directa desde cliente autenticado si no se endurece.
+- `paymentSchedulesService.markAsPaid` conserva una escritura latente de `paid_at` con `new Date().toISOString()`.
+
+### Archivos principales a tocar
+
+- nueva migracion SQL S14
+- nuevo audit SQL S14
+- `src/services/audit.service.js`
+- `src/utils/userAudit.js`
+- `src/services/paymentSchedules.service.js`
+
+### Validacion de cierre
+
+- no hay insert directo frontend a `audit_logs`
+- no hay policy amplia de insert directo a `audit_logs`
+- auditoria operativa sigue visible en `/auditoria`
+- pagos siguen mostrando fecha calendario correcta
+- `yarn lint`
+- `yarn build`

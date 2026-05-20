@@ -3,7 +3,6 @@ import { rolesService } from '../services/roles.service'
 import { userProfilesService } from '../services/userProfiles.service'
 import { useNotification } from './useNotification'
 import { useUserProfile } from './useUserProfile'
-import { logProfileChange } from '../utils/userAudit'
 
 export function useUserManagement() {
   const [users, setUsers] = useState([])
@@ -65,7 +64,7 @@ export function useUserManagement() {
   const updateUser = async (payload) => {
     setActionLoading(true)
     try {
-      const updated = await userProfilesService.update(selectedUser.id, {
+      await userProfilesService.update(selectedUser.id, {
         first_name: payload.first_name,
         last_name: payload.last_name,
         institutional_email: payload.institutional_email,
@@ -76,7 +75,6 @@ export function useUserManagement() {
         updated_by: profile?.id,
       })
 
-      await logProfileChange(selectedUser, updated, profile?.id)
       notify.success('Usuario actualizado')
       closeUserModal()
       loadData()

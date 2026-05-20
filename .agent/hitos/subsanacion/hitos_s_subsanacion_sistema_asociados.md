@@ -151,6 +151,16 @@ Completa la administración real de usuarios internos:
 - redirección inicial según rol permitido
 - documentación operativa de roles, permisos y lecturas RLS de referencia
 
+### S14. Hardening preproducción: auditoría confiable y fechas de pago
+
+Cierra hallazgos técnicos previos a producción:
+
+- bloqueo de inserción directa a `audit_logs` desde cliente
+- conservación de auditoría por triggers, RPCs o funciones controladas
+- eliminación o corrección de `paymentSchedulesService.markAsPaid`
+- prevención de escrituras futuras de `paid_at` con `new Date().toISOString()`
+- validación de `register_payment(...)` con fechas de negocio en `America/Lima`
+
 ## Orden recomendado de ejecución
 
 1. S0 - Calidad transversal.
@@ -167,6 +177,7 @@ Completa la administración real de usuarios internos:
 12. S11 - Asociados en lista operativa.
 13. S12 - Corrección de vencimiento de membresía anual.
 14. S13 - Generación de usuarios y roles operativos.
+15. S14 - Hardening preproducción de auditoría y fechas de pago.
 
 S0 debe hacerse primero porque reduce fricción técnica. S6 debe hacerse al final porque valida todo el sistema integrado.
 S7 se ejecuta después de S6 porque nace de un bug funcional detectado durante validación posterior al release interno.
@@ -176,6 +187,7 @@ S10 se ejecuta después de los flujos operativos principales porque aprovecha lo
 S11 se ejecuta después de S10 porque es una mejora de experiencia sobre un flujo ya estable.
 S12 puede adelantarse a S11 si se van a seguir creando membresías anuales, porque corrige una regla financiera de cronograma.
 S13 se ejecuta después de estabilizar auditoría y roles base porque introduce usuarios reales por perfil operativo y debe quedar trazado.
+S14 se ejecuta después de S13 y antes de limpiar la base de datos porque endurece la auditoría y elimina un riesgo latente de fechas antes de iniciar carga real.
 
 ## Criterio global de cierre
 
@@ -206,4 +218,5 @@ La subsanación completa queda cerrada cuando:
 - [S11 - Asociados en lista operativa](./hito_s11_asociados_lista_operativa.md)
 - [S12 - Corrección de vencimiento de membresía anual](./hito_s12_correccion_vencimiento_membresia_anual.md)
 - [S13 - Generación de usuarios y roles operativos](./hito_s13_generacion_usuarios_roles_operativos.md)
+- [S14 - Hardening preproducción de auditoría y fechas de pago](./hito_s14_hardening_preproduccion_auditoria_fechas.md)
 - [Documento técnico S13 - Roles y permisos operativos](../../docs/hito_s13_roles_permisos_operativos.md)
