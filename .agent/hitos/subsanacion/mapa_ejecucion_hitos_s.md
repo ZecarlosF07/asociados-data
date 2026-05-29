@@ -471,3 +471,72 @@ Fechas de pago:
 - pagos siguen mostrando fecha calendario correcta
 - `yarn lint`
 - `yarn build`
+
+## S15 - Modalidades de cobro para membresias anuales
+
+### Estado actual
+
+Pendiente. Nace de la necesidad funcional de agregar modalidades trimestral, cuatrimestral y semestral sin cambiar la cobertura anual de la membresia.
+
+### Evidencia en codigo
+
+Catalogo actual:
+
+- `supabase/migrations/20260312120000_seed_catalog_items.sql`
+- grupo `MEMBERSHIP_TYPE` con `MENSUAL` y `ANUAL`
+
+Generacion de cronograma:
+
+- `src/services/memberships.service.js`
+- metodo `membershipsService.generateSchedule(...)`
+- logica actual binaria: mensual genera 12 cuotas; anual genera 1 cuota
+
+Formulario y validacion:
+
+- `src/components/molecules/financial/MembershipForm.jsx`
+- `src/utils/financialValidation.js`
+- campo `monthly_billing_day` actualmente requerido solo para mensual
+
+Fechas calendario:
+
+- `src/utils/dateOnly.js`
+- reglas documentadas en S7, S12 y S14 para evitar desfases por zona horaria
+
+### Riesgos detectados
+
+- agregar nuevas modalidades copiando ramas de codigo puede duplicar reglas de fechas
+- usar `new Date('YYYY-MM-DD')` o `toISOString()` puede reintroducir el bug del dia anterior
+- interpretar trimestral/cuatrimestral/semestral como duracion de membresia, cuando deben ser modalidades de cobro sobre cobertura anual
+- no conservar la regla anual de S12 para `ANUAL`
+
+### Archivos principales a tocar
+
+- nueva migracion SQL S15 para catalogos `MEMBERSHIP_TYPE`
+- `src/services/memberships.service.js`
+- `src/utils/financialValidation.js`
+- `src/components/molecules/financial/MembershipForm.jsx`
+- `src/components/molecules/financial/MembershipList.jsx`
+- `src/pages/financial/MembershipsPage.jsx`
+- reportes y exportaciones solo si requieren ajuste de visualizacion
+
+### Migraciones esperadas
+
+Crear:
+
+- migracion idempotente para `TRIMESTRAL`, `CUATRIMESTRAL` y `SEMESTRAL`
+
+Opcional:
+
+- `supabase/audits/hito_s15_membership_modalities_audit.sql`
+
+### Validacion de cierre
+
+- crear membresia mensual y validar que no cambia el comportamiento vigente
+- crear membresia trimestral y validar 4 cuotas
+- crear membresia cuatrimestral y validar 3 cuotas
+- crear membresia semestral y validar 2 cuotas
+- crear membresia anual y validar `due_date = end_date + 1 dia`
+- renovar membresia con nueva modalidad y validar cobertura anual
+- validar que no hay fechas desplazadas un dia en America/Lima
+- `yarn lint`
+- `yarn build`

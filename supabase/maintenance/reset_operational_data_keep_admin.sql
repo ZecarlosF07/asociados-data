@@ -24,10 +24,10 @@
 
 begin;
 
--- Archivos en Storage: elimina objetos del bucket documents.
--- Si el dashboard mantiene archivos fisicos externos, vaciar tambien el bucket desde Storage UI.
-delete from storage.objects
-where bucket_id = 'documents';
+-- Archivos en Storage: NOTA: Supabase tiene una función/trigger de protección (storage.protect_delete())
+-- que impide borrar directamente sobre storage.objects mediante SQL.
+-- Para vaciar de forma segura los archivos físicos en el Storage de Supabase, vaciar/limpiar
+-- el bucket 'documents' directamente desde la interfaz web (Storage UI) del Dashboard de Supabase.
 
 -- Dependencias documentales.
 delete from public.documents;

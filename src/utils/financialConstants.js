@@ -35,3 +35,20 @@ export const FINANCIAL_CATALOG_GROUPS = {
   CONTACT_TYPE: 'CONTACT_TYPE',
   PAYMENT_HEALTH: 'PAYMENT_HEALTH',
 }
+
+/** Configuración de cuotas para membresías de cobertura anual */
+export const MEMBERSHIP_PAYMENT_FREQUENCIES = {
+  MENSUAL: { installments: 12, intervalMonths: 1, requiresBillingDay: true },
+  TRIMESTRAL: { installments: 4, intervalMonths: 3, requiresBillingDay: true },
+  CUATRIMESTRAL: { installments: 3, intervalMonths: 4, requiresBillingDay: true },
+  SEMESTRAL: { installments: 2, intervalMonths: 6, requiresBillingDay: true },
+  ANUAL: { installments: 1, intervalMonths: 12, requiresBillingDay: false },
+}
+
+export function getMembershipPaymentFrequency(code) {
+  return MEMBERSHIP_PAYMENT_FREQUENCIES[code] || null
+}
+
+export function requiresMembershipBillingDay(code) {
+  return Boolean(getMembershipPaymentFrequency(code)?.requiresBillingDay)
+}

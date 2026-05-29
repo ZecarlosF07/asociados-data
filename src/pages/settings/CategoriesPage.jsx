@@ -3,7 +3,6 @@ import { categoriesService } from '../../services/categories.service'
 import { useNotification } from '../../hooks/useNotification'
 import { DataTable } from '../../components/organisms/DataTable'
 import { Badge } from '../../components/atoms/Badge'
-import { Button } from '../../components/atoms/Button'
 import { formatCurrency } from '../../utils/helpers'
 
 const COLUMNS = [
@@ -60,20 +59,10 @@ export function CategoriesPage() {
   return (
     <div className="max-w-5xl">
       <div className="mb-7">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-1">Categorías</h1>
-            <p className="text-sm text-slate-400">
-              Clasificación de asociados y prospectos con puntajes y tarifas
-            </p>
-          </div>
-          <Button
-            variant="primary"
-            onClick={() => notify.info('Crear categoría: funcionalidad pendiente')}
-          >
-            Nueva categoría
-          </Button>
-        </div>
+        <h1 className="text-2xl font-bold text-slate-900 mb-1">Categorías</h1>
+        <p className="text-sm text-slate-400">
+          Clasificación de asociados y prospectos con puntajes y tarifas
+        </p>
       </div>
 
       <DataTable

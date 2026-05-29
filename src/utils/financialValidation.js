@@ -1,4 +1,5 @@
 import { compareDateOnly } from './dateOnly'
+import { requiresMembershipBillingDay } from './financialConstants'
 
 /**
  * Validación del formulario de membresía
@@ -26,7 +27,7 @@ export function validateMembershipForm(form, options = {}) {
     errors.end_date = 'La fecha de fin no puede ser anterior al inicio'
   }
 
-  if (options.isMonthly) {
+  if (requiresMembershipBillingDay(options.membershipTypeCode)) {
     const billingDay = Number(form.monthly_billing_day)
 
     if (!form.monthly_billing_day) {

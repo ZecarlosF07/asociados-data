@@ -6,6 +6,7 @@ import {
   getDateOnlyParts,
   todayDateOnly,
 } from '../utils/dateOnly'
+import { getMembershipPaymentFrequency } from '../utils/financialConstants'
 
 const MEMBERSHIP_SELECT = `
   *,
@@ -192,73 +193,39 @@ export const membershipsService = {
 
   /**
    * Genera el cronograma de pagos para una membresía.
-   * - MENSUAL: 12 cuotas con el día de cobro configurado
+   * - Modalidades periódicas: cuotas según frecuencia y día de cobro
    * - ANUAL: 1 cuota con vencimiento al día siguiente de la fecha de fin
    */
   async generateSchedule({ membership, defaultStatusId, userId }) {
-    const schedules = []
     const startDate = getDateOnlyParts(membership.start_date)
+    const membershipTypeCode = membership.membership_type?.code
+    const frequency = getMembershipPaymentFrequency(membershipTypeCode)
 
-    const isMensual = membership.membership_type?.code === 'MENSUAL'
-
-    if (isMensual) {
-      const billingDay = Number(membership.monthly_billing_day || startDate.day)
-      const firstDueOffset = billingDay >= startDate.day ? 0 : 1
-      const monthlyAmount = Math.round((membership.fee_amount / 12) * 100) / 100
-
-      for (let i = 0; i < 12; i++) {
-        const dueDate = buildDateOnly(
-          startDate.year,
-          startDate.month + firstDueOffset + i,
-          billingDay
-        )
-        const dueParts = getDateOnlyParts(dueDate)
-
-        schedules.push({
-          membership_id: membership.id,
-          associate_id: membership.associate_id,
-          due_date: dueDate,
-          period_year: dueParts.year,
-          period_month: dueParts.month,
-          expected_amount: monthlyAmount,
-          collection_status_id: defaultStatusId,
-          created_by: userId,
-        })
-      }
-    } else {
-      let effectiveEndDate = membership.end_date
-
-      if (!membership.end_date) {
-        effectiveEndDate = addDaysToDateOnly(
-          addYearsToDateOnly(membership.start_date, 1),
-          -1
-        )
-
-        const { error: updateError } = await supabase
-          .from('memberships')
-          .update({
-            end_date: effectiveEndDate,
-            updated_at: new Date().toISOString(),
-            updated_by: userId,
-          })
-          .eq('id', membership.id)
-
-        if (updateError) throw updateError
-      }
-
-      const annualDueDate = addDaysToDateOnly(effectiveEndDate, 1)
-
-      schedules.push({
-        membership_id: membership.id,
-        associate_id: membership.associate_id,
-        due_date: annualDueDate,
-        period_year: startDate.year,
-        period_month: null,
-        expected_amount: membership.fee_amount,
-        collection_status_id: defaultStatusId,
-        created_by: userId,
-      })
+    if (!frequency) {
+      throw new Error(`Tipo de membresía no soportado: ${membershipTypeCode || 'sin tipo'}`)
     }
+
+    const effectiveEndDate = await ensureMembershipEndDate({
+      membership,
+      userId,
+    })
+
+    const schedules = frequency.requiresBillingDay
+      ? buildPeriodicSchedules({
+        membership,
+        startDate,
+        frequency,
+        defaultStatusId,
+        userId,
+      })
+      : buildAnnualSchedule({
+        membership,
+        startDate,
+        effectiveEndDate,
+        defaultStatusId,
+        userId,
+      })
+
 
     const { data, error } = await supabase
       .from('payment_schedules')
@@ -268,4 +235,87 @@ export const membershipsService = {
     if (error) throw error
     return data
   },
+}
+
+async function ensureMembershipEndDate({ membership, userId }) {
+  if (membership.end_date) return membership.end_date
+
+  const effectiveEndDate = addDaysToDateOnly(
+    addYearsToDateOnly(membership.start_date, 1),
+    -1
+  )
+
+  const { error } = await supabase
+    .from('memberships')
+    .update({
+      end_date: effectiveEndDate,
+      updated_at: new Date().toISOString(),
+      updated_by: userId,
+    })
+    .eq('id', membership.id)
+
+  if (error) throw error
+  return effectiveEndDate
+}
+
+function buildPeriodicSchedules({
+  membership,
+  startDate,
+  frequency,
+  defaultStatusId,
+  userId,
+}) {
+  const billingDay = Number(membership.monthly_billing_day)
+
+  if (!Number.isInteger(billingDay) || billingDay < 1 || billingDay > 28) {
+    throw new Error('El día de cobro debe estar entre 1 y 28.')
+  }
+
+  const firstDueOffset = billingDay >= startDate.day ? 0 : 1
+  const expectedAmount = roundMoney(
+    Number(membership.fee_amount) / frequency.installments
+  )
+
+  return Array.from({ length: frequency.installments }, (_, index) => {
+    const dueDate = buildDateOnly(
+      startDate.year,
+      startDate.month + ((firstDueOffset + index) * frequency.intervalMonths),
+      billingDay
+    )
+    const dueParts = getDateOnlyParts(dueDate)
+
+    return {
+      membership_id: membership.id,
+      associate_id: membership.associate_id,
+      due_date: dueDate,
+      period_year: dueParts.year,
+      period_month: dueParts.month,
+      expected_amount: expectedAmount,
+      collection_status_id: defaultStatusId,
+      created_by: userId,
+    }
+  })
+}
+
+function buildAnnualSchedule({
+  membership,
+  startDate,
+  effectiveEndDate,
+  defaultStatusId,
+  userId,
+}) {
+  return [{
+    membership_id: membership.id,
+    associate_id: membership.associate_id,
+    due_date: addDaysToDateOnly(effectiveEndDate, 1),
+    period_year: startDate.year,
+    period_month: null,
+    expected_amount: membership.fee_amount,
+    collection_status_id: defaultStatusId,
+    created_by: userId,
+  }]
+}
+
+function roundMoney(value) {
+  return Math.round(value * 100) / 100
 }

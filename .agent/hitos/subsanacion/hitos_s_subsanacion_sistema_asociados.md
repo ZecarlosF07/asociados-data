@@ -161,6 +161,16 @@ Cierra hallazgos técnicos previos a producción:
 - prevención de escrituras futuras de `paid_at` con `new Date().toISOString()`
 - validación de `register_payment(...)` con fechas de negocio en `America/Lima`
 
+### S15. Evolución post-release del Hito 6: modalidades de cobro para membresías anuales
+
+Extiende el cronograma financiero de membresías:
+
+- nuevas modalidades de cobro `TRIMESTRAL`, `CUATRIMESTRAL` y `SEMESTRAL`
+- membresía con cobertura anual, independientemente de la modalidad de cobro
+- generación de 4, 3 o 2 cuotas según modalidad
+- misma regla de día de cobro usada por membresías mensuales
+- protección explícita contra regresiones de fechas calendario y desfases por zona horaria
+
 ## Orden recomendado de ejecución
 
 1. S0 - Calidad transversal.
@@ -178,6 +188,7 @@ Cierra hallazgos técnicos previos a producción:
 13. S12 - Corrección de vencimiento de membresía anual.
 14. S13 - Generación de usuarios y roles operativos.
 15. S14 - Hardening preproducción de auditoría y fechas de pago.
+16. S15 - Modalidades de cobro para membresías anuales.
 
 S0 debe hacerse primero porque reduce fricción técnica. S6 debe hacerse al final porque valida todo el sistema integrado.
 S7 se ejecuta después de S6 porque nace de un bug funcional detectado durante validación posterior al release interno.
@@ -188,6 +199,7 @@ S11 se ejecuta después de S10 porque es una mejora de experiencia sobre un fluj
 S12 puede adelantarse a S11 si se van a seguir creando membresías anuales, porque corrige una regla financiera de cronograma.
 S13 se ejecuta después de estabilizar auditoría y roles base porque introduce usuarios reales por perfil operativo y debe quedar trazado.
 S14 se ejecuta después de S13 y antes de limpiar la base de datos porque endurece la auditoría y elimina un riesgo latente de fechas antes de iniciar carga real.
+S15 se ejecuta después de S14 porque amplía la lógica financiera ya estabilizada y debe respetar las reglas de fechas endurecidas antes de cargar membresías reales con nuevas modalidades.
 
 ## Criterio global de cierre
 
@@ -219,4 +231,5 @@ La subsanación completa queda cerrada cuando:
 - [S12 - Corrección de vencimiento de membresía anual](./hito_s12_correccion_vencimiento_membresia_anual.md)
 - [S13 - Generación de usuarios y roles operativos](./hito_s13_generacion_usuarios_roles_operativos.md)
 - [S14 - Hardening preproducción de auditoría y fechas de pago](./hito_s14_hardening_preproduccion_auditoria_fechas.md)
+- [S15 - Modalidades de cobro para membresías anuales](./hito_s15_modalidades_cobro_membresias_anuales.md)
 - [Documento técnico S13 - Roles y permisos operativos](../../docs/hito_s13_roles_permisos_operativos.md)
