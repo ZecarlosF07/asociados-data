@@ -2,7 +2,7 @@
 -- Valida catalogos y consistencia basica de cronogramas generados.
 
 with membership_types as (
-  select ci.code, ci.label, ci.sort_order
+  select ci.code, ci.label, ci.sort_order, ci.is_active
   from public.catalog_items ci
   join public.catalog_groups cg on cg.id = ci.group_id
   where cg.code = 'MEMBERSHIP_TYPE'
@@ -59,18 +59,23 @@ where mt.code is null
 union all
 
 select
-  'wrong_membership_type_order' as section,
+  'wrong_membership_type_config' as section,
   jsonb_agg(
     jsonb_build_object(
       'code', mt.code,
+      'current_label', mt.label,
+      'expected_label', et.label,
       'current_sort_order', mt.sort_order,
-      'expected_sort_order', et.sort_order
+      'expected_sort_order', et.sort_order,
+      'is_active', mt.is_active
     )
     order by et.sort_order
   ) as details
 from expected_types et
 join membership_types mt on mt.code = et.code
-where mt.sort_order is distinct from et.sort_order
+where mt.label is distinct from et.label
+  or mt.sort_order is distinct from et.sort_order
+  or mt.is_active is distinct from true
 
 union all
 

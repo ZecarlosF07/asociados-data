@@ -105,7 +105,7 @@ export function PaymentForm({
           error={errors.amount_paid}
         />
 
-        <FormField label="Código de operación" name="operation_code" required
+        <FormField label="N° de Factura" name="operation_code" required
           value={form.operation_code} onChange={handleChange}
           error={errors.operation_code}
         />

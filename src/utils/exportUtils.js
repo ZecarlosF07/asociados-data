@@ -145,7 +145,7 @@ export const EXPORT_COLUMNS = {
     { key: 'payment_date', label: 'Fecha de pago', format: 'date' },
     { key: 'payment_schedule_period', label: 'Cuota' },
     { key: 'amount_paid', label: 'Monto pagado', format: 'currency' },
-    { key: 'operation_code', label: 'Código operación' },
+    { key: 'operation_code', label: 'N° de Factura' },
     { key: 'payment_method.label', label: 'Método de pago' },
   ],
 

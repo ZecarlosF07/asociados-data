@@ -25,7 +25,7 @@ export function PaymentList({ payments }) {
               Monto
             </th>
             <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500">
-              Operación
+              N° de Factura
             </th>
             <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500">
               Método

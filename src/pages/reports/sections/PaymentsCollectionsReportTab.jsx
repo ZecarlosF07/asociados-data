@@ -311,7 +311,7 @@ const FINANCIAL_REPORT_COLUMNS = {
     { key: 'associate.ruc', label: 'RUC' },
     { key: 'payment_schedule_period', label: 'Cuota' },
     { key: 'amount_paid', label: 'Monto', format: 'currency', align: 'right' },
-    { key: 'operation_code', label: 'Operación' },
+    { key: 'operation_code', label: 'N° de Factura' },
   ],
   collections: [
     { key: 'action_date', label: 'Fecha', format: 'date' },

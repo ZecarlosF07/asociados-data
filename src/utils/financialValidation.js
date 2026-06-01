@@ -63,7 +63,7 @@ export function validatePaymentForm(form, options = {}) {
   }
 
   if (!form.operation_code?.trim()) {
-    errors.operation_code = 'El código de operación es obligatorio'
+    errors.operation_code = 'El N° de Factura es obligatorio'
   }
 
   return errors

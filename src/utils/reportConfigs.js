@@ -100,7 +100,7 @@ export const REPORT_TABLE_COLUMNS = {
     { key: 'associate.company_name', label: 'Asociado' },
     { key: 'payment_date', label: 'Fecha', format: 'date' },
     { key: 'amount_paid', label: 'Monto', format: 'currency', align: 'right' },
-    { key: 'operation_code', label: 'Operación' },
+    { key: 'operation_code', label: 'N° de Factura' },
     { key: 'payment_method.label', label: 'Método' },
   ],
 
