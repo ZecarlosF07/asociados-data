@@ -19,12 +19,14 @@ import {
 
 export function AssociatesReportTab({ navigate }) {
   const [filters, setFilters] = useState(defaultPeriodFilters)
-  const { data, loading } = useReportData('associates')
+  const { data, error, loading } = useReportData('associates')
 
   if (loading) return <LoadingState />
+  if (error) return <ReportErrorState error={error} />
 
-  const years = buildPeriodYearOptions(data, 'association_date', filters.year)
-  const filteredData = (data || []).filter(
+  const rows = Array.isArray(data) ? data : []
+  const years = buildPeriodYearOptions(rows, 'association_date', filters.year)
+  const filteredData = rows.filter(
     (row) =>
       matchesSearch(row, filters.search, ['company_name', 'ruc', 'internal_code']) &&
       filterByPeriod(row, 'association_date', filters)
@@ -84,6 +86,19 @@ function LoadingState() {
   return (
     <div className="flex justify-center py-16">
       <Loader />
+    </div>
+  )
+}
+
+function ReportErrorState({ error }) {
+  return (
+    <div className="rounded-lg border border-red-100 bg-red-50 p-4">
+      <p className="text-sm font-semibold text-red-700">
+        No se pudo cargar el reporte de asociados.
+      </p>
+      <p className="mt-1 text-xs text-red-600">
+        {error}
+      </p>
     </div>
   )
 }

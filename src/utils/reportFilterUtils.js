@@ -1,4 +1,4 @@
-import { getDateOnlyParts, isDateOnly, todayDateOnly } from './dateOnly'
+import { getDateOnlyParts, isDateOnly, parseDateOnly, todayDateOnly } from './dateOnly'
 
 export const MONTH_OPTIONS = [
   { value: '1', label: 'Enero' },
@@ -94,7 +94,10 @@ export function groupByMonth(rows, datePath) {
     const dateParts = getPeriodParts(getNestedValue(row, datePath))
     if (!dateParts) return
 
-    const label = `${MONTH_OPTIONS[dateParts.month - 1].label} ${dateParts.year}`
+    const month = MONTH_OPTIONS[dateParts.month - 1]
+    if (!month) return
+
+    const label = `${month.label} ${dateParts.year}`
     counts[label] = (counts[label] || 0) + 1
   })
 
@@ -109,7 +112,7 @@ function getPeriodParts(value) {
   if (!value) return null
 
   if (isDateOnly(value)) {
-    return getDateOnlyParts(value)
+    return parseDateOnly(value)
   }
 
   const date = new Date(value)
