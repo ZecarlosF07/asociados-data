@@ -4,7 +4,10 @@ import { PROSPECT_STATUS_VARIANT } from '../../../utils/prospectConstants'
 
 export function ProspectDetailHeader({
   prospect,
+  actionLoading,
+  canDelete,
   canEdit,
+  onDelete,
   onEdit,
   onStatusChange,
   onConvert,
@@ -47,19 +50,33 @@ export function ProspectDetailHeader({
           )}
         </div>
 
-        {canEdit && (
+        {(canEdit || canDelete) && (
           <div className="flex gap-2">
-            {canConvert && (
+            {canEdit && canConvert && (
               <Button size="sm" onClick={onConvert}>
                 Convertir a asociado
               </Button>
             )}
-            <Button variant="secondary" size="sm" onClick={onStatusChange}>
-              Cambiar estado
-            </Button>
-            <Button variant="secondary" size="sm" onClick={onEdit}>
-              Editar
-            </Button>
+            {canEdit && (
+              <>
+                <Button variant="secondary" size="sm" onClick={onStatusChange}>
+                  Cambiar estado
+                </Button>
+                <Button variant="secondary" size="sm" onClick={onEdit}>
+                  Editar
+                </Button>
+              </>
+            )}
+            {canDelete && (
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={onDelete}
+                loading={actionLoading}
+              >
+                Eliminar
+              </Button>
+            )}
           </div>
         )}
       </div>

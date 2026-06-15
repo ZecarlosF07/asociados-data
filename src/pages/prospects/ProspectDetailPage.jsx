@@ -1,14 +1,8 @@
-import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProspectDetail } from '../../hooks/useProspectDetail'
-import { useNotification } from '../../hooks/useNotification'
-import { useUserProfile } from '../../hooks/useUserProfile'
 import { usePermissions } from '../../hooks/usePermissions'
 import { useCategories } from '../../hooks/useCategories'
-import { prospectsService } from '../../services/prospects.service'
-import { prospectEvaluationsService } from '../../services/prospectEvaluations.service'
-import { prospectQuotesService } from '../../services/prospectQuotes.service'
-import { associatesService } from '../../services/associates.service'
+import { useProspectDetailActions } from '../../hooks/useProspectDetailActions'
 import { ProspectDetailHeader } from './sections/ProspectDetailHeader'
 import { ProspectDetailTabs } from './sections/ProspectDetailTabs'
 import { StatusChangeModal } from '../../components/molecules/prospects/StatusChangeModal'
@@ -19,98 +13,16 @@ import { ROUTES } from '../../router/routes'
 export function ProspectDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { notify } = useNotification()
-  const { profile } = useUserProfile()
-  const { canEdit } = usePermissions()
+  const { canDelete, canEdit } = usePermissions()
   const canEditProspect = canEdit('prospectos')
+  const canDeleteProspect = canDelete('prospectos')
   const { categories } = useCategories()
   const detail = useProspectDetail(id)
-  const [statusModal, setStatusModal] = useState(false)
-  const [convertModal, setConvertModal] = useState(false)
-  const [convertError, setConvertError] = useState(null)
-  const [actionLoading, setActionLoading] = useState(false)
-
-  const handleStatusChange = async ({ newStatusId, reason }) => {
-    setActionLoading(true)
-    try {
-      await prospectsService.updateStatus(id, {
-        newStatusId,
-        previousStatusId: detail.prospect?.prospect_status_id,
-        reason,
-        changedBy: profile?.id,
-      })
-      notify.success('Estado actualizado')
-      setStatusModal(false)
-      detail.refetch()
-    } catch (error) {
-      notify.error('Error: ' + error.message)
-    } finally {
-      setActionLoading(false)
-    }
-  }
-
-  const handleEvaluationSubmit = async (evaluationData) => {
-    setActionLoading(true)
-    try {
-      await prospectEvaluationsService.create({
-        ...evaluationData,
-        prospect_id: id,
-        created_by: profile?.id,
-      })
-
-      // Actualizar categoría y tarifa sugerida en el prospecto
-      if (evaluationData.suggested_category_id) {
-        await prospectsService.update(id, {
-          current_category_id: evaluationData.suggested_category_id,
-          suggested_fee: evaluationData.suggested_fee,
-          updated_by: profile?.id,
-        })
-      }
-
-      notify.success('Evaluación registrada')
-      detail.refetch()
-    } catch (error) {
-      notify.error('Error: ' + error.message)
-    } finally {
-      setActionLoading(false)
-    }
-  }
-
-  const handleQuoteSubmit = async (quoteData) => {
-    setActionLoading(true)
-    try {
-      await prospectQuotesService.create({
-        ...quoteData,
-        prospect_id: id,
-        created_by: profile?.id,
-      })
-      notify.success('Cotización registrada')
-      detail.refetch()
-    } catch (error) {
-      notify.error('Error: ' + error.message)
-    } finally {
-      setActionLoading(false)
-    }
-  }
-
-  const handleConvert = async (conversionData) => {
-    setActionLoading(true)
-    setConvertError(null)
-    try {
-      const associate = await associatesService.convertFromProspect({
-        prospect: detail.prospect,
-        conversionData,
-      })
-      notify.success('Prospecto convertido a asociado')
-      setConvertModal(false)
-      navigate(`${ROUTES.ASOCIADOS}/${associate.id}`)
-    } catch (error) {
-      setConvertError(error.message)
-      notify.error('Error: ' + error.message)
-    } finally {
-      setActionLoading(false)
-    }
-  }
+  const actions = useProspectDetailActions({
+    prospectId: id,
+    prospect: detail.prospect,
+    refetch: detail.refetch,
+  })
 
   if (detail.loading) {
     return (
@@ -141,12 +53,12 @@ export function ProspectDetailPage() {
       <ProspectDetailHeader
         prospect={detail.prospect}
         canEdit={canEditProspect}
+        canDelete={canDeleteProspect}
+        actionLoading={actions.actionLoading}
         onEdit={() => navigate(`${ROUTES.PROSPECTOS}/${id}/editar`)}
-        onStatusChange={() => setStatusModal(true)}
-        onConvert={() => {
-          setConvertError(null)
-          setConvertModal(true)
-        }}
+        onStatusChange={() => actions.setStatusModal(true)}
+        onConvert={actions.openConvertModal}
+        onDelete={actions.handleDelete}
         onBack={() => navigate(ROUTES.PROSPECTOS)}
       />
 
@@ -157,29 +69,26 @@ export function ProspectDetailPage() {
         statusHistory={detail.statusHistory}
         categories={categories}
         canEdit={canEditProspect}
-        actionLoading={actionLoading}
-        onEvaluationSubmit={handleEvaluationSubmit}
-        onQuoteSubmit={handleQuoteSubmit}
+        actionLoading={actions.actionLoading}
+        onEvaluationSubmit={actions.handleEvaluationSubmit}
+        onQuoteSubmit={actions.handleQuoteSubmit}
       />
 
       <StatusChangeModal
-        isOpen={statusModal}
-        onClose={() => setStatusModal(false)}
+        isOpen={actions.statusModal}
+        onClose={() => actions.setStatusModal(false)}
         currentStatusId={detail.prospect.prospect_status_id}
-        onSubmit={handleStatusChange}
-        loading={actionLoading}
+        onSubmit={actions.handleStatusChange}
+        loading={actions.actionLoading}
       />
 
       <ConvertProspectModal
-        isOpen={convertModal}
+        isOpen={actions.convertModal}
         prospect={detail.prospect}
-        onClose={() => {
-          setConvertError(null)
-          setConvertModal(false)
-        }}
-        onSubmit={handleConvert}
-        loading={actionLoading}
-        submitError={convertError}
+        onClose={actions.closeConvertModal}
+        onSubmit={actions.handleConvert}
+        loading={actions.actionLoading}
+        submitError={actions.convertError}
       />
     </div>
   )
