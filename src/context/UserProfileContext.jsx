@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { UserProfileContext } from './user-profile-context-value'
 import { useAuth } from '../hooks/useAuth'
 import { userProfilesService } from '../services/userProfiles.service'
+import { retryAsync } from '../utils/retry'
 
 export function UserProfileProvider({ children }) {
   const { user, isAuthenticated } = useAuth()
@@ -18,9 +19,9 @@ export function UserProfileProvider({ children }) {
     }
 
     try {
-      const data = await userProfilesService.getMyProfile(user.id)
+      const data = await retryAsync(() => userProfilesService.getMyProfile(user.id))
       setProfile(data)
-      await userProfilesService.updateLastLogin(data.id)
+      updateLastLoginSafely()
     } catch (error) {
       console.warn('No se encontró perfil para este usuario:', error.message)
       setProfile(null)
@@ -50,4 +51,14 @@ export function UserProfileProvider({ children }) {
       {children}
     </UserProfileContext.Provider>
   )
+}
+
+async function updateLastLoginSafely() {
+  try {
+    await retryAsync(() => userProfilesService.updateLastLogin(), {
+      attempts: 2,
+    })
+  } catch (error) {
+    console.warn('No se pudo actualizar el último acceso:', error.message)
+  }
 }
