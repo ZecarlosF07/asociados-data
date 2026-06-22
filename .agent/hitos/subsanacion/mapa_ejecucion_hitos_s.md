@@ -330,7 +330,6 @@ Parcial. Reportes y exportaciones existen, pero no hay vistas SQL/RPC ni automat
 Reportes actuales:
 
 - `src/pages/reports/ReportsPage.jsx`
-- `src/services/reports.service.js`
 - `src/hooks/useReportData.js`
 - `src/components/molecules/reports/*`
 
@@ -538,5 +537,45 @@ Opcional:
 - crear membresia anual y validar `due_date = end_date + 1 dia`
 - renovar membresia con nueva modalidad y validar cobertura anual
 - validar que no hay fechas desplazadas un dia en America/Lima
+- `yarn lint`
+- `yarn build`
+
+## S16 - Asignacion de comites a asociados
+
+### Estado actual
+
+Implementado y migrado a Supabase el 2026-06-22. La evidencia recibida confirma tablas, FKs, checks, indices, RLS, policies y matriz de permisos. Queda por confirmar el resto de controles del audit S16 y los casos operativos de cierre.
+
+### Evidencia en codigo y documentacion
+
+- `.agent/docs/diccionario_de_tablas_sistema_de_asociados_v_2.md`
+- `.agent/docs/Asociadosdiagramas.md`
+- `supabase/migrations/20260317010000_create_associates.sql`
+- `src/services/associates.service.js`
+- `src/components/molecules/associates/AssociateForm.jsx`
+- `src/components/molecules/associates/AssociateFilters.jsx`
+
+### Riesgos detectados
+
+- agregar texto libre genera nombres duplicados e inconsistentes
+- agregar `committee_id` directo en `associates` elimina historial y limita la evolucion a multiples comites
+- reutilizar `DOCUMENT_CATEGORY.COMITES` confunde una categoria documental con una entidad institucional
+- actualizar asociado y asignacion en operaciones separadas puede dejar datos parciales
+- hacer obligatorio el campo inmediatamente bloquea la regularizacion de asociados existentes
+
+### Archivos principales a tocar
+
+- nueva migracion SQL S16 para `committees`, `associate_committees`, RPCs, RLS y permisos
+- nuevo audit SQL S16
+- nuevo modulo Comites con servicio, hook, selector, listado, detalle y tipos
+- servicios, formularios, filtros, lista y ficha de asociados
+
+### Validacion de cierre
+
+- administrar comites activos e inactivos
+- asignar, cambiar y retirar comite principal conservando historial
+- alta directa y conversion con asignacion atomica opcional
+- filtrar por comite y por `Sin comite`
+- validar RLS y auditoria
 - `yarn lint`
 - `yarn build`

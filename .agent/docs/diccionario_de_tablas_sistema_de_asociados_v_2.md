@@ -583,6 +583,7 @@ Relación entre asociado y comité.
 | committee_id | uuid | No | FK | FK → `committees.id` |
 | joined_at | date | Sí |  | Fecha de incorporación |
 | left_at | date | Sí |  | Fecha de salida |
+| is_primary | boolean | No |  | Identifica el comité principal visible del asociado |
 | is_active | boolean | No |  | Estado del vínculo |
 | notes | text | Sí |  | Observaciones |
 | created_at | timestamptz | No |  | Fecha de creación |
@@ -934,4 +935,3 @@ Todo ello manteniendo:
 - soft delete
 - compatibilidad con React + Supabase
 - crecimiento progresivo del sistema
-

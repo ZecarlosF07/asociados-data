@@ -1,5 +1,6 @@
 import type { AuditFields, CatalogItem, Category, UserReference } from './shared'
 import type { Captador } from './prospects'
+import type { AssociateCommittee, Committee } from './committees'
 
 export interface Associate extends AuditFields {
   id: string
@@ -18,6 +19,8 @@ export interface Associate extends AuditFields {
   captador?: Captador | null
   affiliation_responsible?: UserReference | null
   payment_health?: CatalogItem | null
+  primary_committee?: Committee | null
+  primary_committee_assignment?: AssociateCommittee | null
 }
 
 export interface AssociatePerson extends AuditFields {
@@ -39,4 +42,3 @@ export interface AssociateAreaContact extends AuditFields {
   phone?: string | null
   area?: CatalogItem | null
 }
-

@@ -41,6 +41,7 @@ No deben existir perfiles asociados a roles retirados.
 | `FIDELIZACION` | `membresias` | `read`, `create`, `update` |
 | `FIDELIZACION` | `cobranza` | `read`, `create`, `update` |
 | `FIDELIZACION` | `documentos` | `read`, `create`, `update` |
+| `FIDELIZACION` | `comites` | `read`, `create`, `update` |
 | `ALTA_DIRECCION` | `reportes` | `read` |
 | `ALTA_DIRECCION` | `auditoria` | `read` |
 
@@ -52,6 +53,7 @@ Reglas transversales:
 - `CAPTACION` y `FIDELIZACION` pueden crear prospectos.
 - `FACTURACION` puede operar cobranza y consultar membresias.
 - `FIDELIZACION` no accede a Dashboard, Reportes, Usuarios, Configuracion ni Auditoria.
+- `FIDELIZACION` administra comites y la asignacion del comite principal de cada asociado.
 
 ## 4. Lectura interna de referencia
 

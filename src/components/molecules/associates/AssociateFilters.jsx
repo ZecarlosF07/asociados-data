@@ -1,9 +1,22 @@
 import { Input } from '../../atoms/Input'
 import { CatalogSelect } from '../CatalogSelect'
 import { CategorySelect } from '../CategorySelect'
+import { CommitteeSelect } from '../CommitteeSelect'
 import { ASSOCIATE_CATALOG_GROUPS } from '../../../utils/associateConstants'
 
 export function AssociateFilters({ filters, onFilterChange, onClear }) {
+  const committeeValue = filters.withoutCommittee
+    ? '__WITHOUT__'
+    : filters.committeeId
+
+  const handleCommitteeChange = (event) => {
+    const value = event.target.value
+    onFilterChange({
+      committeeId: value === '__WITHOUT__' ? '' : value,
+      withoutCommittee: value === '__WITHOUT__',
+    })
+  }
+
   return (
     <div className="flex flex-wrap items-end gap-3 mb-6 bg-white border border-slate-200 rounded-lg p-4">
       <div className="flex-1 min-w-[200px]">
@@ -27,6 +40,19 @@ export function AssociateFilters({ filters, onFilterChange, onClear }) {
           onChange={(e) => onFilterChange({ statusId: e.target.value })}
           name="statusId"
           placeholder="Todos"
+        />
+      </div>
+
+      <div className="w-48">
+        <label className="text-xs font-semibold text-slate-600 mb-1 block">
+          Comité
+        </label>
+        <CommitteeSelect
+          name="committeeFilter"
+          value={committeeValue}
+          onChange={handleCommitteeChange}
+          placeholder="Todos"
+          showWithoutOption
         />
       </div>
 

@@ -679,6 +679,7 @@ Se recomienda que los módulos funcionales se agrupen por dominio, por ejemplo:
 - cobranzas,
 - auditoría,
 - reportes,
+- comités,
 - autenticación,
 - configuración.
 
@@ -878,4 +879,3 @@ Este documento constituye la base para pasar al siguiente nivel de definición t
 - componentes,
 - vistas,
 - estrategia de implementación por etapas.
-

@@ -9,6 +9,8 @@ export function useAssociates() {
     search: '',
     statusId: '',
     categoryId: '',
+    committeeId: '',
+    withoutCommittee: false,
   })
 
   const fetchAssociates = useCallback(async () => {

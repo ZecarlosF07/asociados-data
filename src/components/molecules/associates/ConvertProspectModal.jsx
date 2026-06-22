@@ -1,11 +1,8 @@
 import { useState } from 'react'
-import { FormField } from '../FormField'
-import { CatalogSelect } from '../CatalogSelect'
-import { UserProfileSelect } from '../UserProfileSelect'
 import { Button } from '../../atoms/Button'
-import { ASSOCIATE_CATALOG_GROUPS } from '../../../utils/associateConstants'
 import { validateConversionForm } from '../../../utils/associateValidation'
 import { todayDateOnly } from '../../../utils/dateOnly'
+import { ConversionAssociateFields } from './ConversionAssociateFields'
 
 export function ConvertProspectModal({
   isOpen,
@@ -21,6 +18,7 @@ export function ConvertProspectModal({
     associationDate: todayDateOnly(),
     responsibleUserId: '',
     notes: '',
+    committeeId: '',
   })
 
   const [errors, setErrors] = useState({})
@@ -70,58 +68,9 @@ export function ConvertProspectModal({
               </div>
             )}
 
-            <FormField
-              label="RUC"
-              name="ruc"
-              required
-              value={form.ruc}
-              onChange={handleChange}
-              error={errors.ruc}
-              maxLength={11}
-              helpText="Es obligatorio para completar la conversión."
-            />
-
-            <FormField
-              label="Estado inicial del asociado"
-              name="statusId"
-              required
-              error={errors.statusId}
-            >
-              <CatalogSelect
-                groupCode={ASSOCIATE_CATALOG_GROUPS.STATUS}
-                value={form.statusId}
-                onChange={handleChange}
-                name="statusId"
-                placeholder="Seleccionar estado..."
-              />
-            </FormField>
-
-            <FormField
-              label="Fecha de asociación"
-              name="associationDate"
-              type="date"
-              required
-              value={form.associationDate}
-              onChange={handleChange}
-              error={errors.associationDate}
-            />
-
-            <FormField
-              label="Responsable de afiliación"
-              name="responsibleUserId"
-            >
-              <UserProfileSelect
-                value={form.responsibleUserId}
-                onChange={handleChange}
-                name="responsibleUserId"
-                placeholder="Seleccionar responsable..."
-              />
-            </FormField>
-
-            <FormField
-              label="Observaciones"
-              name="notes"
-              value={form.notes}
+            <ConversionAssociateFields
+              errors={errors}
+              form={form}
               onChange={handleChange}
             />
 

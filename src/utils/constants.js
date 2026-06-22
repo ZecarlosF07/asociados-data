@@ -6,6 +6,7 @@ export const NAVIGATION_ITEMS = [
   { label: 'Dashboard', path: ROUTES.DASHBOARD, icon: '📊' },
   { label: 'Prospectos', path: ROUTES.PROSPECTOS, icon: '🎯' },
   { label: 'Asociados', path: ROUTES.ASOCIADOS, icon: '🏢' },
+  { label: 'Comités', path: ROUTES.COMITES, icon: '🏛️' },
   { label: 'Membresías', path: ROUTES.MEMBRESIAS, icon: '📋' },
   { label: 'Cobranza', path: ROUTES.COBRANZA, icon: '💰' },
   { label: 'Documentos', path: ROUTES.DOCUMENTOS, icon: '📁' },

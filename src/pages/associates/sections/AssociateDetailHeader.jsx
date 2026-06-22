@@ -5,8 +5,10 @@ import { ASSOCIATE_STATUS_VARIANT } from '../../../utils/associateConstants'
 export function AssociateDetailHeader({
   associate,
   canEdit,
+  committeeActionLoading,
   onEdit,
   onBack,
+  onManageCommittee,
 }) {
   const statusCode = associate.associate_status?.code
   const statusLabel = associate.associate_status?.label || '—'
@@ -44,6 +46,42 @@ export function AssociateDetailHeader({
           </div>
         )}
       </div>
+
+      <CommitteeSummary
+        committee={associate.primary_committee}
+        canEdit={canEdit}
+        loading={committeeActionLoading}
+        onManage={onManageCommittee}
+      />
+    </div>
+  )
+}
+
+function CommitteeSummary({ committee, canEdit, loading, onManage }) {
+  return (
+    <div className={`mt-4 flex flex-wrap items-center gap-2 rounded-lg border px-4 py-3 ${committee ? 'border-blue-100 bg-blue-50/70' : 'border-amber-200 bg-amber-50'}`}>
+      <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        Comité principal
+      </span>
+      {committee ? (
+        <span className="text-sm font-semibold text-blue-900">
+          {committee.code ? `${committee.code} · ` : ''}{committee.name}
+        </span>
+      ) : (
+        <span className="text-sm font-medium text-amber-800">Sin comité asignado</span>
+      )}
+      {canEdit && (
+        <div className="ml-auto flex gap-2">
+          <Button size="sm" variant="secondary" disabled={loading} onClick={() => onManage(committee ? 'change' : 'assign')}>
+            {committee ? 'Cambiar comité' : 'Asignar comité'}
+          </Button>
+          {committee && (
+            <Button size="sm" variant="ghost" disabled={loading} onClick={() => onManage('remove')}>
+              Retirar
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   )
 }

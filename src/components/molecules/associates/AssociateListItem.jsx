@@ -47,10 +47,11 @@ export function AssociateListItem({ associate, onClick }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4 text-xs">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mt-4 text-xs">
         <Item label="Código" value={associate.internal_code} strong />
         <Item label="RUC" value={associate.ruc} />
         <Item label="Responsable" value={responsible} />
+        <Item label="Comité" value={associate.primary_committee?.name} />
         <Item label="Salud de pago" value={healthLabel}>
           <Badge variant={healthVariant}>{healthLabel}</Badge>
         </Item>

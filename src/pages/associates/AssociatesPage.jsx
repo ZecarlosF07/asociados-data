@@ -15,7 +15,13 @@ export function AssociatesPage() {
   const { associates, loading, error, filters, updateFilters } = useAssociates()
 
   const handleClearFilters = () => {
-    updateFilters({ search: '', statusId: '', categoryId: '' })
+    updateFilters({
+      search: '',
+      statusId: '',
+      categoryId: '',
+      committeeId: '',
+      withoutCommittee: false,
+    })
   }
 
   const handleAssociateClick = (associate) => {

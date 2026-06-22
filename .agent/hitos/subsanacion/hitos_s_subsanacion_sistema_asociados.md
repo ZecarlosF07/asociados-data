@@ -171,6 +171,16 @@ Extiende el cronograma financiero de membresías:
 - misma regla de día de cobro usada por membresías mensuales
 - protección explícita contra regresiones de fechas calendario y desfases por zona horaria
 
+### S16. Evolución post-release de los Hitos 5 y 7: asignación de comités a asociados
+
+Implementa la relación institucional entre asociados y comités:
+
+- módulo operativo propio para administrar y consultar comités
+- asignación de un comité principal vigente por asociado
+- historial de incorporaciones, cambios y salidas
+- filtros y ficha de asociados por comité
+- modelo preparado para múltiples comités y futuros documentos o reuniones
+
 ## Orden recomendado de ejecución
 
 1. S0 - Calidad transversal.
@@ -189,6 +199,7 @@ Extiende el cronograma financiero de membresías:
 14. S13 - Generación de usuarios y roles operativos.
 15. S14 - Hardening preproducción de auditoría y fechas de pago.
 16. S15 - Modalidades de cobro para membresías anuales.
+17. S16 - Asignación de comités a asociados.
 
 S0 debe hacerse primero porque reduce fricción técnica. S6 debe hacerse al final porque valida todo el sistema integrado.
 S7 se ejecuta después de S6 porque nace de un bug funcional detectado durante validación posterior al release interno.
@@ -200,6 +211,7 @@ S12 puede adelantarse a S11 si se van a seguir creando membresías anuales, porq
 S13 se ejecuta después de estabilizar auditoría y roles base porque introduce usuarios reales por perfil operativo y debe quedar trazado.
 S14 se ejecuta después de S13 y antes de limpiar la base de datos porque endurece la auditoría y elimina un riesgo latente de fechas antes de iniciar carga real.
 S15 se ejecuta después de S14 porque amplía la lógica financiera ya estabilizada y debe respetar las reglas de fechas endurecidas antes de cargar membresías reales con nuevas modalidades.
+S16 se ejecuta después de estabilizar el núcleo de asociados y los permisos, y antes de desarrollar reuniones o documentos específicos de comités.
 
 ## Criterio global de cierre
 
@@ -232,4 +244,5 @@ La subsanación completa queda cerrada cuando:
 - [S13 - Generación de usuarios y roles operativos](./hito_s13_generacion_usuarios_roles_operativos.md)
 - [S14 - Hardening preproducción de auditoría y fechas de pago](./hito_s14_hardening_preproduccion_auditoria_fechas.md)
 - [S15 - Modalidades de cobro para membresías anuales](./hito_s15_modalidades_cobro_membresias_anuales.md)
+- [S16 - Asignación de comités a asociados](./hito_s16_asignacion_comites_asociados.md)
 - [Documento técnico S13 - Roles y permisos operativos](../../docs/hito_s13_roles_permisos_operativos.md)

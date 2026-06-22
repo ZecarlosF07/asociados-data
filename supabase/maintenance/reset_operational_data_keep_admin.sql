@@ -42,6 +42,7 @@ delete from public.memberships;
 -- Datos del asociado.
 delete from public.associate_area_contacts;
 delete from public.associate_people;
+delete from public.associate_committees;
 
 -- Romper enlace circular prospecto <-> asociado antes de borrar asociados.
 update public.prospects
@@ -73,6 +74,7 @@ commit;
 -- Validacion rapida posterior.
 select 'prospects' as table_name, count(*)::int as row_count from public.prospects
 union all select 'associates', count(*)::int from public.associates
+union all select 'associate_committees', count(*)::int from public.associate_committees
 union all select 'memberships', count(*)::int from public.memberships
 union all select 'payment_schedules', count(*)::int from public.payment_schedules
 union all select 'payments', count(*)::int from public.payments

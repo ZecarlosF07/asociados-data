@@ -14,11 +14,31 @@ const ASSOCIATE_SELECT = `
   affiliation_responsible:affiliation_responsible_user_id(id, first_name, last_name),
   captador:captador_id(id, full_name, is_internal),
   payment_health:payment_health_status_id(id, code, label),
-  prospect_origin:prospect_origin_id(id, suggested_fee, current_category_id, current_category:current_category_id(id, code, name, base_fee))
+  prospect_origin:prospect_origin_id(id, suggested_fee, current_category_id, current_category:current_category_id(id, code, name, base_fee)),
+  committee_assignments:associate_committees(
+    id,
+    joined_at,
+    is_primary,
+    is_active,
+    is_deleted,
+    committee:committee_id(id, code, name, description, is_active)
+  )
 `
 
 export const associatesService = {
-  async getAll({ search, statusId, categoryId } = {}) {
+  async getAll({
+    search,
+    statusId,
+    categoryId,
+    committeeId,
+    withoutCommittee = false,
+  } = {}) {
+    const filteredIds = await getCommitteeFilteredIds({
+      committeeId,
+      withoutCommittee,
+    })
+    if (filteredIds && filteredIds.length === 0) return []
+
     let query = supabase
       .from('associates')
       .select(ASSOCIATE_SELECT)
@@ -33,10 +53,11 @@ export const associatesService = {
 
     if (statusId) query = query.eq('associate_status_id', statusId)
     if (categoryId) query = query.eq('category_id', categoryId)
+    if (filteredIds) query = query.in('id', filteredIds)
 
     const { data, error } = await query
     if (error) throw error
-    return attachComputedPaymentHealth(data)
+    return attachComputedPaymentHealth(data.map(mapPrimaryCommittee))
   },
 
   async getById(id) {
@@ -48,7 +69,7 @@ export const associatesService = {
       .single()
 
     if (error) throw error
-    return data
+    return mapPrimaryCommittee(data)
   },
 
   async create(associate) {
@@ -59,12 +80,12 @@ export const associatesService = {
       .single()
 
     if (error) throw error
-    return data
+    return mapPrimaryCommittee(data)
   },
 
   async createDirectAssociate(associate) {
     const { data: created, error } = await supabase.rpc(
-      'create_direct_associate',
+      'create_direct_associate_with_committee',
       {
         p_company_name: associate.company_name,
         p_ruc: associate.ruc,
@@ -88,6 +109,7 @@ export const associatesService = {
         p_book_registry: associate.book_registry || null,
         p_welcome_status: associate.welcome_status || false,
         p_notes: associate.notes || null,
+        p_committee_id: associate.committee_id || null,
       }
     )
 
@@ -108,7 +130,7 @@ export const associatesService = {
       .single()
 
     if (error) throw error
-    return data
+    return mapPrimaryCommittee(data)
   },
 
   async softDelete(id, deletedBy) {
@@ -129,7 +151,7 @@ export const associatesService = {
 
   async convertFromProspect({ prospect, conversionData }) {
     const { data: created, error } = await supabase.rpc(
-      'convert_prospect_to_associate',
+      'convert_prospect_to_associate_with_committee',
       {
         p_prospect_id: prospect.id,
         p_ruc: conversionData.ruc,
@@ -137,6 +159,7 @@ export const associatesService = {
         p_association_date: conversionData.associationDate,
         p_responsible_user_id: conversionData.responsibleUserId || null,
         p_notes: conversionData.notes || null,
+        p_committee_id: conversionData.committeeId || null,
       }
     )
 
@@ -146,6 +169,35 @@ export const associatesService = {
     }
 
     return associatesService.getById(created.id)
+  },
+
+  async setPrimaryCommittee(associateId, values) {
+    const { data, error } = await supabase.rpc(
+      'set_associate_primary_committee',
+      {
+        p_associate_id: associateId,
+        p_committee_id: values.committeeId,
+        p_effective_date: values.effectiveDate,
+        p_notes: values.notes || null,
+      }
+    )
+
+    if (error) throw error
+    return data
+  },
+
+  async clearPrimaryCommittee(associateId, values) {
+    const { data, error } = await supabase.rpc(
+      'clear_associate_primary_committee',
+      {
+        p_associate_id: associateId,
+        p_effective_date: values.effectiveDate,
+        p_notes: values.notes || null,
+      }
+    )
+
+    if (error) throw error
+    return data
   },
 
   // ---- Personas vinculadas ----
@@ -253,6 +305,33 @@ export const associatesService = {
 
     if (error) throw error
   },
+}
+
+async function getCommitteeFilteredIds({ committeeId, withoutCommittee }) {
+  if (!committeeId && !withoutCommittee) return null
+
+  const { data, error } = await supabase.rpc(
+    'filter_associate_ids_by_committee',
+    {
+      p_committee_id: committeeId || null,
+      p_without_committee: withoutCommittee,
+    }
+  )
+
+  if (error) throw error
+  return (data || []).map((row) => row.associate_id)
+}
+
+function mapPrimaryCommittee(associate) {
+  const assignment = associate.committee_assignments?.find(
+    (item) => item.is_primary && item.is_active && !item.is_deleted
+  )
+
+  return {
+    ...associate,
+    primary_committee: assignment?.committee || null,
+    primary_committee_assignment: assignment || null,
+  }
 }
 
 async function attachComputedPaymentHealth(associates) {

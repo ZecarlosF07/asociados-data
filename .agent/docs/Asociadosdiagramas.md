@@ -261,6 +261,7 @@ erDiagram
         uuid id PK
         uuid associate_id FK
         uuid committee_id FK
+        boolean is_primary
         boolean is_active
         boolean is_deleted
     }
@@ -529,6 +530,7 @@ flowchart TD
     B --> I["/app/usuarios"]
     B --> J["/app/sincronizacion-drive"]
     B --> K["/app/configuracion"]
+    B --> L["/comites"]
 
     %% Prospectos
     C --> C1["/app/prospectos/nuevo"]
@@ -568,6 +570,10 @@ flowchart TD
     E3 --> E4
     E5 --> E2
     E5 --> E3
+
+    %% Comites operativos
+    L --> L1["/comites/:id"]
+    L1 --> L2["Asociados vigentes del comite"]
 
     %% Almacenamiento
     F --> F1["/app/almacenamiento/subir"]
@@ -630,7 +636,6 @@ flowchart TD
     %% Configuración
     K --> K1["/app/configuracion/categorias"]
     K --> K2["/app/configuracion/catalogos"]
-    K --> K3["/app/configuracion/comites"]
     K --> K4["/app/configuracion/parametros"]
 ```
 
