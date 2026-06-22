@@ -160,6 +160,18 @@ export const EXPORT_COLUMNS = {
     { key: 'period_month', label: 'Mes', format: 'number' },
   ],
 
+  collectionSchedules: [
+    { key: 'associate.internal_code', label: 'Código asociado' },
+    { key: 'associate.company_name', label: 'Razón social' },
+    { key: 'associate.ruc', label: 'RUC' },
+    { key: 'payment_type', label: 'Tipo de pago' },
+    { key: 'period', label: 'Período' },
+    { key: 'due_date', label: 'Vencimiento', format: 'date' },
+    { key: 'expected_amount', label: 'Monto esperado', format: 'currency' },
+    { key: 'status', label: 'Estado' },
+    { key: 'paid_at', label: 'Fecha de pago', format: 'date' },
+  ],
+
   collections: [
     { key: 'associate.internal_code', label: 'Código asociado' },
     { key: 'associate.company_name', label: 'Razón social' },

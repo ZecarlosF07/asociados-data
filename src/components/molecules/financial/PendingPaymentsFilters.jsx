@@ -1,4 +1,6 @@
 import { Input } from '../../atoms/Input'
+import { CatalogSelect } from '../CatalogSelect'
+import { FINANCIAL_CATALOG_GROUPS } from '../../../utils/financialConstants'
 import { MONTH_NAMES } from '../../../utils/paymentScheduleUtils'
 
 export function PendingPaymentsFilters({
@@ -7,12 +9,14 @@ export function PendingPaymentsFilters({
   showAllMonths,
   viewMode,
   search,
+  paymentTypeId,
   onPrevMonth,
   onNextMonth,
   onCurrentMonth,
   onToggleAllMonths,
   onToggleViewMode,
   onSearchChange,
+  onPaymentTypeChange,
   onClearSearch,
 }) {
   return (
@@ -52,6 +56,16 @@ export function PendingPaymentsFilters({
       <FilterButton active={viewMode === 'paid'} onClick={onToggleViewMode}>
         {viewMode === 'paid' ? 'Ver pendientes' : 'Ver pagadas'}
       </FilterButton>
+
+      <div className="min-w-[180px]">
+        <CatalogSelect
+          groupCode={FINANCIAL_CATALOG_GROUPS.MEMBERSHIP_TYPE}
+          name="paymentTypeId"
+          value={paymentTypeId}
+          onChange={(event) => onPaymentTypeChange(event.target.value)}
+          placeholder="Todos los tipos de pago"
+        />
+      </div>
 
       <div className="flex-1 min-w-[180px] ml-auto">
         <Input

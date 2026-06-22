@@ -26,6 +26,11 @@ export interface PaymentSchedule extends AuditFields {
   period_month?: number | null
   collection_status_id?: string | null
   collection_status?: CatalogItem | null
+  membership?: {
+    id: string
+    membership_type_id?: string | null
+    membership_type?: CatalogItem | null
+  } | null
 }
 
 export interface Payment extends AuditFields {
@@ -51,4 +56,3 @@ export interface CollectionAction extends AuditFields {
   contact_type_id?: string | null
   result_id?: string | null
 }
-

@@ -49,7 +49,7 @@ export function getScheduleDisplayStatus(schedule) {
 
 export function filterPaymentSchedules(
   schedules,
-  { selectedMonth, selectedYear, showAllMonths, search }
+  { selectedMonth, selectedYear, showAllMonths, search, paymentTypeId }
 ) {
   let result = schedules
 
@@ -58,6 +58,12 @@ export function filterPaymentSchedules(
       const due = getDateOnlyParts(schedule.due_date)
       return due.month === selectedMonth && due.year === selectedYear
     })
+  }
+
+  if (paymentTypeId) {
+    result = result.filter(
+      (schedule) => schedule.membership?.membership_type_id === paymentTypeId
+    )
   }
 
   if (!search) return result

@@ -36,7 +36,12 @@ export const paymentSchedulesService = {
       .from('payment_schedules')
       .select(`
         ${SCHEDULE_SELECT},
-        associate:associate_id(id, company_name, ruc, internal_code)
+        associate:associate_id(id, company_name, ruc, internal_code),
+        membership:membership_id(
+          id,
+          membership_type_id,
+          membership_type:membership_type_id(id, code, label)
+        )
       `)
       .eq('is_deleted', false)
       .eq('is_paid', isPaid)

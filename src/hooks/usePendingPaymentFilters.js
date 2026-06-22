@@ -5,6 +5,7 @@ export function usePendingPaymentFilters() {
   const currentMonth = getCurrentMonthFilter()
   const [search, setSearch] = useState('')
   const [viewMode, setViewMode] = useState('pending')
+  const [paymentTypeId, setPaymentTypeId] = useState('')
   const [selectedMonth, setSelectedMonth] = useState(currentMonth.month)
   const [selectedYear, setSelectedYear] = useState(currentMonth.year)
   const [showAllMonths, setShowAllMonths] = useState(false)
@@ -42,10 +43,12 @@ export function usePendingPaymentFilters() {
     handleNextMonth,
     handlePrevMonth,
     handleViewModeToggle,
+    paymentTypeId,
     search,
     selectedMonth,
     selectedYear,
     setSearch,
+    setPaymentTypeId,
     setShowAllMonths,
     showAllMonths,
     viewMode,
