@@ -181,6 +181,16 @@ Implementa la relación institucional entre asociados y comités:
 - filtros y ficha de asociados por comité
 - modelo preparado para múltiples comités y futuros documentos o reuniones
 
+### S17. Evolución post-release del Hito 5: directorio operativo de contactos de empresas
+
+Agrega una vista transversal para explotar los contactos por área ya registrados en las fichas de asociados:
+
+- lista global de contactos de empresas
+- filtro obligatorio por área
+- búsqueda por contacto, cargo, correo, teléfono, razón social, RUC y código de asociado
+- navegación desde el contacto hacia la ficha del asociado
+- exportación a Excel del resultado filtrado
+
 ## Orden recomendado de ejecución
 
 1. S0 - Calidad transversal.
@@ -200,6 +210,7 @@ Implementa la relación institucional entre asociados y comités:
 15. S14 - Hardening preproducción de auditoría y fechas de pago.
 16. S15 - Modalidades de cobro para membresías anuales.
 17. S16 - Asignación de comités a asociados.
+18. S17 - Directorio operativo de contactos de empresas.
 
 S0 debe hacerse primero porque reduce fricción técnica. S6 debe hacerse al final porque valida todo el sistema integrado.
 S7 se ejecuta después de S6 porque nace de un bug funcional detectado durante validación posterior al release interno.
@@ -212,6 +223,7 @@ S13 se ejecuta después de estabilizar auditoría y roles base porque introduce 
 S14 se ejecuta después de S13 y antes de limpiar la base de datos porque endurece la auditoría y elimina un riesgo latente de fechas antes de iniciar carga real.
 S15 se ejecuta después de S14 porque amplía la lógica financiera ya estabilizada y debe respetar las reglas de fechas endurecidas antes de cargar membresías reales con nuevas modalidades.
 S16 se ejecuta después de estabilizar el núcleo de asociados y los permisos, y antes de desarrollar reuniones o documentos específicos de comités.
+S17 se ejecuta después de S16 porque aprovecha la ficha de asociados ya estabilizada y agrega una consulta transversal sin cambiar la captura de contactos existente.
 
 ## Criterio global de cierre
 

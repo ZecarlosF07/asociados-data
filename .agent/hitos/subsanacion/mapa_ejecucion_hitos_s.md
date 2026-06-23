@@ -579,3 +579,50 @@ Implementado y migrado a Supabase el 2026-06-22. La evidencia recibida confirma 
 - validar RLS y auditoria
 - `yarn lint`
 - `yarn build`
+
+## S17 - Directorio operativo de contactos de empresas
+
+### Estado actual
+
+Implementado en codigo el 2026-06-23. La captura de contactos por area se mantiene dentro de la ficha del asociado y se agrego una pantalla global para consultar todos los contactos y exportar una base filtrada.
+
+### Evidencia en codigo y documentacion
+
+- `supabase/migrations/20260317030000_create_associate_area_contacts.sql`
+- `src/services/associates.service.js`
+- `src/hooks/useAssociateAreaContactActions.js`
+- `src/components/molecules/associates/AreaContactList.jsx`
+- `.agent/docs/diccionario_de_tablas_sistema_de_asociados_v_2.md`
+- `.agent/docs/hito_s17_implementation_summary.md`
+
+### Riesgos detectados
+
+- resolverlo en Reportes limita la navegacion operativa hacia la ficha del asociado
+- duplicar la tabla de contactos introduce inconsistencias con la ficha del asociado
+- exportar la lista completa ignorando filtros produciria bases de contacto incorrectas
+- editar contactos desde una lista global ampliaria el alcance y duplicaria reglas de la ficha
+
+### Archivos principales a tocar
+
+- `src/router/routes.js`
+- `src/router/associateRoutes.jsx`
+- `src/utils/constants.js`
+- `src/utils/exportUtils.js`
+- `src/services/companyContacts.service.js`
+- `src/hooks/useCompanyContacts.js`
+- `src/pages/contacts/CompanyContactsPage.jsx`
+- `src/components/molecules/contacts/CompanyContactFilters.jsx`
+- `src/components/molecules/contacts/CompanyContactList.jsx`
+- `src/components/molecules/contacts/CompanyContactListItem.jsx`
+
+### Validacion de cierre
+
+- listar contactos no eliminados de empresas asociadas no eliminadas
+- filtrar por area
+- combinar area con busqueda textual
+- filtrar por estado/categoria del asociado y contactos principales
+- exportar a Excel solo el resultado filtrado
+- navegar desde una fila hacia la ficha del asociado
+- validar permiso `asociados:read`
+- `yarn lint`
+- `yarn build`

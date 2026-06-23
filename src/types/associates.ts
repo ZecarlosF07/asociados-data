@@ -38,7 +38,14 @@ export interface AssociateAreaContact extends AuditFields {
   associate_id: string
   full_name: string
   area_id?: string | null
+  position?: string | null
   email?: string | null
   phone?: string | null
+  is_primary?: boolean
+  notes?: string | null
   area?: CatalogItem | null
+}
+
+export interface CompanyContactDirectoryItem extends AssociateAreaContact {
+  associate?: Associate | null
 }

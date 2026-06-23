@@ -9,7 +9,7 @@ export function Sidebar() {
   const { profile, roleCode } = useUserProfile()
 
   const visibleItems = NAVIGATION_ITEMS.filter((item) => {
-    const moduleKey = item.path.replace('/', '')
+    const moduleKey = item.permissionModule || item.path.replace('/', '')
     return hasPermission(roleCode, moduleKey)
   })
 

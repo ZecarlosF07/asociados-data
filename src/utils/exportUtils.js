@@ -172,6 +172,22 @@ export const EXPORT_COLUMNS = {
     { key: 'paid_at', label: 'Fecha de pago', format: 'date' },
   ],
 
+  companyContacts: [
+    { key: 'contact_name', label: 'Contacto' },
+    { key: 'area', label: 'Área' },
+    { key: 'position', label: 'Cargo' },
+    { key: 'email', label: 'Email' },
+    { key: 'phone', label: 'Teléfono' },
+    { key: 'is_primary_label', label: 'Principal' },
+    { key: 'associate_name', label: 'Asociado' },
+    { key: 'associate_code', label: 'Código asociado' },
+    { key: 'associate_ruc', label: 'RUC' },
+    { key: 'associate_status', label: 'Estado asociado' },
+    { key: 'category', label: 'Categoría' },
+    { key: 'primary_committee', label: 'Comité principal' },
+    { key: 'notes', label: 'Observaciones' },
+  ],
+
   collections: [
     { key: 'associate.internal_code', label: 'Código asociado' },
     { key: 'associate.company_name', label: 'Razón social' },
