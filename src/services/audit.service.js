@@ -71,6 +71,17 @@ export const auditService = {
     if (error) throw error
     return data
   },
+
+  async logExcelExport({ filename, sheets, extraMeta = {} }) {
+    const { data, error } = await supabase.rpc('log_excel_export', {
+      p_filename: filename,
+      p_sheets: sheets,
+      p_extra_meta: extraMeta,
+    })
+
+    if (error) throw error
+    return data
+  },
 }
 
 function toStartOfDayIso(value) {

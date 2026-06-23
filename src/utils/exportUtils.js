@@ -1,3 +1,4 @@
+import { auditService } from '../services/audit.service'
 import { formatDate } from './helpers'
 
 /**
@@ -10,6 +11,11 @@ import { formatDate } from './helpers'
  * @param {Array<{key: string, label: string, format?: 'date'|'currency'|'number'}>} options.columns - Definición de columnas
  */
 export async function exportToExcel({ filename, sheetName, data, columns }) {
+  await auditExcelExport({
+    filename,
+    sheets: [buildSheetAudit(sheetName || 'Datos', data, columns)],
+  })
+
   const { XLSX, saveAs } = await loadExcelDependencies()
   const headers = columns.map((c) => c.label)
 
@@ -49,6 +55,13 @@ export async function exportToExcel({ filename, sheetName, data, columns }) {
  * Exporta múltiples hojas a un mismo archivo Excel
  */
 export async function exportMultiSheetExcel({ filename, sheets }) {
+  await auditExcelExport({
+    filename,
+    sheets: sheets.map((sheet) =>
+      buildSheetAudit(sheet.sheetName, sheet.data, sheet.columns)
+    ),
+  })
+
   const { XLSX, saveAs } = await loadExcelDependencies()
   const workbook = XLSX.utils.book_new()
 
@@ -98,6 +111,24 @@ async function loadExcelDependencies() {
  */
 function getNestedValue(obj, path) {
   return path.split('.').reduce((acc, key) => acc?.[key], obj)
+}
+
+async function auditExcelExport({ filename, sheets }) {
+  await auditService.logExcelExport({
+    filename: `${filename || 'export'}.xlsx`,
+    sheets,
+    extraMeta: {
+      format: 'xlsx',
+    },
+  })
+}
+
+function buildSheetAudit(sheetName, data, columns) {
+  return {
+    sheet_name: sheetName || 'Datos',
+    row_count: Array.isArray(data) ? data.length : 0,
+    columns: columns.map((column) => column.label),
+  }
 }
 
 /**

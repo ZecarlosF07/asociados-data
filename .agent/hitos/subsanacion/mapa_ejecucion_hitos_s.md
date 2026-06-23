@@ -584,7 +584,7 @@ Implementado y migrado a Supabase el 2026-06-22. La evidencia recibida confirma 
 
 ### Estado actual
 
-Implementado en codigo el 2026-06-23. La captura de contactos por area se mantiene dentro de la ficha del asociado y se agrego una pantalla global para consultar todos los contactos y exportar una base filtrada.
+Implementado en codigo el 2026-06-23. La captura de contactos por area se mantiene dentro de la ficha del asociado y se agrego una pantalla global para consultar todos los contactos y exportar una base filtrada. Tambien se agrego auditoria centralizada para descargas Excel.
 
 ### Evidencia en codigo y documentacion
 
@@ -594,6 +594,7 @@ Implementado en codigo el 2026-06-23. La captura de contactos por area se mantie
 - `src/components/molecules/associates/AreaContactList.jsx`
 - `.agent/docs/diccionario_de_tablas_sistema_de_asociados_v_2.md`
 - `.agent/docs/hito_s17_implementation_summary.md`
+- `supabase/migrations/20260623100000_s17_excel_export_audit.sql`
 
 ### Riesgos detectados
 
@@ -608,6 +609,8 @@ Implementado en codigo el 2026-06-23. La captura de contactos por area se mantie
 - `src/router/associateRoutes.jsx`
 - `src/utils/constants.js`
 - `src/utils/exportUtils.js`
+- `src/services/audit.service.js`
+- `src/utils/auditFormatters.js`
 - `src/services/companyContacts.service.js`
 - `src/hooks/useCompanyContacts.js`
 - `src/pages/contacts/CompanyContactsPage.jsx`
@@ -622,6 +625,7 @@ Implementado en codigo el 2026-06-23. La captura de contactos por area se mantie
 - combinar area con busqueda textual
 - filtrar por estado/categoria del asociado y contactos principales
 - exportar a Excel solo el resultado filtrado
+- validar evento `excel_exports` / `export_excel` en auditoria
 - navegar desde una fila hacia la ficha del asociado
 - validar permiso `asociados:read`
 - `yarn lint`

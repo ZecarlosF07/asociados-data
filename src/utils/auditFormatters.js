@@ -13,6 +13,7 @@ export const AUDIT_ENTITY_OPTIONS = [
   'catalog_items',
   'automation_jobs',
   'automation_job_runs',
+  'excel_exports',
 ]
 
 export const AUDIT_ACTION_OPTIONS = [
@@ -29,6 +30,7 @@ export const AUDIT_ACTION_OPTIONS = [
   'deactivate_user',
   'reactivate_user',
   'reset_internal_user_password',
+  'export_excel',
 ]
 
 const ENTITY_LABELS = {
@@ -47,6 +49,7 @@ const ENTITY_LABELS = {
   automation_jobs: 'Automatizaciones',
   automation_job_runs: 'Ejecuciones',
   audit_logs: 'Auditoría',
+  excel_exports: 'Exportaciones Excel',
 }
 
 const ACTION_LABELS = {
@@ -63,6 +66,7 @@ const ACTION_LABELS = {
   deactivate_user: 'Desactivación de usuario',
   reactivate_user: 'Reactivación de usuario',
   reset_internal_user_password: 'Cambio de contraseña',
+  export_excel: 'Descarga de Excel',
 }
 
 const FIELD_LABELS = {
@@ -89,6 +93,8 @@ const FIELD_LABELS = {
   payment_date: 'Fecha de pago',
   file_name: 'Archivo',
   title: 'Título',
+  filename: 'Archivo',
+  total_rows: 'Registros',
 }
 
 const IGNORED_CHANGE_FIELDS = new Set([
@@ -174,6 +180,10 @@ export function formatAuditSubject(log) {
       formatRelatedAssociate(associate, data.associate_id)
         || formatRelatedProspect(prospect, data.prospect_id)
     )
+  }
+
+  if (log?.entity_name === 'excel_exports') {
+    return joinSubject(data.filename, data.total_rows && `${data.total_rows} registros`)
   }
 
   return joinSubject(data.name || data.label || data.code || data.full_name, log?.entity_id)

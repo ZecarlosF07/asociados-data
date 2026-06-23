@@ -145,6 +145,7 @@ Reglas:
 - exporta solo el resultado filtrado visible
 - respeta busqueda y filtros activos
 - se deshabilita si no hay contactos para exportar
+- registra la descarga en auditoria antes de generar el archivo
 - nombre sugerido del archivo:
 
 ```txt
@@ -270,6 +271,26 @@ EXPORT_COLUMNS.companyContacts
 ```
 
 La pagina debe llamar `exportToExcel` con `filteredContacts`, no con la lista completa.
+La auditoria de la descarga no debe implementarse solo en esta pagina. Debe quedar centralizada en `exportToExcel` y `exportMultiSheetExcel`, para cubrir cualquier descarga Excel del sistema.
+
+### 6.6 Auditoria de descargas Excel
+
+Crear una RPC segura:
+
+```txt
+public.log_excel_export(...)
+```
+
+Reglas:
+
+- insertar en `audit_logs` desde base de datos, no desde frontend directo
+- registrar `actor_user_id` con `current_user_profile_id()`
+- usar entidad `excel_exports`
+- usar accion `export_excel`
+- guardar nombre de archivo, hojas, columnas y cantidad de registros
+- bloquear la descarga si la auditoria falla
+- revocar ejecucion a `public` y `anon`
+- otorgar ejecucion solo a `authenticated`
 
 ## 7. Modelo de datos
 
@@ -281,9 +302,15 @@ La fuente de verdad sigue siendo:
 associate_area_contacts
 ```
 
-El hito es principalmente de consulta, filtros y exportacion.
+El hito es principalmente de consulta, filtros, exportacion y auditoria de descarga.
 
-Solo considerar migracion si se detecta bajo rendimiento en volumen real. En ese caso, agregar indices no destructivos, por ejemplo:
+Se requiere migracion para la RPC de auditoria:
+
+```txt
+supabase/migrations/YYYYMMDDHHMMSS_s17_excel_export_audit.sql
+```
+
+Solo considerar una migracion adicional si se detecta bajo rendimiento en volumen real. En ese caso, agregar indices no destructivos, por ejemplo:
 
 ```txt
 create index if not exists idx_area_contacts_active_area
@@ -353,6 +380,7 @@ Queda fuera de este hito:
 - mover contactos a una tabla nueva
 - convertir esta pantalla en modulo de CRM
 - agregar reportes dentro de `/reportes`
+- permitir descargas Excel sin auditoria
 
 ## 12. Criterios de aceptacion
 
@@ -364,6 +392,7 @@ El hito queda cerrado cuando:
 - busqueda y filtros se pueden combinar
 - la exportacion genera Excel solo con el resultado filtrado
 - la exportacion incluye datos del contacto y del asociado
+- cada exportacion Excel queda registrada en `audit_logs`
 - usuarios sin permiso de lectura de asociados no acceden a la pantalla
 - `yarn lint` pasa
 - `yarn build` pasa
@@ -380,6 +409,7 @@ El hito queda cerrado cuando:
 8. Exportar y verificar que el Excel contiene solo los registros filtrados.
 9. Click en una empresa y validar navegacion a su ficha.
 10. Probar con usuario sin permiso de `asociados:read`.
+11. Verificar en Auditoria un evento `excel_exports` / `export_excel`.
 
 ## 14. Decision recomendada
 

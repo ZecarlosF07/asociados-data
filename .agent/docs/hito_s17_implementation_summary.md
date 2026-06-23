@@ -4,7 +4,33 @@ Fecha: 2026-06-23
 
 ## Estado
 
-Implementado en codigo. No requiere migracion de base de datos.
+Implementado en codigo y con migracion de auditoria.
+
+## Base de datos
+
+Se creo:
+
+```txt
+supabase/migrations/20260623100000_s17_excel_export_audit.sql
+```
+
+Incluye la RPC segura:
+
+```txt
+public.log_excel_export(...)
+```
+
+La funcion registra eventos en `audit_logs` con:
+
+- entidad `excel_exports`
+- accion `export_excel`
+- usuario actor tomado de `current_user_profile_id()`
+- nombre de archivo
+- hojas exportadas
+- columnas exportadas
+- cantidad de registros
+
+La ejecucion queda revocada para `public` y `anon`, y permitida solo para `authenticated`.
 
 ## Fuente de datos
 
@@ -70,6 +96,8 @@ Se agrego:
 EXPORT_COLUMNS.companyContacts
 ```
 
+Ademas, `exportToExcel` y `exportMultiSheetExcel` registran auditoria antes de generar el archivo. Si la auditoria falla, la descarga no se ejecuta.
+
 El Excel incluye:
 
 - Contacto
@@ -94,6 +122,8 @@ src/router/associateRoutes.jsx
 src/layouts/Sidebar.jsx
 src/utils/constants.js
 src/utils/exportUtils.js
+src/services/audit.service.js
+src/utils/auditFormatters.js
 src/utils/companyContactUtils.js
 src/services/companyContacts.service.js
 src/hooks/useCompanyContacts.js
@@ -102,6 +132,7 @@ src/components/molecules/contacts/CompanyContactFilters.jsx
 src/components/molecules/contacts/CompanyContactList.jsx
 src/components/molecules/contacts/CompanyContactListItem.jsx
 src/types/associates.ts
+supabase/migrations/20260623100000_s17_excel_export_audit.sql
 ```
 
 ## Validaciones ejecutadas
