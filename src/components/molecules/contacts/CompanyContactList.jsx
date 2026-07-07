@@ -5,7 +5,7 @@ export function CompanyContactList({ contacts, onAssociateClick }) {
     <div className="space-y-3">
       {contacts.map((contact) => (
         <CompanyContactListItem
-          key={contact.id}
+          key={`${contact.source}:${contact.id}`}
           contact={contact}
           onAssociateClick={onAssociateClick}
         />

@@ -1,5 +1,6 @@
 import { Badge } from '../../atoms/Badge'
 import { ASSOCIATE_STATUS_VARIANT } from '../../../utils/associateConstants'
+import { formatDateOnly } from '../../../utils/dateOnly'
 
 export function CompanyContactListItem({ contact, onAssociateClick }) {
   const associate = contact.associate
@@ -11,6 +12,7 @@ export function CompanyContactListItem({ contact, onAssociateClick }) {
           <div className="flex flex-wrap items-center gap-2 mb-1">
             <h3 className="text-sm font-bold text-slate-900">{contact.full_name}</h3>
             {contact.is_primary && <Badge variant="info">Principal</Badge>}
+            <Badge>{contact.contact_type_label}</Badge>
             {contact.area?.label && <Badge>{contact.area.label}</Badge>}
           </div>
           <p className="text-xs text-slate-500">
@@ -66,6 +68,17 @@ function ContactData({ contact }) {
         <span className="font-medium text-slate-700">Tel:</span>{' '}
         {contact.phone || '—'}
       </span>
+      {contact.dni && (
+        <span>
+          <span className="font-medium text-slate-700">DNI:</span> {contact.dni}
+        </span>
+      )}
+      {contact.birthday && (
+        <span>
+          <span className="font-medium text-slate-700">Onomástico:</span>{' '}
+          {formatDateOnly(contact.birthday)}
+        </span>
+      )}
     </div>
   )
 }

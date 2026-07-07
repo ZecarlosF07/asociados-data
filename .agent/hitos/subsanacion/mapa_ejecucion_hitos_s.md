@@ -630,3 +630,53 @@ Implementado en codigo el 2026-06-23. La captura de contactos por area se mantie
 - validar permiso `asociados:read`
 - `yarn lint`
 - `yarn build`
+
+## S18 - Representantes en el directorio de contactos de empresas
+
+### Estado actual
+
+Implementado en codigo el 2026-07-07. El directorio unifica contactos por area,
+representantes legales y representantes ante la Camara sin duplicar registros.
+No requiere una migracion nueva.
+
+### Evidencia en codigo y documentacion
+
+- `supabase/migrations/20260317020000_create_associate_people.sql`
+- `supabase/migrations/20260608090000_add_person_role_representante_ante_camara.sql`
+- `src/components/molecules/associates/PersonForm.jsx`
+- `src/services/companyContacts.service.js`
+- `src/utils/companyContactUtils.js`
+- `.agent/hitos/subsanacion/hito_s18_directorio_representantes_empresas.md`
+- `.agent/docs/hito_s18_implementation_summary.md`
+
+### Riesgos detectados
+
+- copiar representantes a `associate_area_contacts` duplicaria la fuente de verdad
+- filtrar por la etiqueta del rol seria fragil ante cambios de redaccion
+- combinar representante y area sin una regla UX produciria resultados confusos
+- exportar solo los campos de contacto por area perderia DNI y onomastico
+- consultar todos los roles de persona ampliaria el alcance sin necesidad
+
+### Archivos principales modificados
+
+- `src/services/companyContacts.service.js`
+- `src/hooks/useCompanyContacts.js`
+- `src/utils/companyContactUtils.js`
+- `src/utils/exportUtils.js`
+- `src/components/molecules/contacts/CompanyContactFilters.jsx`
+- `src/components/molecules/contacts/CompanyContactListItem.jsx`
+- `src/pages/contacts/CompanyContactsPage.jsx`
+
+### Validacion de cierre
+
+- mostrar contactos por area y ambos tipos de representante
+- filtrar mediante codigos estables por tipo de contacto
+- limpiar y deshabilitar area cuando se filtra un representante
+- reflejar representantes registrados en la ficha sin duplicarlos
+- exportar el resultado filtrado con tipo, DNI y onomastico
+- validar fecha de onomastico con utilidades `dateOnly`
+- validar auditoria de la descarga Excel
+- validar permiso `asociados:read`
+- `yarn lint`
+- `yarn build`
+- `git diff --check`

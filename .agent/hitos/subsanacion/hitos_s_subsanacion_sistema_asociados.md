@@ -191,6 +191,16 @@ Agrega una vista transversal para explotar los contactos por área ya registrado
 - navegación desde el contacto hacia la ficha del asociado
 - exportación a Excel del resultado filtrado
 
+### S18. Evolución post-release de los Hitos 5 y S17: representantes en el directorio
+
+Amplía el directorio de contactos sin duplicar la información existente:
+
+- incorpora representantes legales desde `associate_people`
+- incorpora representantes ante la Cámara desde `associate_people`
+- agrega filtro por tipo de contacto
+- conserva el filtro por área para los contactos por área
+- exporta a Excel el resultado unificado y filtrado
+
 ## Orden recomendado de ejecución
 
 1. S0 - Calidad transversal.
@@ -211,6 +221,7 @@ Agrega una vista transversal para explotar los contactos por área ya registrado
 16. S15 - Modalidades de cobro para membresías anuales.
 17. S16 - Asignación de comités a asociados.
 18. S17 - Directorio operativo de contactos de empresas.
+19. S18 - Representantes en el directorio de contactos de empresas.
 
 S0 debe hacerse primero porque reduce fricción técnica. S6 debe hacerse al final porque valida todo el sistema integrado.
 S7 se ejecuta después de S6 porque nace de un bug funcional detectado durante validación posterior al release interno.
@@ -224,6 +235,7 @@ S14 se ejecuta después de S13 y antes de limpiar la base de datos porque endure
 S15 se ejecuta después de S14 porque amplía la lógica financiera ya estabilizada y debe respetar las reglas de fechas endurecidas antes de cargar membresías reales con nuevas modalidades.
 S16 se ejecuta después de estabilizar el núcleo de asociados y los permisos, y antes de desarrollar reuniones o documentos específicos de comités.
 S17 se ejecuta después de S16 porque aprovecha la ficha de asociados ya estabilizada y agrega una consulta transversal sin cambiar la captura de contactos existente.
+S18 se ejecuta después de S17 porque amplía su consulta con representantes ya registrados en la ficha, sin crear nuevas fuentes de verdad.
 
 ## Criterio global de cierre
 

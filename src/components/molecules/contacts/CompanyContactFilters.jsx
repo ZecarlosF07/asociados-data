@@ -2,8 +2,14 @@ import { Input } from '../../atoms/Input'
 import { CatalogSelect } from '../CatalogSelect'
 import { CategorySelect } from '../CategorySelect'
 import { ASSOCIATE_CATALOG_GROUPS } from '../../../utils/associateConstants'
+import {
+  COMPANY_CONTACT_TYPE_OPTIONS,
+  isRepresentativeContactType,
+} from '../../../utils/companyContactUtils'
 
 export function CompanyContactFilters({ filters, onClear, onFilterChange }) {
+  const areaDisabled = isRepresentativeContactType(filters.contactType)
+
   return (
     <div className="flex flex-wrap items-end gap-3 mb-6 bg-white border border-slate-200 rounded-lg p-4">
       <div className="flex-1 min-w-[220px]">
@@ -15,6 +21,22 @@ export function CompanyContactFilters({ filters, onClear, onFilterChange }) {
         />
       </div>
 
+      <div className="w-52">
+        <FilterLabel>Tipo de contacto</FilterLabel>
+        <select
+          name="contactType"
+          value={filters.contactType}
+          onChange={(event) => onFilterChange({ contactType: event.target.value })}
+          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
+        >
+          {COMPANY_CONTACT_TYPE_OPTIONS.map((option) => (
+            <option key={option.value || 'all'} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div className="w-44">
         <FilterLabel>Área</FilterLabel>
         <CatalogSelect
@@ -23,6 +45,7 @@ export function CompanyContactFilters({ filters, onClear, onFilterChange }) {
           value={filters.areaId}
           onChange={(event) => onFilterChange({ areaId: event.target.value })}
           placeholder="Todas"
+          disabled={areaDisabled}
         />
       </div>
 

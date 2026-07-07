@@ -204,11 +204,14 @@ export const EXPORT_COLUMNS = {
   ],
 
   companyContacts: [
-    { key: 'contact_name', label: 'Contacto' },
+    { key: 'contact_type', label: 'Tipo de contacto' },
     { key: 'area', label: 'Área' },
+    { key: 'contact_name', label: 'Contacto' },
     { key: 'position', label: 'Cargo' },
     { key: 'email', label: 'Email' },
     { key: 'phone', label: 'Teléfono' },
+    { key: 'dni', label: 'DNI' },
+    { key: 'birthday', label: 'Onomástico' },
     { key: 'is_primary_label', label: 'Principal' },
     { key: 'associate_name', label: 'Asociado' },
     { key: 'associate_code', label: 'Código asociado' },

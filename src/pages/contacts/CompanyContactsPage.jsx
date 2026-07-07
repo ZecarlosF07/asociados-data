@@ -105,5 +105,5 @@ function CompanyContactContent({ contacts, onAssociateClick }) {
 
 function getEmptyDescription(hasFilters) {
   if (hasFilters) return 'No se encontraron contactos con los filtros aplicados.'
-  return 'Todavía no hay contactos por área registrados en los asociados.'
+  return 'Todavía no hay contactos ni representantes registrados en los asociados.'
 }
