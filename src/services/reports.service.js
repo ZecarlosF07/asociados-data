@@ -72,6 +72,28 @@ export const reportsService = {
     return data.map(mapDocumentReport)
   },
 
+  async getCommitteesReport() {
+    const [assignmentsResult, committeesResult] = await Promise.all([
+      supabase
+        .from('report_committee_assignments_current')
+        .select('*')
+        .order('associate_company_name', { ascending: true }),
+      supabase
+        .from('committees')
+        .select('id, code, name, is_active')
+        .eq('is_deleted', false)
+        .order('name', { ascending: true }),
+    ])
+
+    if (assignmentsResult.error) throw assignmentsResult.error
+    if (committeesResult.error) throw committeesResult.error
+
+    return {
+      associates: (assignmentsResult.data || []).map(mapCommitteeAssociateReport),
+      committees: committeesResult.data || [],
+    }
+  },
+
   async getDashboardKpis() {
     const { data, error } = await supabase
       .from('dashboard_kpis')
@@ -216,6 +238,29 @@ function mapDocumentReport(row) {
     document_type: buildCatalog(row.document_type_code, row.document_type_label),
     document_category: buildCatalog(row.document_category_code, row.document_category_label),
     associate: buildAssociate(row),
+  }
+}
+
+function mapCommitteeAssociateReport(row) {
+  return {
+    id: row.associate_id,
+    assignment_id: row.committee_assignment_id,
+    internal_code: row.associate_internal_code,
+    company_name: row.associate_company_name,
+    ruc: row.associate_ruc,
+    joined_at: row.joined_at,
+    associate_status: buildCatalog(row.associate_status_code, row.associate_status_label),
+    category: buildCategory(row.category_code, row.category_name),
+    committee_label: row.committee_name || 'Sin comité',
+    committee_code: row.committee_code || '',
+    committee: row.committee_id
+      ? {
+          id: row.committee_id,
+          code: row.committee_code,
+          name: row.committee_name,
+          is_active: row.committee_is_active,
+        }
+      : null,
   }
 }
 

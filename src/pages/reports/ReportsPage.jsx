@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button } from '../../components/atoms/Button'
-import { reportsService } from '../../services/reports.service'
-import { exportMultiSheetExcel, EXPORT_COLUMNS } from '../../utils/exportUtils'
+import { ReportsExportAllButton } from '../../components/molecules/reports/ReportsExportAllButton'
 import { formatDate } from '../../utils/helpers'
-import { REPORT_TABS, reportFilename } from '../../utils/reportConfigs'
+import { REPORT_TABS } from '../../utils/reportConfigs'
 import { AssociatesReportTab } from './sections/AssociatesReportTab'
+import { CommitteesReportTab } from './sections/CommitteesReportTab'
 import { DocumentsReportTab } from './sections/DocumentsReportTab'
 import { MembershipsReportTab } from './sections/MembershipsReportTab'
 import { PaymentsCollectionsReportTab } from './sections/PaymentsCollectionsReportTab'
@@ -26,7 +25,7 @@ export function ReportsPage() {
             {formatDate(new Date())}
           </p>
         </div>
-        <ExportAllButton />
+        <ReportsExportAllButton />
       </div>
 
       <div className="flex gap-1 border-b border-slate-200 mb-6 overflow-x-auto">
@@ -48,64 +47,10 @@ export function ReportsPage() {
       {activeTab === 'overview' && <ReportsSummaryTab navigate={navigate} />}
       {activeTab === 'prospects' && <ProspectsReportTab navigate={navigate} />}
       {activeTab === 'associates' && <AssociatesReportTab navigate={navigate} />}
+      {activeTab === 'committees' && <CommitteesReportTab navigate={navigate} />}
       {activeTab === 'memberships' && <MembershipsReportTab navigate={navigate} />}
       {activeTab === 'financial' && <PaymentsCollectionsReportTab />}
       {activeTab === 'documents' && <DocumentsReportTab />}
     </div>
-  )
-}
-
-function ExportAllButton() {
-  const [loading, setLoading] = useState(false)
-
-  const handleExportAll = async () => {
-    setLoading(true)
-    try {
-      const [
-        prospects,
-        associates,
-        memberships,
-        payments,
-        schedules,
-        collections,
-        documents,
-      ] = await Promise.all([
-        reportsService.getProspectsSummary(),
-        reportsService.getAssociatesSummary(),
-        reportsService.getMembershipsSummary(),
-        reportsService.getPaymentsSummary(),
-        reportsService.getSchedulesSummary(),
-        reportsService.getCollectionActionsSummary(),
-        reportsService.getDocumentsSummary(),
-      ])
-
-      await exportMultiSheetExcel({
-        filename: reportFilename('reporte_completo', formatDate(new Date())),
-        sheets: [
-          { sheetName: 'Prospectos', data: prospects, columns: EXPORT_COLUMNS.prospects },
-          { sheetName: 'Asociados', data: associates, columns: EXPORT_COLUMNS.associates },
-          { sheetName: 'Membresías', data: memberships, columns: EXPORT_COLUMNS.memberships },
-          { sheetName: 'Pagos', data: payments, columns: EXPORT_COLUMNS.payments },
-          { sheetName: 'Cronograma', data: schedules, columns: EXPORT_COLUMNS.schedules },
-          { sheetName: 'Gestiones', data: collections, columns: EXPORT_COLUMNS.collections },
-          { sheetName: 'Documentos', data: documents, columns: EXPORT_COLUMNS.documents },
-        ],
-      })
-    } catch (err) {
-      console.error('Error al exportar:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <Button
-      variant="secondary"
-      size="sm"
-      onClick={handleExportAll}
-      loading={loading}
-    >
-      📥 Exportar todo
-    </Button>
   )
 }

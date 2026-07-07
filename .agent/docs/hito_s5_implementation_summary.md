@@ -21,6 +21,10 @@ Se agregaron vistas:
 - `report_documents_summary`
 - `dashboard_kpis`
 
+S19 agrega como extension:
+
+- `report_committee_assignments_current`
+
 Las vistas usan `security_invoker = true`, filtran `is_deleted = false` y exponen campos listos para reportes.
 
 También se agregaron:
@@ -45,6 +49,7 @@ Se crearon secciones:
 - `MembershipsReportTab`
 - `PaymentsCollectionsReportTab`
 - `DocumentsReportTab`
+- `CommitteesReportTab`
 
 Se centralizó configuración en:
 
@@ -53,6 +58,9 @@ Se centralizó configuración en:
 Se agregó:
 
 - `ReportExportButton`
+- `ReportsExportAllButton`
+- `CommitteeReportFilters`
+- `CommitteeReportKpis`
 
 ## Servicios
 
@@ -78,6 +86,13 @@ Se agregó exportación de gestiones de cobranza y la exportación multi-hoja in
 - Cronograma
 - Gestiones
 - Documentos
+- Resumen comités
+- Asociados por comité
+
+La exportacion global genera nueve hojas. La exportacion propia de Comites genera
+las dos ultimas hojas con los filtros activos. Ambas rutas usan la misma funcion
+pura de transformacion y registran auditoria mediante el flujo centralizado de
+Excel.
 
 ## Rendimiento
 

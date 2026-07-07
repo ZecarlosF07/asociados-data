@@ -3,7 +3,7 @@ import { reportsService } from '../services/reports.service'
 
 /**
  * Hook para cargar datos de un reporte específico.
- * @param {'prospects'|'associates'|'memberships'|'payments'|'schedules'|'collections'|'documents'|'kpis'} reportType
+ * @param {'prospects'|'associates'|'memberships'|'payments'|'schedules'|'collections'|'documents'|'committees'|'kpis'} reportType
  */
 export function useReportData(reportType) {
   const [data, setData] = useState(null)
@@ -38,6 +38,9 @@ export function useReportData(reportType) {
           break
         case 'documents':
           result = await reportsService.getDocumentsSummary()
+          break
+        case 'committees':
+          result = await reportsService.getCommitteesReport()
           break
         case 'kpis':
           result = await reportsService.getDashboardKpis()

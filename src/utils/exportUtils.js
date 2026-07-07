@@ -158,6 +158,28 @@ export const EXPORT_COLUMNS = {
     { key: 'payment_health.label', label: 'Salud de pago' },
   ],
 
+  committeeSummary: [
+    { key: 'committee_code', label: 'Código comité' },
+    { key: 'committee_name', label: 'Comité' },
+    { key: 'committee_status', label: 'Estado comité' },
+    { key: 'total_assigned', label: 'Total asociados', format: 'number' },
+    { key: 'active_count', label: 'Activos', format: 'number' },
+    { key: 'inactive_count', label: 'Inactivos', format: 'number' },
+    { key: 'suspended_count', label: 'Suspendidos', format: 'number' },
+    { key: 'in_process_count', label: 'En proceso', format: 'number' },
+  ],
+
+  committeeAssociates: [
+    { key: 'committee_label', label: 'Comité' },
+    { key: 'committee_code', label: 'Código comité' },
+    { key: 'company_name', label: 'Razón social' },
+    { key: 'internal_code', label: 'Código asociado' },
+    { key: 'ruc', label: 'RUC' },
+    { key: 'associate_status.label', label: 'Estado asociado' },
+    { key: 'category.name', label: 'Categoría' },
+    { key: 'joined_at', label: 'Fecha de incorporación', format: 'date' },
+  ],
+
   memberships: [
     { key: 'associate.internal_code', label: 'Código asociado' },
     { key: 'associate.company_name', label: 'Razón social' },

@@ -3,7 +3,15 @@ import { ReportExportButton } from './ReportExportButton'
 /**
  * Sección de reporte con tabla, conteo e botón de exportación
  */
-export function ReportSection({ title, subtitle, count, onExport, exportLabel, children }) {
+export function ReportSection({
+  title,
+  subtitle,
+  count,
+  onExport,
+  exportLabel,
+  exportDisabled = false,
+  children,
+}) {
   return (
     <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
@@ -21,6 +29,7 @@ export function ReportSection({ title, subtitle, count, onExport, exportLabel, c
             <ReportExportButton
               label={`📥 ${exportLabel || 'Exportar Excel'}`}
               onExport={onExport}
+              disabled={exportDisabled}
             />
           )}
         </div>

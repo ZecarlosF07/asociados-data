@@ -680,3 +680,81 @@ No requiere una migracion nueva.
 - `yarn lint`
 - `yarn build`
 - `git diff --check`
+
+## S19 - Reporte actual de comites
+
+### Estado actual
+
+Implementado en codigo y migracion local el 2026-07-07. La aplicacion de la
+migracion y la ejecucion del audit S19 en la instancia desplegada permanecen como
+validacion operativa pendiente.
+
+### Evidencia en codigo y documentacion
+
+- `supabase/migrations/20260622090000_s16_associate_committees.sql`
+- `src/services/committees.service.js`
+- `src/services/reports.service.js`
+- `src/pages/reports/ReportsPage.jsx`
+- `src/hooks/useReportData.js`
+- `src/utils/reportConfigs.js`
+- `.agent/hitos/subsanacion/hito_s19_reporte_comites.md`
+- `supabase/migrations/20260707100000_s19_committee_reports.sql`
+- `supabase/audits/hito_s19_committee_reports_audit.sql`
+- `src/utils/committeeReportUtils.js`
+- `src/pages/reports/sections/CommitteesReportTab.jsx`
+- `.agent/docs/hito_s19_implementation_summary.md`
+
+### Riesgos detectados
+
+- contar todo el historial inflaria los totales actuales
+- excluir asociados no activos ocultaria parte de la asignacion institucional
+- consultar las tablas solo desde frontend duplicaria reglas de conteo
+- usar permisos `comites:read` impediria el reporte a Alta Direccion
+- agrupar por separado para UI y Excel produciria resultados divergentes
+- exportar sin filtros o sin auditoria incumpliria las reglas transversales
+
+### Archivos principales a tocar
+
+- migracion y audit SQL S19
+- `src/services/reports.service.js`
+- `src/hooks/useReportData.js`
+- `src/utils/reportConfigs.js`
+- `src/utils/committeeReportUtils.js`
+- `src/utils/exportUtils.js`
+- `src/types/reports.ts`
+- `src/pages/reports/ReportsPage.jsx`
+- nueva seccion y filtros del reporte de comites
+- componente de siete indicadores del reporte
+- componente extraido para `Exportar todo`
+- `ReportSection` y `ReportExportButton` para propagar `exportDisabled`
+- `.agent/docs/hito_s13_roles_permisos_operativos.md`
+- `.agent/docs/hito_s5_implementation_summary.md`
+- `.agent/docs/hito_8_implementation_summary.md`
+- `.agent/docs/qa_checklist_mvp.md`
+- `.agent/hitos/subsanacion/mapa_ejecucion_hitos_s.md`
+
+### Validacion de cierre
+
+- contar solo asignaciones principales vigentes
+- incluir asociados de todos los estados y desglosarlos
+- identificar asociados sin comite y comites con cero asociados
+- calcular cobertura, comite mayor y promedio por comite
+- combinar busqueda, comite, estado y categoria
+- usar UUID para comite y codigos estables para estado y categoria
+- conservar comites vacios cuando coincidan con la busqueda
+- mantener consistencia entre indicadores, graficos, tablas y Excel
+- exportar resumen y detalle filtrados con auditoria
+- deshabilitar exportacion solo cuando resumen y detalle estan vacios
+- incluir comites en `Exportar todo`
+- compartir una sola transformacion entre pantalla y ambas exportaciones
+- conservar identificadores estables en tablas y navegacion
+- validar `reportes:read` sin permisos administrativos de comites
+- validar politicas `committees_reports_read` y `associate_committees_reports_read`
+- validar grants `select` requeridos por la vista `security_invoker`
+- mantener los componentes bajo 120 lineas
+- actualizar resumenes S5/Hito 8, checklist QA y estado documental de S19
+- validar fechas `joined_at` con utilidades `dateOnly`
+- ejecutar audit SQL S19
+- `yarn lint`
+- `yarn build`
+- `git diff --check`

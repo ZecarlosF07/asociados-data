@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '../../atoms/Button'
 
-export function ReportExportButton({ label = 'Exportar Excel', onExport }) {
+export function ReportExportButton({ disabled = false, label = 'Exportar Excel', onExport }) {
   const [loading, setLoading] = useState(false)
 
   const handleClick = async () => {
@@ -19,6 +19,7 @@ export function ReportExportButton({ label = 'Exportar Excel', onExport }) {
       size="sm"
       onClick={handleClick}
       loading={loading}
+      disabled={disabled}
     >
       {label}
     </Button>

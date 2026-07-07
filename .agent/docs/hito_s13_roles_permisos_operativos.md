@@ -93,6 +93,15 @@ Para que `ALTA_DIRECCION` pueda consultar reportes sin recibir permisos operativ
 - `collection_actions`
 - `documents`
 
+S19 extiende esta lectura exclusivamente para el reporte actual de comites sobre:
+
+- `committees`
+- `associate_committees`
+
+Las politicas de S19 son `committees_reports_read` y
+`associate_committees_reports_read`. No habilitan escrituras ni acceso funcional al
+modulo `/comites`.
+
 Esto permite alimentar las vistas de reportes, pero no habilita:
 
 - navegacion a modulos operativos
@@ -126,10 +135,12 @@ Migraciones:
 - `supabase/migrations/20260519010000_s13_user_generation_operational_roles.sql`
 - `supabase/migrations/20260519020000_s13_internal_reference_reads.sql`
 - `supabase/migrations/20260519030000_s13_reports_operational_read.sql`
+- `supabase/migrations/20260707100000_s19_committee_reports.sql`
 
 Auditoria:
 
 - `supabase/audits/hito_s13_user_roles_audit.sql`
+- `supabase/audits/hito_s19_committee_reports_audit.sql`
 
 Frontend:
 
@@ -161,6 +172,10 @@ El audit debe validar, como minimo:
 - `facturacion_sin_asociados_module_permission = 0`
 - `reportes_operational_read_policies = 5`
 - `alta_direccion_sin_modulos_operativos = 0`
+
+El control `reportes_operational_read_policies = 5` conserva el alcance original de
+S13. Las dos politicas adicionales de comites se validan por nombre y permisos en
+el audit S19.
 
 ## 9. Criterio funcional
 

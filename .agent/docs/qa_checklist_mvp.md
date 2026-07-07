@@ -89,10 +89,15 @@ Marcar cada punto como:
 | Validar KPIs | Pendiente |  |
 | Validar reporte de prospectos | Pendiente |  |
 | Validar reporte de asociados | Pendiente |  |
+| Validar reporte de comités y sus siete indicadores | Pendiente |  |
+| Combinar filtros de comité, estado, categoría y búsqueda | Pendiente |  |
+| Validar asociados sin comité y comités activos con conteo cero | Pendiente |  |
 | Validar reporte financiero | Pendiente |  |
 | Validar reporte documental | Pendiente |  |
 | Exportar Excel individual | Pendiente |  |
 | Exportar Excel multi-hoja | Pendiente |  |
+| Validar las nueve hojas de `Exportar todo` | Pendiente |  |
+| Confirmar auditoría de ambas exportaciones de comités | Pendiente |  |
 
 ## 8. Cierre técnico
 

@@ -2,6 +2,7 @@ export const REPORT_TABS = [
   { key: 'overview', label: 'Resumen' },
   { key: 'prospects', label: 'Prospectos' },
   { key: 'associates', label: 'Asociados' },
+  { key: 'committees', label: 'Comités' },
   { key: 'memberships', label: 'Membresías' },
   { key: 'financial', label: 'Pagos y cobranza' },
   { key: 'documents', label: 'Documentos' },
@@ -72,6 +73,28 @@ export const REPORT_TABLE_COLUMNS = {
         return 'default'
       },
     },
+  ],
+
+  committeeSummary: [
+    { key: 'committee_code', label: 'Código' },
+    { key: 'committee_name', label: 'Comité' },
+    { key: 'committee_status', label: 'Estado' },
+    { key: 'total_assigned', label: 'Total', align: 'right' },
+    { key: 'active_count', label: 'Activos', align: 'right' },
+    { key: 'inactive_count', label: 'Inactivos', align: 'right' },
+    { key: 'suspended_count', label: 'Suspendidos', align: 'right' },
+    { key: 'in_process_count', label: 'En proceso', align: 'right' },
+  ],
+
+  committeeAssociates: [
+    { key: 'committee_label', label: 'Comité' },
+    { key: 'committee_code', label: 'Código comité' },
+    { key: 'company_name', label: 'Razón social' },
+    { key: 'internal_code', label: 'Código asociado' },
+    { key: 'ruc', label: 'RUC' },
+    { key: 'associate_status.label', label: 'Estado asociado' },
+    { key: 'category.name', label: 'Categoría' },
+    { key: 'joined_at', label: 'Incorporación', format: 'date' },
   ],
 
   memberships: [

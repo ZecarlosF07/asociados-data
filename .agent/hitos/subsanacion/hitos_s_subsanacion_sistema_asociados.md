@@ -201,6 +201,18 @@ Amplía el directorio de contactos sin duplicar la información existente:
 - conserva el filtro por área para los contactos por área
 - exporta a Excel el resultado unificado y filtrado
 
+### S19. Evolución post-release de los Hitos S5 y S16: reporte de comités
+
+Agrega una vista analítica actual de la distribución institucional:
+
+- nueva pestaña `Comités` dentro de Reportes
+- conteo de asociados por comité principal vigente
+- identificación de asociados sin comité y comités sin asociados
+- indicadores de cobertura, comité con más asociados y promedio por comité
+- filtros por comité, estado, categoría y búsqueda
+- detalle navegable hacia la ficha del asociado
+- exportación Excel auditada con resumen y detalle
+
 ## Orden recomendado de ejecución
 
 1. S0 - Calidad transversal.
@@ -222,6 +234,7 @@ Amplía el directorio de contactos sin duplicar la información existente:
 17. S16 - Asignación de comités a asociados.
 18. S17 - Directorio operativo de contactos de empresas.
 19. S18 - Representantes en el directorio de contactos de empresas.
+20. S19 - Reporte actual de comités.
 
 S0 debe hacerse primero porque reduce fricción técnica. S6 debe hacerse al final porque valida todo el sistema integrado.
 S7 se ejecuta después de S6 porque nace de un bug funcional detectado durante validación posterior al release interno.
@@ -236,6 +249,7 @@ S15 se ejecuta después de S14 porque amplía la lógica financiera ya estabiliz
 S16 se ejecuta después de estabilizar el núcleo de asociados y los permisos, y antes de desarrollar reuniones o documentos específicos de comités.
 S17 se ejecuta después de S16 porque aprovecha la ficha de asociados ya estabilizada y agrega una consulta transversal sin cambiar la captura de contactos existente.
 S18 se ejecuta después de S17 porque amplía su consulta con representantes ya registrados en la ficha, sin crear nuevas fuentes de verdad.
+S19 se ejecuta después de S18 porque explota analíticamente el modelo de comités estabilizado en S16 y reutiliza la arquitectura de reportes y auditoría Excel.
 
 ## Criterio global de cierre
 
@@ -269,4 +283,7 @@ La subsanación completa queda cerrada cuando:
 - [S14 - Hardening preproducción de auditoría y fechas de pago](./hito_s14_hardening_preproduccion_auditoria_fechas.md)
 - [S15 - Modalidades de cobro para membresías anuales](./hito_s15_modalidades_cobro_membresias_anuales.md)
 - [S16 - Asignación de comités a asociados](./hito_s16_asignacion_comites_asociados.md)
+- [S17 - Directorio operativo de contactos de empresas](./hito_s17_directorio_contactos_empresas.md)
+- [S18 - Representantes en el directorio de contactos](./hito_s18_directorio_representantes_empresas.md)
+- [S19 - Reporte actual de comités](./hito_s19_reporte_comites.md)
 - [Documento técnico S13 - Roles y permisos operativos](../../docs/hito_s13_roles_permisos_operativos.md)

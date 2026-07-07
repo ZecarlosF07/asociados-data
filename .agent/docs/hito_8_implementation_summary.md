@@ -10,7 +10,7 @@
 
 | Archivo | Responsabilidad |
 |---------|----------------|
-| [reports.service.js](file:///Users/areadeti/Proyectos/asociados-mvp/src/services/reports.service.js) | Consultas centralizadas de reportes para todos los módulos: prospectos, asociados, membresías, pagos, cronogramas, acciones de cobranza, documentos y KPIs agregados |
+| [reports.service.js](file:///Users/areadeti/Proyectos/asociados-mvp/src/services/reports.service.js) | Consultas centralizadas de reportes para todos los módulos: prospectos, asociados, comités, membresías, pagos, cronogramas, acciones de cobranza, documentos y KPIs agregados |
 
 ### 🛠️ Utilidades (1 archivo)
 
@@ -22,9 +22,9 @@
 
 | Archivo | Función |
 |---------|---------|
-| [useReportData.js](file:///Users/areadeti/Proyectos/asociados-mvp/src/hooks/useReportData.js) | Carga reactiva de datos de reporte según tipo (prospects, associates, memberships, payments, schedules, collections, documents, kpis) |
+| [useReportData.js](file:///Users/areadeti/Proyectos/asociados-mvp/src/hooks/useReportData.js) | Carga reactiva de datos de reporte según tipo (prospects, associates, committees, memberships, payments, schedules, collections, documents, kpis) |
 
-### 🧩 Componentes (4 archivos nuevos)
+### 🧩 Componentes
 
 | Componente | Descripción |
 |-----------|-------------|
@@ -32,12 +32,15 @@
 | [DistributionChart.jsx](file:///Users/areadeti/Proyectos/asociados-mvp/src/components/molecules/reports/DistributionChart.jsx) | Gráfico de distribución horizontal con barras proporcionales, porcentajes y colores configurables |
 | [ReportSection.jsx](file:///Users/areadeti/Proyectos/asociados-mvp/src/components/molecules/reports/ReportSection.jsx) | Sección de reporte con título, conteo de registros y botón de exportación |
 | [ReportTable.jsx](file:///Users/areadeti/Proyectos/asociados-mvp/src/components/molecules/reports/ReportTable.jsx) | Tabla de datos con formateo automático (fecha, moneda, badge, booleano), valores anidados, truncamiento y click en fila |
+| [CommitteeReportFilters.jsx](file:///Users/areadeti/Proyectos/asociados-mvp/src/components/molecules/reports/CommitteeReportFilters.jsx) | Filtros combinables por búsqueda, comité, estado y categoría |
+| [CommitteeReportKpis.jsx](file:///Users/areadeti/Proyectos/asociados-mvp/src/components/molecules/reports/CommitteeReportKpis.jsx) | Siete indicadores recalculados sobre el resultado filtrado |
+| [ReportsExportAllButton.jsx](file:///Users/areadeti/Proyectos/asociados-mvp/src/components/molecules/reports/ReportsExportAllButton.jsx) | Exportación global auditada de nueve hojas |
 
 ### 📄 Páginas (1)
 
 | Archivo | Descripción |
 |---------|-------------|
-| [ReportsPage.jsx](file:///Users/areadeti/Proyectos/asociados-mvp/src/pages/reports/ReportsPage.jsx) | Página principal de reportes con 6 pestañas (Resumen, Prospectos, Asociados, Membresías, Pagos/Cobranza, Documentos). Cada pestaña incluye KPIs, gráficos de distribución, tablas de datos y exportación individual a Excel. Incluye botón "Exportar todo" para generar un Excel multi-hoja |
+| [ReportsPage.jsx](file:///Users/areadeti/Proyectos/asociados-mvp/src/pages/reports/ReportsPage.jsx) | Página principal de reportes con 7 pestañas (Resumen, Prospectos, Asociados, Comités, Membresías, Pagos/Cobranza, Documentos). Cada pestaña incluye KPIs, gráficos de distribución, tablas de datos y exportación individual a Excel. Incluye botón "Exportar todo" para generar un Excel multi-hoja |
 
 ### 📦 Dependencias instaladas (2)
 
@@ -63,9 +66,10 @@ flowchart TD
     R[Reportes] --> T1[Resumen]
     R --> T2[Prospectos]
     R --> T3[Asociados]
-    R --> T4[Membresías]
-    R --> T5[Pagos y Cobranza]
-    R --> T6[Documentos]
+    R --> T4[Comités]
+    R --> T5[Membresías]
+    R --> T6[Pagos y Cobranza]
+    R --> T7[Documentos]
 
     T1 --> K1[7 KPI Cards]
     T1 --> C1[Distribución prospectos]
@@ -77,17 +81,20 @@ flowchart TD
     T3 --> K3[Chart estado + categoría]
     T3 --> E3[Tabla + Export Excel]
 
-    T4 --> K4[4 KPIs + Charts]
-    T4 --> E4[Tabla + Export Excel]
+    T4 --> K4[7 KPIs + 2 Charts]
+    T4 --> E4[Resumen y detalle + Export multi-hoja]
 
-    T5 --> K5[4 KPIs financieros]
-    T5 --> C5[Charts método/estado]
-    T5 --> E5A[Tabla pagos + Export]
-    T5 --> E5B[Tabla cronograma + Export]
+    T5 --> K5[4 KPIs + Charts]
+    T5 --> E5[Tabla + Export Excel]
 
-    T6 --> K6[3 KPIs]
-    T6 --> C6[Charts tipo/categoría]
-    T6 --> E6[Tabla + Export Excel]
+    T6 --> K6[4 KPIs financieros]
+    T6 --> C6[Charts método/estado]
+    T6 --> E6A[Tabla pagos + Export]
+    T6 --> E6B[Tabla cronograma + Export]
+
+    T7 --> K7[3 KPIs]
+    T7 --> C7[Charts tipo/categoría]
+    T7 --> E7[Tabla + Export Excel]
 
     R --> EA[Exportar Todo → Excel multi-hoja]
 ```
@@ -97,6 +104,7 @@ flowchart TD
 ### Reportes operativos
 - **Prospectos**: por estado, categoría, captador
 - **Asociados**: por estado, categoría, salud de pago
+- **Comités**: cobertura, distribución, estados y detalle filtrable de asociados
 - **Membresías**: vigentes/vencidas, por tipo, tarifas totales
 - **Pagos**: total recaudado, por método de pago
 - **Cobranza**: pendientes, vencidas, por estado
@@ -104,7 +112,7 @@ flowchart TD
 
 ### Exportaciones a Excel
 - **Por módulo**: cada pestaña tiene botón "Exportar Excel" individual
-- **Exportar todo**: botón global genera Excel con 6 hojas (uno por módulo)
+- **Exportar todo**: botón global genera Excel con 9 hojas, incluidas `Resumen comités` y `Asociados por comité`
 - **En listados**: Membresías y Cobranza ahora tienen botón de exportación directa
 - **Formato**: columnas predefinidas con formateo de fechas y moneda
 
