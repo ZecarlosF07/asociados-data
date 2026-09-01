@@ -21,6 +21,26 @@ const ASSOCIATE_SELECT = `
 `
 
 export const associatesService = {
+  async getActiveCount() {
+    const { count, error } = await supabase
+      .from('associate_operational_summary')
+      .select('id', { count: 'exact', head: true })
+      .eq('effective_status_code', 'ACTIVO')
+
+    if (error) throw error
+    return count || 0
+  },
+
+  async getTotalCount() {
+    const { count, error } = await supabase
+      .from('associates')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_deleted', false)
+
+    if (error) throw error
+    return count || 0
+  },
+
   async getAll({
     search,
     statusId,

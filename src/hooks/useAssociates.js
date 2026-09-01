@@ -3,6 +3,8 @@ import { associatesService } from '../services/associates.service'
 
 export function useAssociates() {
   const [associates, setAssociates] = useState([])
+  const [activeCount, setActiveCount] = useState(0)
+  const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [filters, setFilters] = useState({
@@ -18,8 +20,14 @@ export function useAssociates() {
     setError(null)
 
     try {
-      const data = await associatesService.getAll(filters)
+      const [data, count, active] = await Promise.all([
+        associatesService.getAll(filters),
+        associatesService.getTotalCount(),
+        associatesService.getActiveCount(),
+      ])
       setAssociates(data)
+      setTotalCount(count)
+      setActiveCount(active)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -36,11 +44,25 @@ export function useAssociates() {
   }, [])
 
   return {
+    activeCount,
     associates,
+    filteredCount: associates.length,
+    hasFilters: hasAssociateFilters(filters),
+    totalCount,
     loading,
     error,
     filters,
     updateFilters,
     refetch: fetchAssociates,
   }
+}
+
+function hasAssociateFilters(filters) {
+  return Boolean(
+    filters.search.trim() ||
+    filters.statusId ||
+    filters.categoryId ||
+    filters.committeeId ||
+    filters.withoutCommittee
+  )
 }

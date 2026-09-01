@@ -8,8 +8,8 @@ const MEMBERSHIP_SELECT = `
 `
 
 export const membershipsService = {
-  async getAll({ search, statusId, typeId } = {}) {
-    let query = supabase
+  async getAll() {
+    const { data, error } = await supabase
       .from('memberships')
       .select(`
         ${MEMBERSHIP_SELECT},
@@ -18,26 +18,8 @@ export const membershipsService = {
       .eq('is_deleted', false)
       .order('start_date', { ascending: false })
 
-    if (typeId) query = query.eq('membership_type_id', typeId)
-
-    const { data, error } = await query
     if (error) throw error
-
-    let result = await attachOperationalMemberships(data || [])
-    if (statusId) {
-      const statusCode = await getCatalogCode(statusId)
-      result = result.filter((membership) => membership.membership_status?.code === statusCode)
-    }
-    if (search) {
-      const term = search.toLowerCase()
-      result = result.filter(
-        (membership) =>
-          membership.associate?.company_name?.toLowerCase().includes(term) ||
-          membership.associate?.ruc?.includes(term) ||
-          membership.associate?.internal_code?.toLowerCase().includes(term)
-      )
-    }
-    return result
+    return attachOperationalMemberships(data || [])
   },
 
   async getByAssociate(associateId) {
@@ -141,16 +123,6 @@ async function attachOperationalMemberships(memberships) {
       },
     }
   })
-}
-
-async function getCatalogCode(id) {
-  const { data, error } = await supabase
-    .from('catalog_items')
-    .select('code')
-    .eq('id', id)
-    .single()
-  if (error) throw error
-  return data.code
 }
 
 function normalizeMembershipError(error) {

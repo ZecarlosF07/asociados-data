@@ -12,7 +12,17 @@ export function AssociatesPage() {
   const navigate = useNavigate()
   const { canCreate } = usePermissions()
   const canCreateAssociate = canCreate('asociados')
-  const { associates, loading, error, filters, updateFilters } = useAssociates()
+  const {
+    activeCount,
+    associates,
+    error,
+    filteredCount,
+    filters,
+    hasFilters,
+    loading,
+    totalCount,
+    updateFilters,
+  } = useAssociates()
 
   const handleClearFilters = () => {
     updateFilters({
@@ -32,9 +42,11 @@ export function AssociatesPage() {
     <div className="max-w-6xl">
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-1">Asociados</h1>
+          <h1 className="text-2xl font-bold text-slate-900 mb-1">Empresas</h1>
           <p className="text-sm text-slate-400">
-            Gestión de empresas asociadas y su ficha institucional.
+            {loading
+              ? 'Gestión de empresas asociadas y su ficha institucional.'
+              : getCompaniesSummary({ activeCount, filteredCount, hasFilters, totalCount })}
           </p>
         </div>
         {canCreateAssociate && (
@@ -86,4 +98,11 @@ export function AssociatesPage() {
       )}
     </div>
   )
+}
+
+function getCompaniesSummary({ activeCount, filteredCount, hasFilters, totalCount }) {
+  if (hasFilters) {
+    return `${filteredCount} de ${totalCount} empresas cumplen los filtros.`
+  }
+  return `${activeCount} asociadas de ${totalCount} empresas registradas.`
 }
