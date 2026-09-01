@@ -60,13 +60,20 @@ export function formatDateOnly(value) {
   return `${pad2(parts.day)}/${pad2(parts.month)}/${parts.year}`
 }
 
-export function todayDateOnly() {
-  return toDateOnlyString(new Date())
+export function todayDateOnly(now = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Lima',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(now)
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]))
+  return `${values.year}-${values.month}-${values.day}`
 }
 
 export function startOfCurrentMonthDateOnly() {
-  const today = new Date()
-  return buildDateOnly(today.getFullYear(), today.getMonth() + 1, 1)
+  const { year, month } = getDateOnlyParts(todayDateOnly())
+  return buildDateOnly(year, month, 1)
 }
 
 export function addDaysToDateOnly(value, days) {

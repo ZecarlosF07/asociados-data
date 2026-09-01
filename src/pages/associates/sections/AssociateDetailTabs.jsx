@@ -54,6 +54,7 @@ export function AssociateDetailTabs(props) {
           onEditAssociate={props.onEditAssociate}
           onSubmit={props.onMembershipSubmit}
           onCancel={props.onMembershipCancel}
+          onCancelScheduled={props.onScheduledMembershipCancel}
           onRenew={props.onMembershipRenew}
         />
       )}

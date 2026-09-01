@@ -10,7 +10,7 @@ const OPTIONS = [
 
 export function AssociatePaymentsCollectionsSection(props) {
   const [active, setActive] = useState('payments')
-  const common = { actionLoading: props.actionLoading, canEdit: props.canEdit }
+  const common = { actionLoading: props.actionLoading, canEdit: props.canManageCollection }
 
   return (
     <div>
@@ -21,6 +21,7 @@ export function AssociatePaymentsCollectionsSection(props) {
           schedules={props.schedules}
           payments={props.payments}
           onPaymentSubmit={props.onPaymentSubmit}
+          onPaymentReverse={props.onPaymentReverse}
         />
       )}
       {active === 'collections' && (

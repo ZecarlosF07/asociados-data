@@ -1,7 +1,8 @@
 import { Badge } from '../../atoms/Badge'
+import { Button } from '../../atoms/Button'
 import { formatDate, formatCurrency } from '../../../utils/helpers'
 
-export function PaymentList({ payments }) {
+export function PaymentList({ payments, canReverse = false, loading = false, onReverse }) {
   if (payments.length === 0) {
     return (
       <p className="text-sm text-slate-400 text-center py-6">
@@ -36,6 +37,7 @@ export function PaymentList({ payments }) {
             <th className="text-center py-2 px-3 text-xs font-semibold text-slate-500">
               Estado
             </th>
+            {canReverse && <th className="text-center py-2 px-3 text-xs font-semibold text-slate-500">Acción</th>}
           </tr>
         </thead>
         <tbody>
@@ -73,6 +75,16 @@ export function PaymentList({ payments }) {
                   <Badge variant="success">Válido</Badge>
                 )}
               </td>
+              {canReverse && (
+                <td className="py-2 px-3 text-center">
+                  {!p.is_reversed && (
+                    <Button size="sm" variant="ghost" disabled={loading}
+                      onClick={() => onReverse(p)}>
+                      Reversar
+                    </Button>
+                  )}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

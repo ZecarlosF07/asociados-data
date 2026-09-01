@@ -46,10 +46,12 @@ export const companyContactsService = {
     if (areaResult.error) throw areaResult.error
     if (representativeResult.error) throw representativeResult.error
 
-    return [
+    const contacts = [
       ...(areaResult.data || []).map(mapAreaContact),
       ...(representativeResult.data || []).map(mapRepresentative),
-    ].sort(compareByName)
+    ]
+
+    return (await attachOperationalAssociateStates(contacts)).sort(compareByName)
   },
 }
 
@@ -110,4 +112,41 @@ function mapAssociate(associate) {
 
 function compareByName(first, second) {
   return first.full_name.localeCompare(second.full_name, 'es', { sensitivity: 'base' })
+}
+
+async function attachOperationalAssociateStates(contacts) {
+  const associateIds = [...new Set(contacts.map((contact) => contact.associate?.id).filter(Boolean))]
+  if (!associateIds.length) return contacts
+
+  const [operationalResult, statusesResult] = await Promise.all([
+    supabase.from('associate_operational_summary').select('id, effective_status_code, effective_status_label').in('id', associateIds),
+    supabase.from('catalog_items').select('id, code, group:group_id(code)').eq('is_deleted', false),
+  ])
+  if (operationalResult.error) throw operationalResult.error
+  if (statusesResult.error) throw statusesResult.error
+
+  const statuses = new Map(
+    (statusesResult.data || [])
+      .filter((item) => item.group?.code === 'ASSOCIATE_STATUS')
+      .map((item) => [item.code, item])
+  )
+  const operationalById = new Map((operationalResult.data || []).map((row) => [row.id, row]))
+
+  return contacts.map((contact) => {
+    const operational = operationalById.get(contact.associate?.id)
+    const status = statuses.get(operational?.effective_status_code)
+    if (!operational || !status) return contact
+    return {
+      ...contact,
+      associate: {
+        ...contact.associate,
+        associate_status_id: status.id,
+        associate_status: {
+          id: status.id,
+          code: operational.effective_status_code,
+          label: operational.effective_status_label,
+        },
+      },
+    }
+  })
 }

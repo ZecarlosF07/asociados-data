@@ -2,7 +2,10 @@
 -- Auditoria Hito S21: consistencia de membresias
 -- ============================================================
 
+-- Resultado consolidado para el SQL Editor de Supabase.
+with checks as (
 select
+  1 as position,
   's21_unique_current_index' as check_name,
   count(*)::int as found,
   1 as expected,
@@ -10,9 +13,10 @@ select
 from pg_indexes
 where schemaname = 'public'
   and tablename = 'memberships'
-  and indexname = 'uq_memberships_current_associate';
-
+  and indexname = 'uq_memberships_current_associate'
+union all
 select
+  2 as position,
   's21_required_objects' as check_name,
   count(*)::int as found,
   6 as expected,
@@ -34,9 +38,10 @@ from (
   from pg_constraint
   where conrelid = 'public.memberships'::regclass
     and conname = 'chk_memberships_current_category'
-) required_objects;
-
+) required_objects
+union all
 select
+  3 as position,
   's21_required_triggers' as check_name,
   count(*)::int as found,
   2 as expected,
@@ -47,9 +52,10 @@ where tgrelid in ('public.memberships'::regclass, 'public.associates'::regclass)
   and tgname in (
     'trg_memberships_prepare_category',
     'trg_associates_sync_membership_category'
-  );
-
+  )
+union all
 select
+  4 as position,
   's21_duplicate_current_memberships' as check_name,
   count(*)::int as found,
   0 as expected,
@@ -60,9 +66,10 @@ from (
   where is_current = true and is_deleted = false
   group by associate_id
   having count(*) > 1
-) duplicates;
-
+) duplicates
+union all
 select
+  5 as position,
   's21_invalid_current_categories' as check_name,
   count(*)::int as found,
   0 as expected,
@@ -83,9 +90,10 @@ where m.is_current = true
         and c.is_active = true
         and c.is_deleted = false
     )
-  );
-
+  )
+union all
 select
+  6 as position,
   's21_recoverable_historical_null_categories' as check_name,
   count(*)::int as found,
   0 as expected,
@@ -95,4 +103,8 @@ join public.associates a on a.id = m.associate_id
 where m.is_current = false
   and m.is_deleted = false
   and m.category_id is null
-  and a.category_id is not null;
+  and a.category_id is not null
+)
+select check_name, found, expected, detail
+from checks
+order by position;

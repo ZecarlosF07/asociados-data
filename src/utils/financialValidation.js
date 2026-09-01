@@ -1,4 +1,3 @@
-import { compareDateOnly } from './dateOnly'
 import { requiresMembershipBillingDay } from './financialConstants'
 
 /**
@@ -19,14 +18,6 @@ export function validateMembershipForm(form, options = {}) {
     errors.start_date = 'La fecha de inicio es obligatoria'
   }
 
-  if (
-    form.start_date &&
-    form.end_date &&
-    compareDateOnly(form.end_date, form.start_date) < 0
-  ) {
-    errors.end_date = 'La fecha de fin no puede ser anterior al inicio'
-  }
-
   if (requiresMembershipBillingDay(options.membershipTypeCode)) {
     const billingDay = Number(form.monthly_billing_day)
 
@@ -35,10 +26,6 @@ export function validateMembershipForm(form, options = {}) {
     } else if (!Number.isInteger(billingDay) || billingDay < 1 || billingDay > 28) {
       errors.monthly_billing_day = 'El día de cobro debe estar entre 1 y 28'
     }
-  }
-
-  if (!form.membership_status_id) {
-    errors.membership_status_id = 'El estado es obligatorio'
   }
 
   return errors
@@ -56,10 +43,16 @@ export function validatePaymentForm(form, options = {}) {
 
   if (!form.payment_date) {
     errors.payment_date = 'La fecha de pago es obligatoria'
+  } else if (options.maxDate && form.payment_date > options.maxDate) {
+    errors.payment_date = 'La fecha de pago no puede estar en el futuro'
+  } else if (options.minDate && form.payment_date < options.minDate) {
+    errors.payment_date = 'La fecha de pago no puede ser anterior al inicio de la membresía'
   }
 
   if (!form.amount_paid || Number(form.amount_paid) <= 0) {
     errors.amount_paid = 'El monto debe ser mayor a 0'
+  } else if (options.maxAmount != null && Number(form.amount_paid) > Number(options.maxAmount)) {
+    errors.amount_paid = `El monto no puede superar el saldo de S/ ${Number(options.maxAmount).toFixed(2)}`
   }
 
   if (!form.operation_code?.trim()) {

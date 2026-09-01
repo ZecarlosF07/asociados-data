@@ -14,20 +14,7 @@ export function AssociateFinancialSummary({
 }) {
   const today = todayDateOnly()
 
-  const paidBySchedule = payments
-    .filter((payment) => !payment.is_reversed)
-    .reduce((acc, payment) => {
-      if (!payment.payment_schedule_id) return acc
-      acc[payment.payment_schedule_id] =
-        (acc[payment.payment_schedule_id] || 0) + Number(payment.amount_paid || 0)
-      return acc
-    }, {})
-
-  const activeSchedules = schedules.filter((schedule) => !schedule.is_paid)
-  const getOutstanding = (schedule) => Math.max(
-    Number(schedule.expected_amount || 0) - Number(paidBySchedule[schedule.id] || 0),
-    0
-  )
+  const activeSchedules = schedules.filter((schedule) => schedule.is_collectible)
 
   const overdueSchedules = activeSchedules.filter(
     (schedule) => isBeforeDateOnly(schedule.due_date, today)
@@ -37,11 +24,11 @@ export function AssociateFinancialSummary({
     .sort((a, b) => compareDateOnly(a.due_date, b.due_date))
 
   const totalPending = activeSchedules.reduce(
-    (sum, schedule) => sum + getOutstanding(schedule),
+    (sum, schedule) => sum + Number(schedule.outstanding_amount || 0),
     0
   )
   const totalOverdue = overdueSchedules.reduce(
-    (sum, schedule) => sum + getOutstanding(schedule),
+    (sum, schedule) => sum + Number(schedule.outstanding_amount || 0),
     0
   )
   const totalPaid = payments

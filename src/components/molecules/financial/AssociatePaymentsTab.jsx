@@ -10,9 +10,10 @@ export function AssociatePaymentsTab({
   canEdit,
   actionLoading,
   onPaymentSubmit,
+  onPaymentReverse,
 }) {
   const [showPaymentForm, setShowPaymentForm] = useState(false)
-  const pendingSchedules = schedules.filter((schedule) => !schedule.is_paid)
+  const pendingSchedules = schedules.filter((schedule) => schedule.is_collectible)
 
   const handleSubmit = async (data) => {
     await onPaymentSubmit(data)
@@ -48,7 +49,8 @@ export function AssociatePaymentsTab({
         </div>
       )}
 
-      <PaymentList payments={payments} />
+      <PaymentList payments={payments} canReverse={canEdit}
+        loading={actionLoading} onReverse={onPaymentReverse} />
 
       <div>
         <h3 className="text-sm font-bold text-slate-700 mb-3">

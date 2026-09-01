@@ -3,107 +3,82 @@ import { supabase } from '../lib/supabaseClient'
 const SCHEDULE_SELECT = `
   *,
   collection_status:collection_status_id(id, code, label),
-  payment_health:payment_health_status_id(id, code, label)
+  payment_health:payment_health_status_id(id, code, label),
+  associate:associate_id(id, company_name, ruc, internal_code),
+  membership:membership_id(
+    id,
+    membership_type_id,
+    membership_type:membership_type_id(id, code, label)
+  )
 `
 
 export const paymentSchedulesService = {
   async getByAssociate(associateId) {
-    const { data, error } = await supabase
-      .from('payment_schedules')
-      .select(SCHEDULE_SELECT)
-      .eq('associate_id', associateId)
-      .eq('is_deleted', false)
-      .order('due_date', { ascending: true })
-
-    if (error) throw error
-    return data
+    const rows = await getBaseSchedules((query) => query.eq('associate_id', associateId))
+    return attachBalances(rows)
   },
 
   async getByMembership(membershipId) {
-    const { data, error } = await supabase
-      .from('payment_schedules')
-      .select(SCHEDULE_SELECT)
-      .eq('membership_id', membershipId)
-      .eq('is_deleted', false)
-      .order('due_date', { ascending: true })
-
-    if (error) throw error
-    return data
+    const rows = await getBaseSchedules((query) => query.eq('membership_id', membershipId))
+    return attachBalances(rows)
   },
 
   async getForCollection({ associateId, isPaid = false } = {}) {
-    let query = supabase
-      .from('payment_schedules')
-      .select(`
-        ${SCHEDULE_SELECT},
-        associate:associate_id(id, company_name, ruc, internal_code),
-        membership:membership_id(
-          id,
-          membership_type_id,
-          membership_type:membership_type_id(id, code, label)
-        )
-      `)
-      .eq('is_deleted', false)
-      .eq('is_paid', isPaid)
-      .order('due_date', { ascending: true })
+    const rows = await getBaseSchedules((query) => (
+      associateId ? query.eq('associate_id', associateId) : query
+    ))
+    const schedules = await attachBalances(rows)
 
-    if (associateId) query = query.eq('associate_id', associateId)
-
-    const { data, error } = await query
-    if (error) throw error
-    return data
+    return schedules.filter((schedule) => (
+      isPaid
+        ? schedule.financial_status_code === 'PAGADO'
+        : schedule.is_collectible
+    ))
   },
 
   async getPending({ associateId } = {}) {
-    return paymentSchedulesService.getForCollection({ associateId, isPaid: false })
+    return this.getForCollection({ associateId, isPaid: false })
   },
+}
 
-  async update(id, updates) {
-    const { data, error } = await supabase
-      .from('payment_schedules')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select(SCHEDULE_SELECT)
-      .single()
+async function getBaseSchedules(applyFilters) {
+  let query = supabase
+    .from('payment_schedules')
+    .select(SCHEDULE_SELECT)
+    .eq('is_deleted', false)
+    .order('due_date', { ascending: true })
 
-    if (error) throw error
-    return data
-  },
+  query = applyFilters(query)
+  const { data, error } = await query
+  if (error) throw error
+  return data || []
+}
 
-  async updateCollectionStatus(id, { statusCode, userId }) {
-    const { data: status, error: statusError } = await supabase
-      .from('catalog_items')
-      .select('id, group:group_id(code)')
-      .eq('code', statusCode)
-      .eq('is_deleted', false)
+async function attachBalances(schedules) {
+  const ids = schedules.map((schedule) => schedule.id).filter(Boolean)
+  if (!ids.length) return schedules
 
-    if (statusError) throw statusError
+  const { data, error } = await supabase
+    .from('payment_schedule_balances')
+    .select(`
+      id, paid_amount, outstanding_amount, financial_status_code,
+      financial_status_label, is_collectible, has_collection_management,
+      membership_effective_status_code, membership_start_date, last_payment_date
+    `)
+    .in('id', ids)
 
-    const collectionStatus = status?.find(
-      (item) => item.group?.code === 'COLLECTION_STATUS'
-    )
+  if (error) throw error
+  const balancesById = new Map((data || []).map((row) => [row.id, row]))
 
-    if (!collectionStatus) {
-      throw new Error(`No se encontró el estado de cobranza ${statusCode}.`)
+  return schedules.map((schedule) => {
+    const balance = balancesById.get(schedule.id) || {}
+    return {
+      ...schedule,
+      ...balance,
+      schedule_status: {
+        code: balance.financial_status_code || schedule.collection_status?.code,
+        label: balance.financial_status_label || schedule.collection_status?.label,
+      },
     }
-
-    return paymentSchedulesService.update(id, {
-      collection_status_id: collectionStatus.id,
-      updated_by: userId,
-    })
-  },
-
-  async softDeleteByMembership(membershipId, deletedBy) {
-    const { error } = await supabase
-      .from('payment_schedules')
-      .update({
-        is_deleted: true,
-        deleted_at: new Date().toISOString(),
-        deleted_by: deletedBy,
-      })
-      .eq('membership_id', membershipId)
-      .eq('is_paid', false)
-
-    if (error) throw error
-  },
+  })
 }

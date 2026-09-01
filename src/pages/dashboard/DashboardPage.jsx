@@ -4,11 +4,9 @@ import { supabase } from '../../lib/supabaseClient'
 import { Loader } from '../../components/atoms/Loader'
 import { Badge } from '../../components/atoms/Badge'
 import { formatCurrency, formatDate } from '../../utils/helpers'
-import {
-  startOfCurrentMonthDateOnly,
-  todayDateOnly,
-} from '../../utils/dateOnly'
 import { ROUTES } from '../../router/routes'
+import { reportsService } from '../../services/reports.service'
+import { paymentSchedulesService } from '../../services/paymentSchedules.service'
 
 export function DashboardPage() {
   const navigate = useNavigate()
@@ -22,93 +20,35 @@ export function DashboardPage() {
   async function fetchDashboard() {
     setLoading(true)
     try {
-      const todayStr = todayDateOnly()
-      const monthStart = startOfCurrentMonthDateOnly()
-
       const [
-        prospectsRes,
-        prospectsApprovedRes,
-        associatesRes,
-        associatesActiveRes,
-        membershipsRes,
-        pendingSchedulesRes,
-        overdueSchedulesRes,
-        paymentsThisMonthRes,
+        kpis,
         recentProspectsRes,
-        upcomingSchedulesRes,
+        collectibleSchedules,
       ] = await Promise.all([
-        // Totales
-        supabase.from('prospects').select('*', { count: 'exact', head: true }).eq('is_deleted', false),
-        supabase.from('prospects').select('id, prospect_status:prospect_status_id(code)', { count: 'exact' }).eq('is_deleted', false),
-        supabase.from('associates').select('*', { count: 'exact', head: true }).eq('is_deleted', false),
-        supabase.from('associates').select('id, associate_status:associate_status_id(code)', { count: 'exact' }).eq('is_deleted', false),
-        supabase.from('memberships').select('*', { count: 'exact', head: true }).eq('is_deleted', false).eq('is_current', true),
-        // Cobranza
-        supabase.from('payment_schedules').select('expected_amount').eq('is_deleted', false).eq('is_paid', false),
-        supabase.from('payment_schedules').select('expected_amount').eq('is_deleted', false).eq('is_paid', false).lt('due_date', todayStr),
-        // Pagos del mes
-        supabase.from('payments').select('amount_paid').eq('is_deleted', false).eq('is_reversed', false)
-          .gte('payment_date', monthStart),
-        // Últimos prospectos
+        reportsService.getDashboardKpis(),
         supabase.from('prospects')
           .select('id, company_name, prospect_status:prospect_status_id(code, label), created_at')
           .eq('is_deleted', false)
           .order('created_at', { ascending: false })
           .limit(5),
-        // Próximas cuotas
-        supabase.from('payment_schedules')
-          .select('id, due_date, expected_amount, associate:associate_id(id, company_name, internal_code), collection_status:collection_status_id(code, label)')
-          .eq('is_deleted', false)
-          .eq('is_paid', false)
-          .gte('due_date', todayStr)
-          .order('due_date', { ascending: true })
-          .limit(6),
+        paymentSchedulesService.getForCollection(),
       ])
-
-      // Contar aprobados
-      const approvedCount = prospectsApprovedRes.data?.filter(
-        (p) => p.prospect_status?.code === 'APROBADO'
-      ).length || 0
-
-      // Contar activos
-      const activeCount = associatesActiveRes.data?.filter(
-        (a) => a.associate_status?.code === 'ACTIVO'
-      ).length || 0
-
-      // Sumar pendientes
-      const totalPending = pendingSchedulesRes.data?.reduce(
-        (s, r) => s + Number(r.expected_amount || 0), 0
-      ) || 0
-
-      // Sumar vencido
-      const totalOverdue = overdueSchedulesRes.data?.reduce(
-        (s, r) => s + Number(r.expected_amount || 0), 0
-      ) || 0
-
-      // Recaudado del mes
-      const totalCollected = paymentsThisMonthRes.data?.reduce(
-        (s, r) => s + Number(r.amount_paid || 0), 0
-      ) || 0
 
       setStats({
         prospects: {
-          total: prospectsRes.count || 0,
-          approved: approvedCount,
+          total: kpis.prospects.total,
+          approved: kpis.prospects.byStatus.APROBADO || 0,
         },
         associates: {
-          total: associatesRes.count || 0,
-          active: activeCount,
+          total: kpis.associates.total,
+          active: kpis.associates.byStatus.ACTIVO || 0,
         },
-        memberships: membershipsRes.count || 0,
-        financial: {
-          pending: totalPending,
-          pendingCount: pendingSchedulesRes.data?.length || 0,
-          overdue: totalOverdue,
-          overdueCount: overdueSchedulesRes.data?.length || 0,
-          collectedThisMonth: totalCollected,
-        },
+        memberships: kpis.memberships,
+        financial: kpis.financial,
         recentProspects: recentProspectsRes.data || [],
-        upcomingSchedules: upcomingSchedulesRes.data || [],
+        upcomingSchedules: collectibleSchedules
+          .filter((schedule) => schedule.financial_status_code !== 'VENCIDO')
+          .slice(0, 6),
       })
     } catch (err) {
       console.error('Error cargando dashboard:', err)
@@ -296,7 +236,7 @@ export function DashboardPage() {
                     </p>
                   </div>
                   <span className="text-sm font-bold text-slate-900 whitespace-nowrap ml-3">
-                    {formatCurrency(s.expected_amount)}
+                    {formatCurrency(s.outstanding_amount)}
                   </span>
                 </div>
               ))}

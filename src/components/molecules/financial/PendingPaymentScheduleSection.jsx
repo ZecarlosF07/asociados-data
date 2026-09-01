@@ -69,7 +69,7 @@ function ScheduleHeader({ canEdit, showPaidAt }) {
         <HeaderCell>Asociado</HeaderCell>
         <HeaderCell>Período</HeaderCell>
         <HeaderCell>Vencimiento</HeaderCell>
-        <HeaderCell align="right">Monto</HeaderCell>
+        <HeaderCell align="right">{showPaidAt ? 'Pagado' : 'Saldo'}</HeaderCell>
         <HeaderCell align="center">Estado</HeaderCell>
         {showPaidAt && <HeaderCell>Pagado el</HeaderCell>}
         {canEdit && <HeaderCell align="center">Acciones</HeaderCell>}

@@ -66,7 +66,7 @@ export function CollectionActionForm({
                   : String(s.period_year)
                 return (
                   <option key={s.id} value={s.id}>
-                    {label} — S/ {s.expected_amount}
+                    {label} — saldo S/ {s.outstanding_amount}
                   </option>
                 )
               })}

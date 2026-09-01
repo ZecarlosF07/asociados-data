@@ -1,5 +1,4 @@
 import { supabase } from '../lib/supabaseClient'
-import { addDaysToDateOnly, isBeforeDateOnly, todayDateOnly } from '../utils/dateOnly'
 
 export const reportsService = {
   async getProspectsSummary() {
@@ -162,7 +161,10 @@ function mapMembershipReport(row) {
     currency_code: row.currency_code,
     start_date: row.start_date,
     end_date: row.end_date,
+    effective_end_date: row.effective_end_date,
     is_current: row.is_current,
+    is_effective: row.is_effective,
+    is_scheduled: row.is_scheduled,
     membership_type: buildCatalog(row.membership_type_code, row.membership_type_label),
     category: buildCategory(row.category_code, row.category_name),
     membership_status: buildCatalog(row.membership_status_code, row.membership_status_label),
@@ -200,12 +202,16 @@ function mapScheduleReport(row) {
     id: row.id,
     due_date: row.due_date,
     expected_amount: row.expected_amount,
+    paid_amount: row.paid_amount,
+    outstanding_amount: row.outstanding_amount,
     is_paid: row.is_paid,
     paid_at: toDatePart(row.paid_at),
     period_year: row.period_year,
     period_month: row.period_month,
     collection_status: buildCatalog(row.collection_status_code, row.collection_status_label),
-    schedule_status: buildScheduleStatus(row),
+    schedule_status: buildCatalog(row.collection_status_code, row.collection_status_label),
+    is_collectible: row.is_collectible,
+    has_collection_management: row.has_collection_management,
     associate: buildAssociate(row),
   }
 }
@@ -282,35 +288,6 @@ function buildAssociate(row) {
     ruc: row.associate_ruc,
     internal_code: row.associate_internal_code,
   }
-}
-
-function buildScheduleStatus(row) {
-  if (row.collection_status_code === 'ANULADO') {
-    return buildCatalog(row.collection_status_code, row.collection_status_label)
-  }
-
-  if (row.is_paid || row.collection_status_code === 'PAGADO') {
-    return { code: 'PAGADO', label: 'Pagado' }
-  }
-
-  if (
-    row.collection_status_code === 'PARCIAL' ||
-    row.collection_status_code === 'EN_GESTION'
-  ) {
-    return buildCatalog(row.collection_status_code, row.collection_status_label)
-  }
-
-  const today = todayDateOnly()
-  if (isBeforeDateOnly(row.due_date, today)) {
-    return { code: 'VENCIDO', label: 'Vencido' }
-  }
-
-  const soonLimit = addDaysToDateOnly(today, 7)
-  if (!isBeforeDateOnly(soonLimit, row.due_date)) {
-    return { code: 'POR_VENCER', label: 'Por vencer' }
-  }
-
-  return { code: 'PENDIENTE', label: 'Pendiente' }
 }
 
 function toDatePart(value) {

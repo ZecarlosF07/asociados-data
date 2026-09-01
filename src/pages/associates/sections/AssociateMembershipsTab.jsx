@@ -3,14 +3,21 @@ import { Button } from '../../../components/atoms/Button'
 import { EmptyState } from '../../../components/atoms/EmptyState'
 import { MembershipForm } from '../../../components/molecules/financial/MembershipForm'
 import { MembershipList } from '../../../components/molecules/financial/MembershipList'
-import { formatCurrency } from '../../../utils/helpers'
+import { MembershipCategoryWarning, ProspectMembershipReference } from './MembershipContextCards'
 
 export function AssociateMembershipsTab(props) {
   const { actionLoading, associate, canCreate, canUpdate, memberships } = props
   const [formOpen, setFormOpen] = useState(false)
   const [renewingFrom, setRenewingFrom] = useState(null)
-  const currentMembership = memberships.find((membership) => membership.is_current)
-  const history = memberships.filter((membership) => !membership.is_current)
+  const currentMembership = memberships.find(
+    (membership) => membership.membership_status?.code === 'VIGENTE'
+  )
+  const scheduledMembership = memberships.find(
+    (membership) => membership.membership_status?.code === 'PROGRAMADA'
+  )
+  const history = memberships.filter(
+    (membership) => !['VIGENTE', 'PROGRAMADA'].includes(membership.membership_status?.code)
+  )
   const closeForm = () => { setRenewingFrom(null); setFormOpen(false) }
   const openRenewal = (membership) => { setRenewingFrom(membership); setFormOpen(true) }
   const save = async (data) => {
@@ -27,18 +34,20 @@ export function AssociateMembershipsTab(props) {
           <h2 className="text-base font-bold text-slate-900">Gestión de membresía</h2>
           <p className="mt-1 max-w-2xl text-sm text-slate-500">
             {currentMembership
-              ? 'Consulta el periodo actual o inicia una renovación. Los periodos anteriores se conservan.'
-              : 'Registra la membresía vigente del asociado.'}
+              ? scheduledMembership
+                ? 'Consulta el periodo vigente y la próxima renovación programada.'
+                : 'Consulta el periodo vigente o programa una renovación. Los periodos anteriores se conservan.'
+              : 'Registra un nuevo periodo anual para el asociado.'}
           </p>
         </div>
-        {canCreate && !currentMembership && !formOpen && associate.category && (
+        {canCreate && !currentMembership && !scheduledMembership && !formOpen && associate.category && (
           <Button onClick={() => setFormOpen(true)}>Crear membresía</Button>
         )}
       </header>
 
-      {associate.prospect_origin && <ProspectReference prospect={associate.prospect_origin} />}
+      {associate.prospect_origin && <ProspectMembershipReference prospect={associate.prospect_origin} />}
       {!associate.category && !currentMembership && (
-        <MissingCategory canEdit={props.canEditAssociate} onEdit={props.onEditAssociate} />
+        <MembershipCategoryWarning canEdit={props.canEditAssociate} onEdit={props.onEditAssociate} />
       )}
 
       {formOpen ? (
@@ -49,10 +58,12 @@ export function AssociateMembershipsTab(props) {
         </MembershipFormPanel>
       ) : (
         <>
-          <MembershipList currentMembership={currentMembership} history={history}
+          <MembershipList currentMembership={currentMembership}
+            scheduledMembership={scheduledMembership} history={history}
             canRenew={canCreate && canUpdate} canCancel={canUpdate}
-            onCancel={props.onCancel} onRenew={openRenewal} />
-          {!currentMembership && associate.category && (
+            onCancel={props.onCancel} onCancelScheduled={props.onCancelScheduled}
+            onRenew={openRenewal} />
+          {!currentMembership && !scheduledMembership && associate.category && (
             <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50/50">
               <EmptyState icon="◎" title="No hay una membresía vigente"
                 description={history.length
@@ -85,35 +96,10 @@ function MembershipFormPanel({ renewing, children }) {
   )
 }
 
-function MissingCategory({ canEdit, onEdit }) {
-  return (
-    <div className="flex flex-wrap items-center gap-4 rounded-xl border border-amber-200 bg-amber-50 p-5">
-      <div className="mr-auto">
-        <h3 className="text-sm font-semibold text-amber-950">Falta asignar una categoría</h3>
-        <p className="mt-1 text-sm text-amber-800">Asígnala primero desde Información para habilitar la membresía.</p>
-      </div>
-      {canEdit && <Button variant="secondary" onClick={onEdit}>Ir a editar ficha</Button>}
-    </div>
-  )
-}
-
-function ProspectReference({ prospect }) {
-  return (
-    <details className="rounded-lg border border-slate-200 bg-white">
-      <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-slate-600">Ver referencia de captación</summary>
-      <div className="flex flex-wrap gap-8 border-t border-slate-100 px-4 py-3 text-sm text-slate-600">
-        <p><span className="block text-xs font-medium text-slate-400">Tarifa sugerida</span>{prospect.suggested_fee ? formatCurrency(prospect.suggested_fee) : '—'}</p>
-        <p><span className="block text-xs font-medium text-slate-400">Categoría sugerida</span>{prospect.current_category?.name || '—'}</p>
-      </div>
-    </details>
-  )
-}
-
 function renewalData(membership) {
   return {
     membership_type_id: membership.membership_type_id,
     fee_amount: membership.fee_amount,
-    currency_code: membership.currency_code,
     monthly_billing_day: membership.monthly_billing_day,
   }
 }

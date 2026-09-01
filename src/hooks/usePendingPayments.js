@@ -111,7 +111,9 @@ export function usePendingPayments({ profile, notify }) {
     setPaymentTypeId: filters.setPaymentTypeId,
     setShowAllMonths: filters.setShowAllMonths,
     showAllMonths: filters.showAllMonths,
-    totalAmount: sumExpectedAmount(filtered),
+    totalAmount: filters.viewMode === 'paid'
+      ? filtered.reduce((sum, schedule) => sum + Number(schedule.paid_amount || 0), 0)
+      : sumExpectedAmount(filtered),
     totalOverdue: sumExpectedAmount(overdue),
     upcoming,
     viewMode: filters.viewMode,

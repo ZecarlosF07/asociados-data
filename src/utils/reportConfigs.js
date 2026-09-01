@@ -110,12 +110,13 @@ export const REPORT_TABLE_COLUMNS = {
       format: 'badge',
       badgeVariant: (val) => {
         if (val === 'Vigente') return 'success'
+        if (val === 'Programada') return 'warning'
         if (val === 'Vencida' || val === 'Cancelada') return 'danger'
         if (val === 'Renovada') return 'info'
         return 'default'
       },
     },
-    { key: 'is_current', label: 'Vigente', format: 'boolean', align: 'center' },
+    { key: 'is_current', label: 'Registro más reciente', format: 'boolean', align: 'center' },
   ],
 
   payments: [
@@ -132,6 +133,8 @@ export const REPORT_TABLE_COLUMNS = {
     { key: 'associate.company_name', label: 'Asociado' },
     { key: 'due_date', label: 'Vencimiento', format: 'date' },
     { key: 'expected_amount', label: 'Monto', format: 'currency', align: 'right' },
+    { key: 'paid_amount', label: 'Pagado', format: 'currency', align: 'right' },
+    { key: 'outstanding_amount', label: 'Saldo', format: 'currency', align: 'right' },
     {
       key: 'schedule_status.label',
       label: 'Estado',
@@ -142,10 +145,10 @@ export const REPORT_TABLE_COLUMNS = {
         if (code === 'VENCIDO') return 'danger'
         if (code === 'PENDIENTE') return 'default'
         if (code === 'POR_VENCER' || code === 'PARCIAL') return 'warning'
-        if (code === 'EN_GESTION') return 'info'
         return 'default'
       },
     },
+    { key: 'has_collection_management', label: 'En gestión', format: 'boolean', align: 'center' },
   ],
 
   collections: [

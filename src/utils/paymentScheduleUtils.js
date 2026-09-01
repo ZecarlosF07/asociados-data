@@ -26,6 +26,8 @@ export function isScheduleOverdue(schedule, today = todayDateOnly()) {
 }
 
 export function getScheduleDisplayStatus(schedule) {
+  if (schedule.schedule_status) return schedule.schedule_status
+
   const statusCode = schedule.collection_status?.code
 
   if (statusCode === 'ANULADO') {
@@ -88,7 +90,7 @@ export function splitSchedulesByDueDate(schedules) {
 
 export function sumExpectedAmount(schedules) {
   return schedules.reduce(
-    (sum, schedule) => sum + Number(schedule.expected_amount || 0),
+    (sum, schedule) => sum + Number(schedule.outstanding_amount || 0),
     0
   )
 }

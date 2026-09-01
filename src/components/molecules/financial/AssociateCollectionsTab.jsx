@@ -11,7 +11,7 @@ export function AssociateCollectionsTab({
   onCollectionSubmit,
 }) {
   const [showCollectionForm, setShowCollectionForm] = useState(false)
-  const manageableSchedules = schedules.filter((schedule) => !schedule.is_paid)
+  const manageableSchedules = schedules.filter((schedule) => schedule.is_collectible)
 
   const handleSubmit = async (data) => {
     await onCollectionSubmit(data)

@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { collectionActionsService } from '../services/collectionActions.service'
-import { paymentSchedulesService } from '../services/paymentSchedules.service'
 
 export function useAssociateCollectionActions({
   associateId,
@@ -17,18 +16,7 @@ export function useAssociateCollectionActions({
         ...data,
         associate_id: associateId,
         managed_by_user_id: profile?.id,
-        created_by: profile?.id,
       })
-
-      if (data.payment_schedule_id) {
-        await paymentSchedulesService.updateCollectionStatus(
-          data.payment_schedule_id,
-          {
-            statusCode: 'EN_GESTION',
-            userId: profile?.id,
-          }
-        )
-      }
 
       notify.success('Gestión de cobranza registrada')
       refetch()

@@ -54,21 +54,14 @@ export const paymentsService = {
   },
 
   async reverse(id, { reason, userId }) {
-    const { data, error } = await supabase
-      .from('payments')
-      .update({
-        is_reversed: true,
-        reversed_at: new Date().toISOString(),
-        reversal_reason: reason,
-        updated_at: new Date().toISOString(),
-        updated_by: userId,
-      })
-      .eq('id', id)
-      .select(PAYMENT_SELECT)
-      .single()
+    void userId
+    const { data: reversed, error } = await supabase.rpc('reverse_payment', {
+      p_payment_id: id,
+      p_reason: reason,
+    })
 
     if (error) throw error
-    return data
+    return paymentsService.getById(reversed.id)
   },
 
   async softDelete(id, deletedBy) {

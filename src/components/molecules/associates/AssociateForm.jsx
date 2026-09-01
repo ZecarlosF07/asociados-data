@@ -25,7 +25,6 @@ export function AssociateForm({ initialData, onSubmit, onCancel, loading }) {
     association_date: initialData?.association_date || '',
     anniversary_date: initialData?.anniversary_date || '',
     category_id: initialData?.category_id || '',
-    associate_status_id: initialData?.associate_status_id || '',
     affiliation_responsible_user_id:
       initialData?.affiliation_responsible_user_id || '',
     captador_id: initialData?.captador_id || '',

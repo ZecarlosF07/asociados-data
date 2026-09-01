@@ -257,6 +257,7 @@ Unifica la categoría y simplifica la operación de la ficha del asociado:
 20. S19 - Reporte actual de comités.
 21. S20 - Filtros combinados de contactos y categorías A-C.
 22. S21 - Consistencia de membresías y detalle de asociados.
+23. S22 - Consistencia integral de membresías, cobranza y estados.
 
 S0 debe hacerse primero porque reduce fricción técnica. S6 debe hacerse al final porque valida todo el sistema integrado.
 S7 se ejecuta después de S6 porque nace de un bug funcional detectado durante validación posterior al release interno.
@@ -274,6 +275,7 @@ S18 se ejecuta después de S17 porque amplía su consulta con representantes ya 
 S19 se ejecuta después de S18 porque explota analíticamente el modelo de comités estabilizado en S16 y reutiliza la arquitectura de reportes y auditoría Excel.
 S20 se ejecuta después de limpiar las referencias operativas a D/E y evoluciona el directorio ya unificado por S18.
 S21 se ejecuta después de S20 y corrige la consistencia financiera antes de nuevas renovaciones.
+S22 se ejecuta después de S21 y reemplaza la vigencia administrativa por estados y saldos operativos calculados.
 
 ## Criterio global de cierre
 
@@ -312,4 +314,5 @@ La subsanación completa queda cerrada cuando:
 - [S19 - Reporte actual de comités](./hito_s19_reporte_comites.md)
 - [S20 - Filtros combinados de contactos y categorías A-C](./hito_s20_filtros_contactos_categorias.md)
 - [S21 - Consistencia de membresías y detalle de asociados](./hito_s21_consistencia_membresias_detalle_asociados.md)
+- [S22 - Consistencia integral de membresías, cobranza y estados](./hito_s22_consistencia_membresias_cobranza_estados.md)
 - [Documento técnico S13 - Roles y permisos operativos](../../docs/hito_s13_roles_permisos_operativos.md)

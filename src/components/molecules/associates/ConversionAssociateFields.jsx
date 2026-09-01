@@ -1,5 +1,3 @@
-import { ASSOCIATE_CATALOG_GROUPS } from '../../../utils/associateConstants'
-import { CatalogSelect } from '../CatalogSelect'
 import { CommitteeSelect } from '../CommitteeSelect'
 import { FormField } from '../FormField'
 import { UserProfileSelect } from '../UserProfileSelect'
@@ -17,15 +15,9 @@ export function ConversionAssociateFields({ errors, form, onChange }) {
         maxLength={11}
         helpText="Es obligatorio para completar la conversión."
       />
-      <FormField label="Estado inicial del asociado" name="statusId" required error={errors.statusId}>
-        <CatalogSelect
-          groupCode={ASSOCIATE_CATALOG_GROUPS.STATUS}
-          value={form.statusId}
-          onChange={onChange}
-          name="statusId"
-          placeholder="Seleccionar estado..."
-        />
-      </FormField>
+      <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+        El asociado se creará <strong>En proceso</strong> y pasará a Activo cuando tenga una membresía vigente.
+      </div>
       <FormField
         label="Fecha de asociación"
         name="associationDate"

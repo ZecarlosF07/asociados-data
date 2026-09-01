@@ -53,7 +53,7 @@ export function MembershipsReportTab({ navigate }) {
 
   const totalFees = filteredData.reduce((s, m) => s + Number(m.fee_amount || 0), 0) || 0
   const activeFees =
-    filteredData.filter((m) => m.is_current).reduce((s, m) => s + Number(m.fee_amount || 0), 0) || 0
+    filteredData.filter((m) => m.is_effective).reduce((s, m) => s + Number(m.fee_amount || 0), 0) || 0
 
   return (
     <div className="space-y-6">
@@ -70,7 +70,7 @@ export function MembershipsReportTab({ navigate }) {
         <ReportKpiCard
           icon="✅"
           title="Vigentes"
-          value={filteredData.filter((m) => m.is_current).length}
+          value={filteredData.filter((m) => m.is_effective).length}
           accent="text-emerald-700"
         />
         <ReportKpiCard

@@ -100,19 +100,19 @@ export function PaymentsCollectionsReportTab() {
     })
 
   const totalPaid = filteredPayments.reduce((s, p) => s + Number(p.amount_paid || 0), 0) || 0
-  const pendingSchedules = filteredSchedules.filter((s) => !s.is_paid)
-  const totalPending = pendingSchedules.reduce((s, r) => s + Number(r.expected_amount || 0), 0)
+  const pendingSchedules = filteredSchedules.filter((schedule) => schedule.is_collectible)
+  const totalPending = pendingSchedules.reduce((sum, row) => sum + Number(row.outstanding_amount || 0), 0)
   const today = todayDateOnly()
   const overdueSchedules = pendingSchedules.filter((s) =>
     isBeforeDateOnly(s.due_date, today)
   )
-  const totalOverdue = overdueSchedules.reduce((s, r) => s + Number(r.expected_amount || 0), 0)
-  const paidSchedules = filteredSchedules.filter((s) => s.is_paid)
+  const totalOverdue = overdueSchedules.reduce((sum, row) => sum + Number(row.outstanding_amount || 0), 0)
+  const paidSchedules = filteredSchedules.filter((schedule) => schedule.schedule_status?.code === 'PAGADO')
   const upcomingSchedules = pendingSchedules.filter((s) =>
     !isBeforeDateOnly(s.due_date, today)
   )
-  const totalUpcoming = upcomingSchedules.reduce((s, r) => s + Number(r.expected_amount || 0), 0)
-  const totalPaidSchedules = paidSchedules.reduce((s, r) => s + Number(r.expected_amount || 0), 0)
+  const totalUpcoming = upcomingSchedules.reduce((sum, row) => sum + Number(row.outstanding_amount || 0), 0)
+  const totalPaidSchedules = paidSchedules.reduce((sum, row) => sum + Number(row.paid_amount || 0), 0)
 
   const listConfig = {
     overdue: {
@@ -267,7 +267,7 @@ const FINANCIAL_REPORT_COLUMNS = {
       align: 'right',
       render: (_, row) => `${getOverdueDays(row.due_date)} días`,
     },
-    { key: 'expected_amount', label: 'Monto', format: 'currency', align: 'right' },
+    { key: 'outstanding_amount', label: 'Saldo', format: 'currency', align: 'right' },
     {
       key: 'collection_status.label',
       label: 'Seguimiento',
@@ -284,7 +284,7 @@ const FINANCIAL_REPORT_COLUMNS = {
       render: (_, row) => formatPeriod(row),
     },
     { key: 'due_date', label: 'Vencimiento', format: 'date' },
-    { key: 'expected_amount', label: 'Monto', format: 'currency', align: 'right' },
+    { key: 'outstanding_amount', label: 'Saldo', format: 'currency', align: 'right' },
     {
       key: 'collection_status.label',
       label: 'Seguimiento',
@@ -302,7 +302,7 @@ const FINANCIAL_REPORT_COLUMNS = {
     },
     { key: 'due_date', label: 'Vencimiento', format: 'date' },
     { key: 'paid_at', label: 'Pagado el', format: 'date' },
-    { key: 'expected_amount', label: 'Monto', format: 'currency', align: 'right' },
+    { key: 'paid_amount', label: 'Pagado', format: 'currency', align: 'right' },
   ],
   payments: [
     { key: 'payment_date', label: 'Fecha de pago', format: 'date' },
@@ -400,25 +400,9 @@ function formatPeriod(row) {
 }
 
 function renderCollectionStatus(row) {
-  const code = row.collection_status?.code
-
-  if (code === 'EN_GESTION') {
-    return <Badge variant="info">Con gestión</Badge>
-  }
-
-  if (code === 'PARCIAL') {
-    return <Badge variant="warning">Pago parcial</Badge>
-  }
-
-  if (code === 'PAGADO' || row.is_paid) {
-    return <Badge variant="success">Pagado</Badge>
-  }
-
-  if (code === 'ANULADO') {
-    return <Badge variant="default">Anulado</Badge>
-  }
-
-  return <Badge variant="default">Sin gestión</Badge>
+  return row.has_collection_management
+    ? <Badge variant="info">En gestión</Badge>
+    : <Badge variant="default">Sin gestión</Badge>
 }
 
 function getOverdueDays(dueDate) {

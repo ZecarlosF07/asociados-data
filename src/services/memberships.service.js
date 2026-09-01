@@ -1,18 +1,10 @@
 import { supabase } from '../lib/supabaseClient'
-import {
-  addDaysToDateOnly,
-  addYearsToDateOnly,
-  buildDateOnly,
-  getDateOnlyParts,
-  todayDateOnly,
-} from '../utils/dateOnly'
-import { getMembershipPaymentFrequency } from '../utils/financialConstants'
 
 const MEMBERSHIP_SELECT = `
   *,
   membership_type:membership_type_id(id, code, label),
   category:category_id(id, code, name, base_fee),
-  membership_status:membership_status_id(id, code, label)
+  stored_membership_status:membership_status_id(id, code, label)
 `
 
 export const membershipsService = {
@@ -26,23 +18,26 @@ export const membershipsService = {
       .eq('is_deleted', false)
       .order('start_date', { ascending: false })
 
-    if (statusId) query = query.eq('membership_status_id', statusId)
     if (typeId) query = query.eq('membership_type_id', typeId)
 
     const { data, error } = await query
     if (error) throw error
 
+    let result = await attachOperationalMemberships(data || [])
+    if (statusId) {
+      const statusCode = await getCatalogCode(statusId)
+      result = result.filter((membership) => membership.membership_status?.code === statusCode)
+    }
     if (search) {
       const term = search.toLowerCase()
-      return data.filter(
-        (m) =>
-          m.associate?.company_name?.toLowerCase().includes(term) ||
-          m.associate?.ruc?.includes(term) ||
-          m.associate?.internal_code?.toLowerCase().includes(term)
+      result = result.filter(
+        (membership) =>
+          membership.associate?.company_name?.toLowerCase().includes(term) ||
+          membership.associate?.ruc?.includes(term) ||
+          membership.associate?.internal_code?.toLowerCase().includes(term)
       )
     }
-
-    return data
+    return result
   },
 
   async getByAssociate(associateId) {
@@ -54,7 +49,7 @@ export const membershipsService = {
       .order('created_at', { ascending: false })
 
     if (error) throw error
-    return data
+    return attachOperationalMemberships(data || [])
   },
 
   async getById(id) {
@@ -66,224 +61,104 @@ export const membershipsService = {
       .single()
 
     if (error) throw error
-    return data
+    const [membership] = await attachOperationalMemberships([data])
+    return membership
   },
 
   async create(membership) {
-    const { data, error } = await supabase.rpc('create_current_membership', {
+    const { data, error } = await supabase.rpc('create_membership_period', {
       p_associate_id: membership.associate_id,
       p_membership_type_id: membership.membership_type_id,
       p_fee_amount: Number(membership.fee_amount),
-      p_currency_code: membership.currency_code,
       p_start_date: membership.start_date,
-      p_end_date: membership.end_date || null,
       p_monthly_billing_day: membership.monthly_billing_day
         ? Number(membership.monthly_billing_day)
         : null,
-      p_membership_status_id: membership.membership_status_id,
       p_negotiation_notes: membership.negotiation_notes || null,
     })
 
     if (error) throw normalizeMembershipError(error)
-    if (!data?.id) throw new Error('La operación no retornó la membresía creada.')
     return this.getById(data.id)
-  },
-
-  async cancel(id, userId) {
-    // Buscar estado CANCELADA
-    const { data: statuses } = await supabase
-      .from('catalog_items')
-      .select('id, group:group_id(code)')
-      .eq('code', 'CANCELADA')
-
-    const cancelStatus = statuses?.find(
-      (s) => s.group?.code === 'MEMBERSHIP_STATUS'
-    )
-    if (!cancelStatus) throw new Error('Estado CANCELADA no encontrado')
-
-    const { data, error } = await supabase
-      .from('memberships')
-      .update({
-        membership_status_id: cancelStatus.id,
-        is_current: false,
-        end_date: todayDateOnly(),
-        updated_at: new Date().toISOString(),
-        updated_by: userId,
-      })
-      .eq('id', id)
-      .eq('is_current', true)
-      .eq('is_deleted', false)
-      .select(MEMBERSHIP_SELECT)
-      .single()
-
-    if (error) throw error
-
-    // Eliminar cuotas no pagadas
-    await supabase
-      .from('payment_schedules')
-      .update({
-        is_deleted: true,
-        deleted_at: new Date().toISOString(),
-        deleted_by: userId,
-      })
-      .eq('membership_id', id)
-      .eq('is_paid', false)
-
-    return data
   },
 
   async renew(oldMembershipId, membership) {
-    const { data, error } = await supabase.rpc('renew_current_membership', {
+    const { data, error } = await supabase.rpc('renew_membership_period', {
       p_membership_id: oldMembershipId,
       p_membership_type_id: membership.membership_type_id,
       p_fee_amount: Number(membership.fee_amount),
-      p_currency_code: membership.currency_code,
       p_start_date: membership.start_date,
-      p_end_date: membership.end_date || null,
       p_monthly_billing_day: membership.monthly_billing_day
         ? Number(membership.monthly_billing_day)
         : null,
-      p_membership_status_id: membership.membership_status_id,
       p_negotiation_notes: membership.negotiation_notes || null,
     })
 
     if (error) throw normalizeMembershipError(error)
-    if (!data?.id) throw new Error('La operación no retornó la membresía renovada.')
     return this.getById(data.id)
   },
-  /**
-   * Genera el cronograma de pagos para una membresía.
-   * - Modalidades periódicas: cuotas según frecuencia y día de cobro
-   * - ANUAL: 1 cuota con vencimiento al día siguiente de la fecha de fin
-   */
-  async generateSchedule({ membership, defaultStatusId, userId }) {
-    const startDate = getDateOnlyParts(membership.start_date)
-    const membershipTypeCode = membership.membership_type?.code
-    const frequency = getMembershipPaymentFrequency(membershipTypeCode)
 
-    if (!frequency) {
-      throw new Error(`Tipo de membresía no soportado: ${membershipTypeCode || 'sin tipo'}`)
-    }
-
-    const effectiveEndDate = await ensureMembershipEndDate({
-      membership,
-      userId,
+  async cancel(id) {
+    const { data, error } = await supabase.rpc('cancel_membership_period', {
+      p_membership_id: id,
     })
+    if (error) throw normalizeMembershipError(error)
+    return data
+  },
 
-    const schedules = frequency.requiresBillingDay
-      ? buildPeriodicSchedules({
-        membership,
-        startDate,
-        frequency,
-        defaultStatusId,
-        userId,
-      })
-      : buildAnnualSchedule({
-        membership,
-        startDate,
-        effectiveEndDate,
-        defaultStatusId,
-        userId,
-      })
-
-
-    const { data, error } = await supabase
-      .from('payment_schedules')
-      .insert(schedules)
-      .select()
-
-    if (error) throw error
+  async cancelScheduled(id) {
+    const { data, error } = await supabase.rpc('cancel_scheduled_membership', {
+      p_membership_id: id,
+    })
+    if (error) throw normalizeMembershipError(error)
     return data
   },
 }
 
-function normalizeMembershipError(error) {
-  if (error?.code === '23505') {
-    return new Error('El asociado ya tiene una membresía vigente. Usa la opción Renovar.')
-  }
+async function attachOperationalMemberships(memberships) {
+  const ids = memberships.map((membership) => membership.id).filter(Boolean)
+  if (!ids.length) return memberships
 
-  return error
-}
-
-async function ensureMembershipEndDate({ membership, userId }) {
-  if (membership.end_date) return membership.end_date
-
-  const effectiveEndDate = addDaysToDateOnly(
-    addYearsToDateOnly(membership.start_date, 1),
-    -1
-  )
-
-  const { error } = await supabase
-    .from('memberships')
-    .update({
-      end_date: effectiveEndDate,
-      updated_at: new Date().toISOString(),
-      updated_by: userId,
-    })
-    .eq('id', membership.id)
+  const { data, error } = await supabase
+    .from('membership_operational_summary')
+    .select(`
+      id, effective_end_date, effective_status_code, effective_status_label,
+      is_effective, is_scheduled, successor_membership_id,
+      renewed_from_membership_id, operational_end_date
+    `)
+    .in('id', ids)
 
   if (error) throw error
-  return effectiveEndDate
-}
+  const operationalById = new Map((data || []).map((row) => [row.id, row]))
 
-function buildPeriodicSchedules({
-  membership,
-  startDate,
-  frequency,
-  defaultStatusId,
-  userId,
-}) {
-  const billingDay = Number(membership.monthly_billing_day)
-
-  if (!Number.isInteger(billingDay) || billingDay < 1 || billingDay > 28) {
-    throw new Error('El día de cobro debe estar entre 1 y 28.')
-  }
-
-  const firstDueOffset = billingDay >= startDate.day ? 0 : 1
-  const expectedAmount = roundMoney(
-    Number(membership.fee_amount) / frequency.installments
-  )
-
-  return Array.from({ length: frequency.installments }, (_, index) => {
-    const dueDate = buildDateOnly(
-      startDate.year,
-      startDate.month + ((firstDueOffset + index) * frequency.intervalMonths),
-      billingDay
-    )
-    const dueParts = getDateOnlyParts(dueDate)
-
+  return memberships.map((membership) => {
+    const operational = operationalById.get(membership.id)
     return {
-      membership_id: membership.id,
-      associate_id: membership.associate_id,
-      due_date: dueDate,
-      period_year: dueParts.year,
-      period_month: dueParts.month,
-      expected_amount: expectedAmount,
-      collection_status_id: defaultStatusId,
-      created_by: userId,
+      ...membership,
+      ...operational,
+      membership_status: {
+        code: operational?.effective_status_code || membership.stored_membership_status?.code,
+        label: operational?.effective_status_label || membership.stored_membership_status?.label,
+      },
     }
   })
 }
 
-function buildAnnualSchedule({
-  membership,
-  startDate,
-  effectiveEndDate,
-  defaultStatusId,
-  userId,
-}) {
-  return [{
-    membership_id: membership.id,
-    associate_id: membership.associate_id,
-    due_date: addDaysToDateOnly(effectiveEndDate, 1),
-    period_year: startDate.year,
-    period_month: null,
-    expected_amount: membership.fee_amount,
-    collection_status_id: defaultStatusId,
-    created_by: userId,
-  }]
+async function getCatalogCode(id) {
+  const { data, error } = await supabase
+    .from('catalog_items')
+    .select('code')
+    .eq('id', id)
+    .single()
+  if (error) throw error
+  return data.code
 }
 
-function roundMoney(value) {
-  return Math.round(value * 100) / 100
+function normalizeMembershipError(error) {
+  if (error?.code === '23505') {
+    return new Error(error.message || 'El asociado ya tiene una membresía vigente o programada.')
+  }
+  if (error?.code === '23P01') {
+    return new Error('El periodo se superpone con otra membresía del asociado.')
+  }
+  return error
 }

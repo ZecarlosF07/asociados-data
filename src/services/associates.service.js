@@ -1,9 +1,4 @@
 import { supabase } from '../lib/supabaseClient'
-import {
-  addDaysToDateOnly,
-  compareDateOnly,
-  todayDateOnly,
-} from '../utils/dateOnly'
 
 const ASSOCIATE_SELECT = `
   *,
@@ -51,13 +46,17 @@ export const associatesService = {
       )
     }
 
-    if (statusId) query = query.eq('associate_status_id', statusId)
     if (categoryId) query = query.eq('category_id', categoryId)
     if (filteredIds) query = query.in('id', filteredIds)
 
     const { data, error } = await query
     if (error) throw error
-    return attachComputedPaymentHealth(data.map(mapPrimaryCommittee))
+    let result = await attachOperationalAssociateState(data.map(mapPrimaryCommittee))
+    if (statusId) {
+      const statusCode = await getCatalogItemCode(statusId)
+      result = result.filter((associate) => associate.associate_status?.code === statusCode)
+    }
+    return result
   },
 
   async getById(id) {
@@ -69,7 +68,8 @@ export const associatesService = {
       .single()
 
     if (error) throw error
-    return mapPrimaryCommittee(data)
+    const [associate] = await attachOperationalAssociateState([mapPrimaryCommittee(data)])
+    return associate
   },
 
   async create(associate) {
@@ -84,12 +84,13 @@ export const associatesService = {
   },
 
   async createDirectAssociate(associate) {
+    const initialStatusId = await getCatalogItemId('ASSOCIATE_STATUS', 'EN_PROCESO')
     const { data: created, error } = await supabase.rpc(
       'create_direct_associate_with_committee',
       {
         p_company_name: associate.company_name,
         p_ruc: associate.ruc,
-        p_associate_status_id: associate.associate_status_id,
+        p_associate_status_id: initialStatusId,
         p_association_date: associate.association_date,
         p_trade_name: associate.trade_name || null,
         p_economic_activity: associate.economic_activity || null,
@@ -122,15 +123,18 @@ export const associatesService = {
   },
 
   async update(id, updates) {
+    const { associate_status_id: ignoredStatus, ...safeUpdates } = updates
+    void ignoredStatus
     const { data, error } = await supabase
       .from('associates')
-      .update({ ...updates, updated_at: new Date().toISOString() })
+      .update({ ...safeUpdates, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select(ASSOCIATE_SELECT)
       .single()
 
     if (error) throw error
-    return mapPrimaryCommittee(data)
+    const [associate] = await attachOperationalAssociateState([mapPrimaryCommittee(data)])
+    return associate
   },
 
   async softDelete(id, deletedBy) {
@@ -150,12 +154,13 @@ export const associatesService = {
   },
 
   async convertFromProspect({ prospect, conversionData }) {
+    const initialStatusId = await getCatalogItemId('ASSOCIATE_STATUS', 'EN_PROCESO')
     const { data: created, error } = await supabase.rpc(
       'convert_prospect_to_associate_with_committee',
       {
         p_prospect_id: prospect.id,
         p_ruc: conversionData.ruc,
-        p_associate_status_id: conversionData.statusId,
+        p_associate_status_id: initialStatusId,
         p_association_date: conversionData.associationDate,
         p_responsible_user_id: conversionData.responsibleUserId || null,
         p_notes: conversionData.notes || null,
@@ -196,6 +201,15 @@ export const associatesService = {
       }
     )
 
+    if (error) throw error
+    return data
+  },
+
+  async setSuspension(associateId, suspended) {
+    const { data, error } = await supabase.rpc('set_associate_suspension', {
+      p_associate_id: associateId,
+      p_suspended: suspended,
+    })
     if (error) throw error
     return data
   },
@@ -334,65 +348,51 @@ function mapPrimaryCommittee(associate) {
   }
 }
 
-async function attachComputedPaymentHealth(associates) {
+async function attachOperationalAssociateState(associates) {
   const associateIds = associates.map((associate) => associate.id).filter(Boolean)
   if (associateIds.length === 0) return associates
 
   const { data, error } = await supabase
-    .from('payment_schedules')
-    .select(`
-      associate_id,
-      due_date
-    `)
-    .in('associate_id', associateIds)
-    .eq('is_deleted', false)
-    .eq('is_paid', false)
+    .from('associate_operational_summary')
+    .select('*')
+    .in('id', associateIds)
 
   if (error) throw error
-
-  const today = todayDateOnly()
-  const soonLimit = addDaysToDateOnly(today, 7)
-  const schedulesByAssociate = new Map()
-
-  for (const schedule of data || []) {
-    const schedules = schedulesByAssociate.get(schedule.associate_id) || []
-    schedules.push(schedule)
-    schedulesByAssociate.set(schedule.associate_id, schedules)
-  }
+  const operationalById = new Map((data || []).map((row) => [row.id, row]))
 
   return associates.map((associate) => {
-    if (associate.payment_health) return associate
-
-    const schedules = schedulesByAssociate.get(associate.id) || []
-    const overdueCount = schedules.filter(
-      (schedule) => compareDateOnly(schedule.due_date, today) < 0
-    ).length
-    const nextDue = schedules
-      .map((schedule) => schedule.due_date)
-      .filter((dueDate) => compareDateOnly(dueDate, today) >= 0)
-      .sort(compareDateOnly)[0]
-
-    let healthCode = 'AL_DIA'
-    if (overdueCount >= 3) {
-      healthCode = 'CRITICO'
-    } else if (overdueCount > 0) {
-      healthCode = 'MOROSO'
-    } else if (nextDue && compareDateOnly(nextDue, soonLimit) <= 0) {
-      healthCode = 'POR_VENCER'
-    }
-
+    const operational = operationalById.get(associate.id)
+    if (!operational) return associate
     return {
       ...associate,
-      payment_health: PAYMENT_HEALTH_BY_CODE[healthCode],
+      associate_status: {
+        code: operational.effective_status_code,
+        label: operational.effective_status_label,
+      },
+      payment_health: {
+        code: operational.payment_health_code,
+        label: operational.payment_health_label,
+      },
     }
   })
 }
 
-const PAYMENT_HEALTH_BY_CODE = {
-  AL_DIA: { code: 'AL_DIA', label: 'Al día' },
-  POR_VENCER: { code: 'POR_VENCER', label: 'Por vencer' },
-  MOROSO: { code: 'MOROSO', label: 'Moroso' },
-  CRITICO: { code: 'CRITICO', label: 'Crítico' },
+async function getCatalogItemId(groupCode, itemCode) {
+  const { data, error } = await supabase
+    .from('catalog_items')
+    .select('id, group:group_id(code)')
+    .eq('code', itemCode)
+    .eq('is_deleted', false)
+  if (error) throw error
+  const item = data?.find((row) => row.group?.code === groupCode)
+  if (!item) throw new Error(`No se encontró el estado ${itemCode}.`)
+  return item.id
+}
+
+async function getCatalogItemCode(id) {
+  const { data, error } = await supabase.from('catalog_items').select('code').eq('id', id).single()
+  if (error) throw error
+  return data.code
 }
 
 function getConversionErrorMessage(error) {

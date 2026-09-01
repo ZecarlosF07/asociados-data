@@ -821,3 +821,39 @@ audit y la validacion funcional autenticada permanecen pendientes.
 - `yarn lint`
 - `yarn build`
 - `git diff --check`
+
+## S22 - Consistencia integral de membresias, cobranza y estados
+
+### Estado actual
+
+Implementado en código y aplicado en la instancia objetivo el 2026-09-01. El
+preflight, S22A/S22B/S22C y los audits S21/S22 finalizaron sin hallazgos. Permanece
+pendiente únicamente la validación visual autenticada del frontend, reportes y Excel.
+
+### Evidencia en codigo y documentacion
+
+- `src/services/memberships.service.js`
+- `src/services/paymentSchedules.service.js`
+- `src/utils/financialRules.js`
+- `supabase/migrations/20260901150000_s22a_membership_data_foundation.sql`
+- `supabase/migrations/20260901151000_s22b_membership_operational_logic.sql`
+- `supabase/migrations/20260901152000_s22c_post_audit_reconciliation.sql`
+- `supabase/audits/hito_s22a_foundation_audit.sql`
+- `supabase/audits/hito_s22_preflight.sql`
+- `supabase/audits/hito_s22_membership_collection_audit.sql`
+- `.agent/hitos/subsanacion/hito_s22_consistencia_membresias_cobranza_estados.md`
+- `.agent/docs/hito_s22_implementation_summary.md`
+
+### Validacion de cierre
+
+- ejecutar preflight y resolver cualquier caso contable bloqueante
+- sanear duplicados sin pagos sin borrar historial
+- validar vigente mas programada y ausencia de periodos superpuestos
+- comprobar deuda devengada y anulacion de obligaciones futuras
+- probar pago parcial, sobrepago, reversion y gestion atomica
+- reconciliar dashboard, reportes y Excel con las vistas operativas
+- ejecutar audits S21 y S22
+- `yarn test`
+- `yarn lint`
+- `yarn build`
+- `git diff --check`

@@ -1,11 +1,6 @@
 import { Badge } from '../../atoms/Badge'
 import { formatDate, formatCurrency } from '../../../utils/helpers'
 import { COLLECTION_STATUS_VARIANT } from '../../../utils/financialConstants'
-import {
-  addDaysToDateOnly,
-  isBeforeDateOnly,
-  todayDateOnly,
-} from '../../../utils/dateOnly'
 
 export function ScheduleTable({ schedules }) {
   if (schedules.length === 0) {
@@ -28,7 +23,13 @@ export function ScheduleTable({ schedules }) {
               Vencimiento
             </th>
             <th className="text-right py-2 px-3 text-xs font-semibold text-slate-500">
-              Monto
+              Esperado
+            </th>
+            <th className="text-right py-2 px-3 text-xs font-semibold text-slate-500">
+              Pagado
+            </th>
+            <th className="text-right py-2 px-3 text-xs font-semibold text-slate-500">
+              Saldo
             </th>
             <th className="text-center py-2 px-3 text-xs font-semibold text-slate-500">
               Estado
@@ -41,15 +42,13 @@ export function ScheduleTable({ schedules }) {
               ? `${String(s.period_month).padStart(2, '0')}/${s.period_year}`
               : String(s.period_year)
 
-            const isOverdue =
-              !s.is_paid && isBeforeDateOnly(s.due_date, todayDateOnly())
             const status = getScheduleStatus(s)
 
             return (
               <tr
                 key={s.id}
                 className={`border-b border-slate-100 ${
-                  isOverdue ? 'bg-red-50/40' : ''
+                  status.code === 'VENCIDO' ? 'bg-red-50/40' : ''
                 }`}
               >
                 <td className="py-2 px-3 text-slate-800 font-medium">
@@ -61,10 +60,19 @@ export function ScheduleTable({ schedules }) {
                 <td className="py-2 px-3 text-right text-slate-800 font-medium">
                   {formatCurrency(s.expected_amount)}
                 </td>
+                <td className="py-2 px-3 text-right text-emerald-700">
+                  {formatCurrency(s.paid_amount)}
+                </td>
+                <td className="py-2 px-3 text-right text-slate-900 font-semibold">
+                  {formatCurrency(s.outstanding_amount)}
+                </td>
                 <td className="py-2 px-3 text-center">
                   <Badge variant={status.variant}>
                     {status.label}
                   </Badge>
+                  {s.has_collection_management && status.code !== 'PAGADO' && (
+                    <span className="ml-2 text-xs font-medium text-blue-700">En gestión</span>
+                  )}
                 </td>
               </tr>
             )
@@ -76,37 +84,10 @@ export function ScheduleTable({ schedules }) {
 }
 
 function getScheduleStatus(schedule) {
-  const statusCode = schedule.collection_status?.code
-
-  if (statusCode === 'ANULADO') {
-    return buildCatalogStatus(schedule)
-  }
-
-  if (schedule.is_paid || statusCode === 'PAGADO') {
-    return { label: 'Pagado', variant: 'success' }
-  }
-
-  if (statusCode === 'PARCIAL' || statusCode === 'EN_GESTION') {
-    return buildCatalogStatus(schedule)
-  }
-
-  const today = todayDateOnly()
-  if (isBeforeDateOnly(schedule.due_date, today)) {
-    return { label: 'Vencido', variant: 'danger' }
-  }
-
-  const soonLimit = addDaysToDateOnly(today, 7)
-  if (!isBeforeDateOnly(soonLimit, schedule.due_date)) {
-    return { label: 'Por vencer', variant: 'warning' }
-  }
-
-  return { label: 'Pendiente', variant: 'default' }
-}
-
-function buildCatalogStatus(schedule) {
-  const statusCode = schedule.collection_status?.code
+  const statusCode = schedule.financial_status_code || schedule.collection_status?.code
   return {
-    label: schedule.collection_status?.label || '—',
+    code: statusCode,
+    label: schedule.financial_status_label || schedule.collection_status?.label || '—',
     variant: COLLECTION_STATUS_VARIANT[statusCode] || 'default',
   }
 }

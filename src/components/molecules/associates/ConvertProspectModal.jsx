@@ -14,7 +14,6 @@ export function ConvertProspectModal({
 }) {
   const [form, setForm] = useState({
     ruc: prospect?.ruc || '',
-    statusId: '',
     associationDate: todayDateOnly(),
     responsibleUserId: '',
     notes: '',

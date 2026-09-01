@@ -1,6 +1,7 @@
 /** Mapeo de estado de membresía a variantes de Badge */
 export const MEMBERSHIP_STATUS_VARIANT = {
   VIGENTE: 'success',
+  PROGRAMADA: 'warning',
   VENCIDA: 'danger',
   CANCELADA: 'danger',
   RENOVADA: 'info',

@@ -1,10 +1,8 @@
 import { useState } from 'react'
-import { FormField } from '../FormField'
-import { CatalogSelect } from '../CatalogSelect'
 import { Button } from '../../atoms/Button'
-import { FINANCIAL_CATALOG_GROUPS } from '../../../utils/financialConstants'
 import { validatePaymentForm } from '../../../utils/financialValidation'
 import { todayDateOnly } from '../../../utils/dateOnly'
+import { PaymentFormFields } from './PaymentFormFields'
 
 export function PaymentForm({
   schedules = [],
@@ -17,8 +15,8 @@ export function PaymentForm({
   const [form, setForm] = useState({
     payment_schedule_id: initialSchedule?.id || '',
     payment_date: todayDateOnly(),
-    amount_paid: initialSchedule?.expected_amount
-      ? String(initialSchedule.expected_amount)
+    amount_paid: initialSchedule?.outstanding_amount
+      ? String(initialSchedule.outstanding_amount)
       : '',
     operation_code: '',
     payment_method_id: '',
@@ -39,7 +37,7 @@ export function PaymentForm({
         setForm((prev) => ({
           ...prev,
           [name]: value,
-          amount_paid: String(schedule.expected_amount),
+          amount_paid: String(schedule.outstanding_amount),
         }))
       }
     }
@@ -47,7 +45,15 @@ export function PaymentForm({
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    const validationErrors = validatePaymentForm(form, { requireSchedule })
+    const selectedSchedule = pendingSchedules.find(
+      (schedule) => schedule.id === form.payment_schedule_id
+    )
+    const validationErrors = validatePaymentForm(form, {
+      requireSchedule,
+      maxAmount: selectedSchedule?.outstanding_amount,
+      maxDate: todayDateOnly(),
+      minDate: selectedSchedule?.membership_start_date,
+    })
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors)
@@ -61,69 +67,17 @@ export function PaymentForm({
     onSubmit(cleaned)
   }
 
-  const pendingSchedules = schedules.filter((s) => !s.is_paid)
+  const pendingSchedules = schedules.filter((schedule) => schedule.is_collectible)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {pendingSchedules.length > 0 && (
-          <FormField label="Cuota a pagar" name="payment_schedule_id"
-            helpText="Selecciona la cuota correspondiente."
-            error={errors.payment_schedule_id}
-          >
-            <select
-              name="payment_schedule_id"
-              value={form.payment_schedule_id}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md text-sm text-slate-900 bg-white border-slate-300 outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
-            >
-              <option value="">
-                {requireSchedule ? 'Seleccionar cuota...' : 'Sin cuota específica'}
-              </option>
-              {pendingSchedules.map((s) => {
-                const label = s.period_month
-                  ? `${String(s.period_month).padStart(2, '0')}/${s.period_year}`
-                  : String(s.period_year)
-                return (
-                  <option key={s.id} value={s.id}>
-                    {label} — S/ {s.expected_amount}
-                  </option>
-                )
-              })}
-            </select>
-          </FormField>
-        )}
-
-        <FormField label="Fecha de pago" name="payment_date" required type="date"
-          value={form.payment_date} onChange={handleChange}
-          error={errors.payment_date}
-        />
-
-        <FormField label="Monto pagado (S/)" name="amount_paid" required
-          type="number" step="0.01"
-          value={form.amount_paid} onChange={handleChange}
-          error={errors.amount_paid}
-        />
-
-        <FormField label="N° de Factura" name="operation_code" required
-          value={form.operation_code} onChange={handleChange}
-          error={errors.operation_code}
-        />
-
-        <FormField label="Método de pago" name="payment_method_id">
-          <CatalogSelect
-            groupCode={FINANCIAL_CATALOG_GROUPS.PAYMENT_METHOD}
-            value={form.payment_method_id}
-            onChange={handleChange}
-            name="payment_method_id"
-            placeholder="Seleccionar método..."
-          />
-        </FormField>
-
-        <FormField label="Observaciones" name="reference_notes"
-          value={form.reference_notes} onChange={handleChange}
-        />
-      </div>
+      <PaymentFormFields
+        errors={errors}
+        form={form}
+        onChange={handleChange}
+        requireSchedule={requireSchedule}
+        schedules={pendingSchedules}
+      />
 
       <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
         <Button variant="secondary" type="button" size="sm" onClick={onCancel}>

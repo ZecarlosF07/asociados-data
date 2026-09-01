@@ -49,7 +49,7 @@ export function MembershipsPage() {
     setFilters({ search: '', statusId: '', typeId: '' })
   }
 
-  const totalActivas = memberships.filter((m) => m.is_current).length
+  const totalActivas = memberships.filter((membership) => membership.is_effective).length
 
   return (
     <div className="max-w-6xl">
@@ -167,7 +167,7 @@ export function MembershipsPage() {
                   Estado
                 </th>
                 <th className="text-center py-3 px-4 text-xs font-semibold text-slate-500">
-                  Vigente
+                  Registro más reciente
                 </th>
               </tr>
             </thead>

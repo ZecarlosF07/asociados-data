@@ -1,24 +1,20 @@
 import { CaptadorSelect } from '../CaptadorSelect'
-import { CatalogSelect } from '../CatalogSelect'
 import { CategorySelect } from '../CategorySelect'
 import { FormField } from '../FormField'
 import { UserProfileSelect } from '../UserProfileSelect'
-import { ASSOCIATE_CATALOG_GROUPS } from '../../../utils/associateConstants'
 import { AssociateFormSection } from './AssociateFormSection'
 
-export function AssociateInternalFields({ errors, form, onChange }) {
+export function AssociateInternalFields({ form, onChange }) {
   return (
     <AssociateFormSection title="Información interna">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <FormField label="Libro / Padrón" name="book_registry" value={form.book_registry} onChange={onChange} />
-        <FormField label="Estado" name="associate_status_id" required error={errors.associate_status_id}>
-          <CatalogSelect
-            groupCode={ASSOCIATE_CATALOG_GROUPS.STATUS}
-            value={form.associate_status_id}
-            onChange={onChange}
-            name="associate_status_id"
-          />
-        </FormField>
+        <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+          <p className="text-xs font-semibold text-slate-500">Estado del asociado</p>
+          <p className="mt-1 text-sm text-slate-700">
+            Se calcula automáticamente según la membresía.
+          </p>
+        </div>
         <FormField label="Categoría" name="category_id">
           <CategorySelect value={form.category_id} onChange={onChange} name="category_id" />
         </FormField>

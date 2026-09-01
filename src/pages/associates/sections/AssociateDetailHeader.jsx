@@ -6,9 +6,11 @@ export function AssociateDetailHeader({
   associate,
   canEdit,
   committeeActionLoading,
+  statusActionLoading,
   onEdit,
   onBack,
   onManageCommittee,
+  onToggleSuspension,
 }) {
   const statusCode = associate.associate_status?.code
   const statusLabel = associate.associate_status?.label || '—'
@@ -45,6 +47,9 @@ export function AssociateDetailHeader({
 
         {canEdit && (
           <div className="flex gap-2">
+            <Button size="sm" variant="secondary" disabled={statusActionLoading} onClick={onToggleSuspension}>
+              {statusCode === 'SUSPENDIDO' ? 'Reactivar estado automático' : 'Suspender asociado'}
+            </Button>
             <Button size="sm" onClick={onEdit}>
               Editar ficha
             </Button>

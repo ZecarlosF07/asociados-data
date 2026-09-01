@@ -39,10 +39,16 @@ export function PendingPaymentScheduleRow({
           {formatDate(schedule.due_date)}
         </td>
         <td className="py-2 px-4 text-right font-medium text-slate-900">
-          {formatCurrency(schedule.expected_amount)}
+          {formatCurrency(showPaidAt ? schedule.paid_amount : schedule.outstanding_amount)}
+          <span className="block text-[11px] font-normal text-slate-400">
+            {formatCurrency(schedule.paid_amount)} de {formatCurrency(schedule.expected_amount)} pagado
+          </span>
         </td>
         <td className="py-2 px-4 text-center">
           <Badge variant={badgeVariant}>{statusLabel}</Badge>
+          {schedule.has_collection_management && statusLabel !== 'Pagado' && (
+            <span className="ml-2 text-xs font-medium text-blue-700">En gestión</span>
+          )}
         </td>
         {showPaidAt && (
           <td className="py-2 px-4 text-slate-600">
