@@ -763,9 +763,8 @@ validacion operativa pendiente.
 
 ### Estado actual
 
-Implementado en codigo y migracion local el 2026-09-01. La aplicacion de la
-migracion y la ejecucion del audit S20 en la instancia desplegada permanecen como
-validacion operativa pendiente.
+Implementado y aplicado el 2026-09-01. El audit S20 confirmo que no quedan
+referencias operativas a las categorias retiradas D/E.
 
 ### Evidencia en codigo y documentacion
 
@@ -787,6 +786,38 @@ validacion operativa pendiente.
 - preservar D/E solo para referencias historicas
 - validar limites de puntaje y resultado `No califica`
 - ejecutar audit SQL S20
+- `yarn lint`
+- `yarn build`
+- `git diff --check`
+
+## S21 - Consistencia de membresias y detalle de asociados
+
+### Estado actual
+
+Implementado en codigo y migracion local el 2026-09-01. La aplicacion de S21, su
+audit y la validacion funcional autenticada permanecen pendientes.
+
+### Evidencia en codigo y documentacion
+
+- `src/services/memberships.service.js`
+- `src/components/molecules/financial/MembershipForm.jsx`
+- `src/pages/associates/sections/AssociateDetailTabs.jsx`
+- `supabase/migrations/20260901120000_s21_membership_consistency.sql`
+- `supabase/audits/hito_s21_membership_consistency_audit.sql`
+- `.agent/hitos/subsanacion/hito_s21_consistencia_membresias_detalle_asociados.md`
+- `.agent/docs/hito_s21_implementation_summary.md`
+
+### Validacion de cierre
+
+- normalizar duplicados conservando la membresia mas reciente
+- impedir mas de una membresia vigente por asociado
+- bloquear creacion o renovacion sin categoria en Informacion
+- sincronizar solo la categoria de la membresia vigente
+- conservar historicos, pagos y cronogramas
+- probar creacion, cancelacion y renovacion transaccional
+- validar cinco secciones, subsecciones y `?section=` en escritorio y movil
+- verificar reportes y Excel de membresias despues del backfill
+- ejecutar audit SQL S21
 - `yarn lint`
 - `yarn build`
 - `git diff --check`

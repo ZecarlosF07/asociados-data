@@ -1,4 +1,4 @@
-import type { AuditFields, CatalogItem } from './shared'
+import type { AuditFields, CatalogItem, Category } from './shared'
 
 export interface Membership extends AuditFields {
   id: string
@@ -8,10 +8,12 @@ export interface Membership extends AuditFields {
   start_date: string
   end_date?: string | null
   is_current: boolean
+  category_id?: string | null
   membership_type_id?: string | null
   membership_status_id?: string | null
   membership_type?: CatalogItem | null
   membership_status?: CatalogItem | null
+  category?: Category | null
 }
 
 export interface PaymentSchedule extends AuditFields {

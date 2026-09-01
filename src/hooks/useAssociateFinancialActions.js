@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { membershipsService } from '../services/memberships.service'
-import { paymentSchedulesService } from '../services/paymentSchedules.service'
 import { paymentsService } from '../services/payments.service'
 
 export function useAssociateFinancialActions({
@@ -46,33 +45,15 @@ export function useAssociateFinancialActions({
       const membership = await membershipsService.create({
         ...data,
         associate_id: associateId,
-        created_by: profile?.id,
       })
 
       await generateScheduleForMembership(membership)
       notify.success('Membresía creada y cronograma generado')
       refetch()
+      return true
     } catch (error) {
       notify.error('Error: ' + error.message)
-    } finally {
-      setFinancialLoading(false)
-    }
-  }
-
-  const handleMembershipDelete = async (membership) => {
-    if (!confirm('¿Eliminar esta membresía?')) return
-
-    setFinancialLoading(true)
-    try {
-      await paymentSchedulesService.softDeleteByMembership(
-        membership.id,
-        profile?.id
-      )
-      await membershipsService.softDelete(membership.id, profile?.id)
-      notify.success('Membresía eliminada')
-      refetch()
-    } catch (error) {
-      notify.error('Error: ' + error.message)
+      return false
     } finally {
       setFinancialLoading(false)
     }
@@ -101,15 +82,16 @@ export function useAssociateFinancialActions({
         {
           ...newData,
           associate_id: associateId,
-        },
-        profile?.id
+        }
       )
 
       await generateScheduleForMembership(membership)
       notify.success('Membresía renovada y cronograma generado')
       refetch()
+      return true
     } catch (error) {
       notify.error('Error: ' + error.message)
+      return false
     } finally {
       setFinancialLoading(false)
     }
@@ -131,7 +113,6 @@ export function useAssociateFinancialActions({
   return {
     financialLoading,
     handleMembershipSubmit,
-    handleMembershipDelete,
     handleMembershipCancel,
     handleMembershipRenew,
     handlePaymentSubmit,

@@ -1,59 +1,64 @@
-import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { AssociateInfoSection } from '../../../components/molecules/associates/AssociateInfoSection'
-import { AssociateCollectionsTab } from '../../../components/molecules/financial/AssociateCollectionsTab'
 import { AssociateFinancialSummary } from '../../../components/molecules/financial/AssociateFinancialSummary'
-import { AssociatePaymentsTab } from '../../../components/molecules/financial/AssociatePaymentsTab'
-import { AssociateContactsTab } from './AssociateContactsTab'
 import { AssociateDocumentsTab } from './AssociateDocumentsTab'
 import { AssociateMembershipsTab } from './AssociateMembershipsTab'
-import { AssociatePeopleTab } from './AssociatePeopleTab'
+import { AssociatePaymentsCollectionsSection } from './AssociatePaymentsCollectionsSection'
+import { AssociateRelationshipsSection } from './AssociateRelationshipsSection'
 
-const TABS = [
-  { key: 'info', label: 'Información' },
-  { key: 'people', label: 'Personas' },
-  { key: 'contacts', label: 'Contactos' },
-  { key: 'memberships', label: 'Membresías' },
-  { key: 'payments', label: 'Pagos' },
-  { key: 'collections', label: 'Cobranza' },
+const SECTIONS = [
+  { key: 'summary', label: 'Resumen' },
+  { key: 'relationships', label: 'Personas y contactos' },
+  { key: 'membership', label: 'Membresía' },
+  { key: 'finance', label: 'Pagos y cobranza' },
   { key: 'documents', label: 'Documentos' },
 ]
 
 export function AssociateDetailTabs(props) {
-  const [activeTab, setActiveTab] = useState('info')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const requestedSection = searchParams.get('section')
+  const activeSection = SECTIONS.some(({ key }) => key === requestedSection)
+    ? requestedSection
+    : 'summary'
   const common = { actionLoading: props.actionLoading, canEdit: props.canEdit }
+  const selectSection = (section) => {
+    const next = new URLSearchParams(searchParams)
+    next.set('section', section)
+    setSearchParams(next)
+  }
 
   return (
     <div>
       <nav className="mb-6 flex gap-1 overflow-x-auto border-b border-slate-200">
-        {TABS.map((tab) => (
+        {SECTIONS.map((section) => (
           <button
-            key={tab.key}
-            className={`whitespace-nowrap px-4 py-2 text-sm font-medium ${activeTab === tab.key ? 'border-b-2 border-slate-900 text-slate-900' : 'text-slate-400'}`}
-            onClick={() => setActiveTab(tab.key)}
+            key={section.key}
+            type="button"
+            className={`whitespace-nowrap px-4 py-3 text-sm font-medium ${activeSection === section.key ? 'border-b-2 border-slate-900 text-slate-900' : 'text-slate-500 hover:text-slate-800'}`}
+            onClick={() => selectSection(section.key)}
           >
-            {tab.label}
+            {section.label}
           </button>
         ))}
       </nav>
-      <AssociateFinancialSummary associate={props.associate} schedules={props.schedules} payments={props.payments} collectionActions={props.collectionActions} />
-      {activeTab === 'info' && <AssociateInfoSection associate={props.associate} />}
-      {activeTab === 'people' && <AssociatePeopleTab {...common} people={props.people} onSubmit={props.onPersonSubmit} onUpdate={props.onPersonUpdate} onDelete={props.onPersonDelete} />}
-      {activeTab === 'contacts' && <AssociateContactsTab {...common} contacts={props.areaContacts} onSubmit={props.onContactSubmit} onUpdate={props.onContactUpdate} onDelete={props.onContactDelete} />}
-      {activeTab === 'memberships' && (
+      {activeSection === 'summary' && <Summary {...props} />}
+      {activeSection === 'relationships' && <AssociateRelationshipsSection {...props} />}
+      {activeSection === 'membership' && (
         <AssociateMembershipsTab
-          {...common}
+          actionLoading={props.actionLoading}
           associate={props.associate}
           memberships={props.memberships}
-          schedules={props.schedules}
+          canCreate={props.canCreateMembership}
+          canUpdate={props.canUpdateMembership}
+          canEditAssociate={props.canEditAssociate}
+          onEditAssociate={props.onEditAssociate}
           onSubmit={props.onMembershipSubmit}
-          onDelete={props.onMembershipDelete}
           onCancel={props.onMembershipCancel}
           onRenew={props.onMembershipRenew}
         />
       )}
-      {activeTab === 'payments' && <AssociatePaymentsTab {...common} schedules={props.schedules} payments={props.payments} onPaymentSubmit={props.onPaymentSubmit} />}
-      {activeTab === 'collections' && <AssociateCollectionsTab {...common} schedules={props.schedules} collectionActions={props.collectionActions} onCollectionSubmit={props.onCollectionSubmit} />}
-      {activeTab === 'documents' && (
+      {activeSection === 'finance' && <AssociatePaymentsCollectionsSection {...props} />}
+      {activeSection === 'documents' && (
         <AssociateDocumentsTab
           {...common}
           associateId={props.associate.id}
@@ -64,6 +69,15 @@ export function AssociateDetailTabs(props) {
           onDelete={props.onDocumentDelete}
         />
       )}
+    </div>
+  )
+}
+
+function Summary({ associate, schedules, payments, collectionActions }) {
+  return (
+    <div className="space-y-6">
+      <AssociateFinancialSummary associate={associate} schedules={schedules} payments={payments} collectionActions={collectionActions} />
+      <AssociateInfoSection associate={associate} />
     </div>
   )
 }

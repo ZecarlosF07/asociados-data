@@ -70,36 +70,23 @@ export const membershipsService = {
   },
 
   async create(membership) {
-    // Marcar membresías anteriores como no vigentes
-    if (membership.is_current !== false) {
-      await supabase
-        .from('memberships')
-        .update({ is_current: false, updated_at: new Date().toISOString() })
-        .eq('associate_id', membership.associate_id)
-        .eq('is_current', true)
-        .eq('is_deleted', false)
-    }
+    const { data, error } = await supabase.rpc('create_current_membership', {
+      p_associate_id: membership.associate_id,
+      p_membership_type_id: membership.membership_type_id,
+      p_fee_amount: Number(membership.fee_amount),
+      p_currency_code: membership.currency_code,
+      p_start_date: membership.start_date,
+      p_end_date: membership.end_date || null,
+      p_monthly_billing_day: membership.monthly_billing_day
+        ? Number(membership.monthly_billing_day)
+        : null,
+      p_membership_status_id: membership.membership_status_id,
+      p_negotiation_notes: membership.negotiation_notes || null,
+    })
 
-    const { data, error } = await supabase
-      .from('memberships')
-      .insert(membership)
-      .select(MEMBERSHIP_SELECT)
-      .single()
-
-    if (error) throw error
-    return data
-  },
-
-  async update(id, updates) {
-    const { data, error } = await supabase
-      .from('memberships')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select(MEMBERSHIP_SELECT)
-      .single()
-
-    if (error) throw error
-    return data
+    if (error) throw normalizeMembershipError(error)
+    if (!data?.id) throw new Error('La operación no retornó la membresía creada.')
+    return this.getById(data.id)
   },
 
   async cancel(id, userId) {
@@ -124,6 +111,8 @@ export const membershipsService = {
         updated_by: userId,
       })
       .eq('id', id)
+      .eq('is_current', true)
+      .eq('is_deleted', false)
       .select(MEMBERSHIP_SELECT)
       .single()
 
@@ -143,54 +132,25 @@ export const membershipsService = {
     return data
   },
 
-  async renew(oldMembershipId, newMembershipData, userId) {
-    // Marcar la anterior como RENOVADA
-    const { data: statuses } = await supabase
-      .from('catalog_items')
-      .select('id, group:group_id(code)')
-      .eq('code', 'RENOVADA')
-
-    const renewedStatus = statuses?.find(
-      (s) => s.group?.code === 'MEMBERSHIP_STATUS'
-    )
-
-    if (renewedStatus) {
-      await supabase
-        .from('memberships')
-        .update({
-          membership_status_id: renewedStatus.id,
-          is_current: false,
-          end_date: todayDateOnly(),
-          updated_at: new Date().toISOString(),
-          updated_by: userId,
-        })
-        .eq('id', oldMembershipId)
-    }
-
-    // Crear nueva membresía
-    const created = await membershipsService.create({
-      ...newMembershipData,
-      is_current: true,
-      created_by: userId,
+  async renew(oldMembershipId, membership) {
+    const { data, error } = await supabase.rpc('renew_current_membership', {
+      p_membership_id: oldMembershipId,
+      p_membership_type_id: membership.membership_type_id,
+      p_fee_amount: Number(membership.fee_amount),
+      p_currency_code: membership.currency_code,
+      p_start_date: membership.start_date,
+      p_end_date: membership.end_date || null,
+      p_monthly_billing_day: membership.monthly_billing_day
+        ? Number(membership.monthly_billing_day)
+        : null,
+      p_membership_status_id: membership.membership_status_id,
+      p_negotiation_notes: membership.negotiation_notes || null,
     })
 
-    return created
+    if (error) throw normalizeMembershipError(error)
+    if (!data?.id) throw new Error('La operación no retornó la membresía renovada.')
+    return this.getById(data.id)
   },
-
-
-  async softDelete(id, deletedBy) {
-    const { error } = await supabase
-      .from('memberships')
-      .update({
-        is_deleted: true,
-        deleted_at: new Date().toISOString(),
-        deleted_by: deletedBy,
-      })
-      .eq('id', id)
-
-    if (error) throw error
-  },
-
   /**
    * Genera el cronograma de pagos para una membresía.
    * - Modalidades periódicas: cuotas según frecuencia y día de cobro
@@ -235,6 +195,14 @@ export const membershipsService = {
     if (error) throw error
     return data
   },
+}
+
+function normalizeMembershipError(error) {
+  if (error?.code === '23505') {
+    return new Error('El asociado ya tiene una membresía vigente. Usa la opción Renovar.')
+  }
+
+  return error
 }
 
 async function ensureMembershipEndDate({ membership, userId }) {

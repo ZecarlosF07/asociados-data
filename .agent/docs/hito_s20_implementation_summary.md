@@ -4,8 +4,8 @@ Fecha: 2026-09-01
 
 ## Estado
 
-Implementado en codigo y migracion local. Pendiente aplicar la migracion y ejecutar
-el audit S20 en la instancia desplegada.
+Implementado y aplicado. El audit S20 confirmó el 2026-09-01 que no quedan
+referencias operativas a las categorías retiradas D/E.
 
 ## Directorio de contactos
 
@@ -37,5 +37,4 @@ Puntajes inferiores a 0.75 se muestran como `No califica`.
 - `yarn build`
 - `git diff --check`
 
-La validacion manual autenticada del frontend y el audit SQL desplegado permanecen
-pendientes.
+La validación manual autenticada del frontend permanece pendiente.

@@ -20,8 +20,10 @@ export function AssociateDetailPage() {
   const navigate = useNavigate()
   const { notify } = useNotification()
   const { profile } = useUserProfile()
-  const { canEdit } = usePermissions()
+  const { canCreate, canEdit } = usePermissions()
   const canEditAssociate = canEdit('asociados')
+  const canCreateMembership = canCreate('membresias')
+  const canUpdateMembership = canEdit('membresias')
   const detail = useAssociateDetail(id)
   const committeeActions = useAssociateCommitteeActions({
     associateId: id,
@@ -34,7 +36,6 @@ export function AssociateDetailPage() {
   const {
     financialLoading,
     handleMembershipSubmit,
-    handleMembershipDelete,
     handleMembershipCancel,
     handleMembershipRenew,
     handlePaymentSubmit,
@@ -61,7 +62,7 @@ export function AssociateDetailPage() {
   }
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-6xl">
       <AssociateDetailHeader
         associate={detail.associate}
         canEdit={canEditAssociate}
@@ -81,6 +82,10 @@ export function AssociateDetailPage() {
         collectionActions={detail.collectionActions}
         documents={detail.documents}
         canEdit={canEditAssociate}
+        canCreateMembership={canCreateMembership}
+        canUpdateMembership={canUpdateMembership}
+        canEditAssociate={canEditAssociate}
+        onEditAssociate={() => navigate(`${ROUTES.ASOCIADOS}/${id}/editar`)}
         actionLoading={isActionLoading}
         onPersonSubmit={peopleActions.create}
         onPersonUpdate={peopleActions.update}
@@ -89,7 +94,6 @@ export function AssociateDetailPage() {
         onContactUpdate={contactActions.update}
         onContactDelete={contactActions.remove}
         onMembershipSubmit={handleMembershipSubmit}
-        onMembershipDelete={handleMembershipDelete}
         onMembershipCancel={handleMembershipCancel}
         onMembershipRenew={handleMembershipRenew}
         onPaymentSubmit={handlePaymentSubmit}

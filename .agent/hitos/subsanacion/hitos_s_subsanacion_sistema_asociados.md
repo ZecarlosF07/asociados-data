@@ -223,6 +223,16 @@ Simplifica la consulta operativa de contactos y actualiza la clasificación vige
 - categorías A Corporativo, B Empresarial y C Ejecutivo
 - retiro lógico de D/E con validación previa de referencias operativas
 
+### S21. Evolución post-release del Hito 6: consistencia de membresías
+
+Unifica la categoría y simplifica la operación de la ficha del asociado:
+
+- una sola membresía vigente con renovaciones anteriores como historial
+- categoría editable únicamente desde Información
+- creación y renovación transaccionales con protección ante concurrencia
+- limpieza segura de duplicados y backfill de categoría
+- cinco secciones principales con navegación persistida en la URL
+
 ## Orden recomendado de ejecución
 
 1. S0 - Calidad transversal.
@@ -246,6 +256,7 @@ Simplifica la consulta operativa de contactos y actualiza la clasificación vige
 19. S18 - Representantes en el directorio de contactos de empresas.
 20. S19 - Reporte actual de comités.
 21. S20 - Filtros combinados de contactos y categorías A-C.
+22. S21 - Consistencia de membresías y detalle de asociados.
 
 S0 debe hacerse primero porque reduce fricción técnica. S6 debe hacerse al final porque valida todo el sistema integrado.
 S7 se ejecuta después de S6 porque nace de un bug funcional detectado durante validación posterior al release interno.
@@ -262,6 +273,7 @@ S17 se ejecuta después de S16 porque aprovecha la ficha de asociados ya estabil
 S18 se ejecuta después de S17 porque amplía su consulta con representantes ya registrados en la ficha, sin crear nuevas fuentes de verdad.
 S19 se ejecuta después de S18 porque explota analíticamente el modelo de comités estabilizado en S16 y reutiliza la arquitectura de reportes y auditoría Excel.
 S20 se ejecuta después de limpiar las referencias operativas a D/E y evoluciona el directorio ya unificado por S18.
+S21 se ejecuta después de S20 y corrige la consistencia financiera antes de nuevas renovaciones.
 
 ## Criterio global de cierre
 
@@ -299,4 +311,5 @@ La subsanación completa queda cerrada cuando:
 - [S18 - Representantes en el directorio de contactos](./hito_s18_directorio_representantes_empresas.md)
 - [S19 - Reporte actual de comités](./hito_s19_reporte_comites.md)
 - [S20 - Filtros combinados de contactos y categorías A-C](./hito_s20_filtros_contactos_categorias.md)
+- [S21 - Consistencia de membresías y detalle de asociados](./hito_s21_consistencia_membresias_detalle_asociados.md)
 - [Documento técnico S13 - Roles y permisos operativos](../../docs/hito_s13_roles_permisos_operativos.md)

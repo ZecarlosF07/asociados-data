@@ -117,7 +117,21 @@ Marcar cada punto como:
 | Audit S4 ejecutado | OK | Validado previamente |
 | Audit S5 ejecutado | OK | Validado previamente |
 | Audit S6 ejecutado | OK | Validado por SQL Editor el 2026-05-11 |
-| Audit S20 ejecutado | Pendiente |  |
+| Audit S20 ejecutado | OK | Sin referencias operativas a categorías D/E, validado el 2026-09-01 |
+| Audit S21 ejecutado | Pendiente | Aplicar migración y ejecutar audit en la instancia desplegada |
+
+## 9. Consistencia de membresías S21
+
+| Check | Estado | Evidencia |
+|---|---:|---|
+| Duplicados vigentes normalizados sin borrar historial | Pendiente | Audit S21 |
+| Índice único parcial impide una segunda vigente | Pendiente | Audit S21 y prueba de conflicto |
+| Creación bloqueada cuando Información no tiene categoría | Pendiente | Prueba funcional autenticada |
+| Cambio de categoría sincroniza solo la vigente | Pendiente | Prueba funcional autenticada |
+| Renovación conserva historial y cronogramas previos | Pendiente | Prueba funcional autenticada |
+| Cinco secciones y `?section=` en escritorio y móvil | Pendiente | Prueba visual autenticada |
+| Reporte y Excel de membresías verificados tras backfill | Pendiente | Comparación de reporte y exportación |
+| `yarn lint`, `yarn build` y `git diff --check` | OK | Ejecutados el 2026-09-01 |
 
 ## Incidencias residuales
 

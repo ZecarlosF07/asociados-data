@@ -23,13 +23,18 @@ export function AssociateDetailHeader({
         ← Volver al listado
       </button>
 
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3 mb-1">
+          <div className="mb-1 flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-bold text-slate-900">
               {associate.company_name}
             </h1>
             <Badge variant={variant}>{statusLabel}</Badge>
+            <Badge variant={associate.category ? 'info' : 'warning'}>
+              {associate.category
+                ? associate.category.name || associate.category.code
+                : 'Sin categoría'}
+            </Badge>
           </div>
           <p className="text-sm text-slate-400">
             {associate.internal_code}
