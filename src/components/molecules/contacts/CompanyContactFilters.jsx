@@ -1,18 +1,22 @@
 import { Input } from '../../atoms/Input'
 import { CatalogSelect } from '../CatalogSelect'
 import { CategorySelect } from '../CategorySelect'
+import { ChecklistFilter } from '../ChecklistFilter'
+import { useCatalog } from '../../../hooks/useCatalog'
+import { useCommittees } from '../../../hooks/useCommittees'
 import { ASSOCIATE_CATALOG_GROUPS } from '../../../utils/associateConstants'
 import {
-  COMPANY_CONTACT_TYPE_OPTIONS,
-  isRepresentativeContactType,
-} from '../../../utils/companyContactUtils'
+  buildCommitteeOptions,
+  buildContactCriteriaOptions,
+} from '../../../utils/companyContactFilterUtils'
 
 export function CompanyContactFilters({ filters, onClear, onFilterChange }) {
-  const areaDisabled = isRepresentativeContactType(filters.contactType)
+  const { items: areas, loading: areasLoading } = useCatalog(ASSOCIATE_CATALOG_GROUPS.AREA)
+  const { committees, loading: committeesLoading } = useCommittees({ activeOnly: true })
 
   return (
-    <div className="flex flex-wrap items-end gap-3 mb-6 bg-white border border-slate-200 rounded-lg p-4">
-      <div className="flex-1 min-w-[220px]">
+    <div className="mb-6 flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-white p-4">
+      <div className="min-w-[220px] flex-1">
         <FilterLabel>Buscar</FilterLabel>
         <Input
           placeholder="Contacto, cargo, correo, empresa, RUC..."
@@ -21,44 +25,36 @@ export function CompanyContactFilters({ filters, onClear, onFilterChange }) {
         />
       </div>
 
+      <div className="w-56">
+        <FilterLabel>Tipo / área</FilterLabel>
+        <ChecklistFilter
+          emptyLabel="Todos"
+          loading={areasLoading}
+          options={buildContactCriteriaOptions(areas)}
+          selectedValues={filters.contactCriteria}
+          onChange={(contactCriteria) => onFilterChange({ contactCriteria })}
+        />
+      </div>
+
       <div className="w-52">
-        <FilterLabel>Tipo de contacto</FilterLabel>
-        <select
-          name="contactType"
-          value={filters.contactType}
-          onChange={(event) => onFilterChange({ contactType: event.target.value })}
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
-        >
-          {COMPANY_CONTACT_TYPE_OPTIONS.map((option) => (
-            <option key={option.value || 'all'} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="w-44">
-        <FilterLabel>Área</FilterLabel>
-        <CatalogSelect
-          groupCode={ASSOCIATE_CATALOG_GROUPS.AREA}
-          name="areaId"
-          value={filters.areaId}
-          onChange={(event) => onFilterChange({ areaId: event.target.value })}
-          placeholder="Todas"
-          disabled={areaDisabled}
+        <FilterLabel>Comités</FilterLabel>
+        <ChecklistFilter
+          emptyLabel="Todos"
+          loading={committeesLoading}
+          options={buildCommitteeOptions(committees)}
+          selectedValues={filters.committeeIds}
+          onChange={(committeeIds) => onFilterChange({ committeeIds })}
         />
       </div>
 
-      <div className="w-44">
-        <FilterLabel>Estado asociado</FilterLabel>
-        <CatalogSelect
-          groupCode={ASSOCIATE_CATALOG_GROUPS.STATUS}
-          name="statusId"
-          value={filters.statusId}
-          onChange={(event) => onFilterChange({ statusId: event.target.value })}
-          placeholder="Todos"
-        />
-      </div>
+      <CatalogFilter
+        groupCode={ASSOCIATE_CATALOG_GROUPS.STATUS}
+        label="Estado asociado"
+        name="statusId"
+        placeholder="Todos"
+        value={filters.statusId}
+        onFilterChange={onFilterChange}
+      />
 
       <div className="w-44">
         <FilterLabel>Categoría</FilterLabel>
@@ -80,21 +76,28 @@ export function CompanyContactFilters({ filters, onClear, onFilterChange }) {
         Solo principales
       </label>
 
-      <button
-        type="button"
-        className="text-xs text-slate-400 hover:text-slate-600 underline pb-2"
-        onClick={onClear}
-      >
+      <button type="button" className="pb-2 text-xs text-slate-400 underline hover:text-slate-600" onClick={onClear}>
         Limpiar
       </button>
     </div>
   )
 }
 
-function FilterLabel({ children }) {
+function CatalogFilter({ groupCode, label, name, onFilterChange, placeholder, value }) {
   return (
-    <label className="text-xs font-semibold text-slate-600 mb-1 block">
-      {children}
-    </label>
+    <div className="w-44">
+      <FilterLabel>{label}</FilterLabel>
+      <CatalogSelect
+        groupCode={groupCode}
+        name={name}
+        value={value}
+        onChange={(event) => onFilterChange({ [name]: event.target.value })}
+        placeholder={placeholder}
+      />
+    </div>
   )
+}
+
+function FilterLabel({ children }) {
+  return <label className="mb-1 block text-xs font-semibold text-slate-600">{children}</label>
 }

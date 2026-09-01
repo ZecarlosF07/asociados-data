@@ -4,7 +4,9 @@ import { Textarea } from '../../atoms/Textarea'
 import { FormField } from '../FormField'
 import {
   EVALUATION_CRITERIA,
+  MIN_QUALIFYING_SCORE,
   calculateAverageScore,
+  findCategoryByScore,
   getEmptyScores,
 } from '../../../utils/evaluationCriteria'
 import { formatCurrency } from '../../../utils/helpers'
@@ -19,10 +21,7 @@ export function EvaluationForm({ onSubmit, loading, categories }) {
     const avg = calculateAverageScore(scores)
     setAverageScore(avg)
 
-    const suggested = categories?.find(
-      (c) => avg >= Number(c.min_score) && avg <= Number(c.max_score)
-    )
-    setSuggestion(suggested || null)
+    setSuggestion(findCategoryByScore(categories, avg))
   }, [scores, categories])
 
   const handleScoreChange = (key, value) => {
@@ -80,7 +79,12 @@ export function EvaluationForm({ onSubmit, loading, categories }) {
             </div>
           </>
         )}
-        {!suggestion && averageScore > 0 && (
+        {!suggestion && averageScore < MIN_QUALIFYING_SCORE && (
+          <p className="text-xs font-medium text-slate-600">
+            No califica para una categoría.
+          </p>
+        )}
+        {!suggestion && averageScore >= MIN_QUALIFYING_SCORE && (
           <p className="text-xs text-amber-600">
             No se encontró categoría para este puntaje.
           </p>

@@ -18,7 +18,7 @@ const ASSOCIATE_SELECT = `
   category:category_id(id, code, name, base_fee),
   committee_assignments:associate_committees(
     id, joined_at, is_primary, is_active, is_deleted,
-    committee:committee_id(id, code, name, description, is_active)
+    committee:committee_id(id, code, name, description, is_active, is_deleted)
   )
 `
 
@@ -97,7 +97,8 @@ function mapRepresentative(person) {
 
 function mapAssociate(associate) {
   const assignment = associate?.committee_assignments?.find(
-    (item) => item.is_primary && item.is_active && !item.is_deleted
+    (item) => item.is_primary && item.is_active && !item.is_deleted &&
+      item.committee?.is_active && !item.committee?.is_deleted
   )
 
   return {

@@ -1,6 +1,7 @@
 import { normalizeText } from './reportFilterUtils'
+import { WITHOUT_COMMITTEE } from './committeeConstants'
 
-export const WITHOUT_COMMITTEE = 'WITHOUT_COMMITTEE'
+export { WITHOUT_COMMITTEE } from './committeeConstants'
 
 export const DEFAULT_COMMITTEE_REPORT_FILTERS = {
   search: '',

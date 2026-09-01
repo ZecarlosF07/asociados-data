@@ -89,6 +89,15 @@ export const EVALUATION_CRITERIA = [
   },
 ]
 
+export const MIN_QUALIFYING_SCORE = 0.75
+
+export function findCategoryByScore(categories, averageScore) {
+  return categories?.find(
+    (category) => averageScore >= Number(category.min_score) &&
+      averageScore <= Number(category.max_score)
+  ) || null
+}
+
 /** Calcula el promedio de todos los criterios */
 export function calculateAverageScore(scores) {
   const total = EVALUATION_CRITERIA.reduce(

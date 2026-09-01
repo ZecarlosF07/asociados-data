@@ -4,8 +4,7 @@ import {
   DEFAULT_COMPANY_CONTACT_FILTERS,
   filterCompanyContacts,
   hasCompanyContactFilters,
-  isRepresentativeContactType,
-} from '../utils/companyContactUtils'
+} from '../utils/companyContactFilterUtils'
 
 export function useCompanyContacts() {
   const [contacts, setContacts] = useState([])
@@ -32,13 +31,7 @@ export function useCompanyContacts() {
   }, [fetchContacts])
 
   const updateFilters = useCallback((updates) => {
-    setFilters((current) => ({
-      ...current,
-      ...updates,
-      areaId: isRepresentativeContactType(updates.contactType)
-        ? ''
-        : updates.areaId ?? current.areaId,
-    }))
+    setFilters((current) => ({ ...current, ...updates }))
   }, [])
 
   const clearFilters = useCallback(() => {

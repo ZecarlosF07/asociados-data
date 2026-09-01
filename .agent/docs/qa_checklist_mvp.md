@@ -29,6 +29,8 @@ Marcar cada punto como:
 | Configuraciones generales visibles | Pendiente |  |
 | Catálogos cargan en formularios | Pendiente |  |
 | Categorías disponibles para prospectos/asociados | Pendiente |  |
+| Solo A-C aparecen como categorías operativas | Pendiente |  |
+| Puntajes menores a 0.75 muestran `No califica` | Pendiente |  |
 
 ## 3. Prospectos
 
@@ -54,6 +56,9 @@ Marcar cada punto como:
 | Registrar persona vinculada | Pendiente |  |
 | Registrar contacto por área | Pendiente |  |
 | Consultar ficha principal completa | Pendiente |  |
+| Combinar representantes y áreas en el checklist de contactos | Pendiente |  |
+| Filtrar contactos por varios comités y `Sin comité` | Pendiente |  |
+| Exportar todos los contactos que cumplen los filtros activos | Pendiente |  |
 
 ## 5. Finanzas
 
@@ -112,6 +117,7 @@ Marcar cada punto como:
 | Audit S4 ejecutado | OK | Validado previamente |
 | Audit S5 ejecutado | OK | Validado previamente |
 | Audit S6 ejecutado | OK | Validado por SQL Editor el 2026-05-11 |
+| Audit S20 ejecutado | Pendiente |  |
 
 ## Incidencias residuales
 

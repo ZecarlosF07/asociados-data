@@ -213,6 +213,16 @@ Agrega una vista analítica actual de la distribución institucional:
 - detalle navegable hacia la ficha del asociado
 - exportación Excel auditada con resumen y detalle
 
+### S20. Evolución post-release de los Hitos 3, S17 y S18: filtros y categorías
+
+Simplifica la consulta operativa de contactos y actualiza la clasificación vigente:
+
+- checklist combinado por representantes y áreas
+- checklist de comités activos con opción `Sin comité`
+- exportación consistente con todas las selecciones activas
+- categorías A Corporativo, B Empresarial y C Ejecutivo
+- retiro lógico de D/E con validación previa de referencias operativas
+
 ## Orden recomendado de ejecución
 
 1. S0 - Calidad transversal.
@@ -235,6 +245,7 @@ Agrega una vista analítica actual de la distribución institucional:
 18. S17 - Directorio operativo de contactos de empresas.
 19. S18 - Representantes en el directorio de contactos de empresas.
 20. S19 - Reporte actual de comités.
+21. S20 - Filtros combinados de contactos y categorías A-C.
 
 S0 debe hacerse primero porque reduce fricción técnica. S6 debe hacerse al final porque valida todo el sistema integrado.
 S7 se ejecuta después de S6 porque nace de un bug funcional detectado durante validación posterior al release interno.
@@ -250,6 +261,7 @@ S16 se ejecuta después de estabilizar el núcleo de asociados y los permisos, y
 S17 se ejecuta después de S16 porque aprovecha la ficha de asociados ya estabilizada y agrega una consulta transversal sin cambiar la captura de contactos existente.
 S18 se ejecuta después de S17 porque amplía su consulta con representantes ya registrados en la ficha, sin crear nuevas fuentes de verdad.
 S19 se ejecuta después de S18 porque explota analíticamente el modelo de comités estabilizado en S16 y reutiliza la arquitectura de reportes y auditoría Excel.
+S20 se ejecuta después de limpiar las referencias operativas a D/E y evoluciona el directorio ya unificado por S18.
 
 ## Criterio global de cierre
 
@@ -286,4 +298,5 @@ La subsanación completa queda cerrada cuando:
 - [S17 - Directorio operativo de contactos de empresas](./hito_s17_directorio_contactos_empresas.md)
 - [S18 - Representantes en el directorio de contactos](./hito_s18_directorio_representantes_empresas.md)
 - [S19 - Reporte actual de comités](./hito_s19_reporte_comites.md)
+- [S20 - Filtros combinados de contactos y categorías A-C](./hito_s20_filtros_contactos_categorias.md)
 - [Documento técnico S13 - Roles y permisos operativos](../../docs/hito_s13_roles_permisos_operativos.md)

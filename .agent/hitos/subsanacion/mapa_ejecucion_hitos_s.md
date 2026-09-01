@@ -758,3 +758,35 @@ validacion operativa pendiente.
 - `yarn lint`
 - `yarn build`
 - `git diff --check`
+
+## S20 - Filtros combinados de contactos y categorias A-C
+
+### Estado actual
+
+Implementado en codigo y migracion local el 2026-09-01. La aplicacion de la
+migracion y la ejecucion del audit S20 en la instancia desplegada permanecen como
+validacion operativa pendiente.
+
+### Evidencia en codigo y documentacion
+
+- `src/components/molecules/ChecklistFilter.jsx`
+- `src/components/molecules/contacts/CompanyContactFilters.jsx`
+- `src/utils/companyContactFilterUtils.js`
+- `supabase/migrations/20260901090000_s20_contact_filters_and_categories.sql`
+- `supabase/audits/hito_s20_contact_filters_categories_audit.sql`
+- `.agent/hitos/subsanacion/hito_s20_filtros_contactos_categorias.md`
+- `.agent/docs/hito_s20_implementation_summary.md`
+
+### Validacion de cierre
+
+- combinar representantes y areas con OR dentro del checklist
+- filtrar por varios comites y por `Sin comité`
+- combinar los grupos de filtros con AND
+- exportar exactamente el resultado filtrado
+- mantener solo A-C como categorias operativas
+- preservar D/E solo para referencias historicas
+- validar limites de puntaje y resultado `No califica`
+- ejecutar audit SQL S20
+- `yarn lint`
+- `yarn build`
+- `git diff --check`

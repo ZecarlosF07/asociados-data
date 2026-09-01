@@ -87,13 +87,14 @@ Validar que tengan registros activos:
 
 ### Categorías
 
-Deben existir al menos 5 categorías operativas:
+Deben existir exactamente 3 categorías operativas:
 
-- `CAT_A`
-- `CAT_B`
-- `CAT_C`
-- `CAT_D`
-- `CAT_E`
+- `CAT_A` — `Categoría A - Corporativo`
+- `CAT_B` — `Categoría B - Empresarial`
+- `CAT_C` — `Categoría C - Ejecutivo`
+
+`CAT_D` y `CAT_E` deben permanecer inactivas y eliminadas lógicamente para
+conservar la integridad de referencias históricas.
 
 ### Storage
 
