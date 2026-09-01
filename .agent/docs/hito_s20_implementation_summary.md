@@ -19,6 +19,9 @@ categoria y solo principales.
 La exportacion no cambio de fuente: continua usando `filteredContacts` y por ello
 incluye todos los registros que cumplen los filtros activos.
 
+El Excel operativo queda limitado, en este orden, a: RUC, Asociados, Categoria,
+Comite principal, Tipo de contacto, Area, Contacto, Cargo, Email y Telefono.
+
 ## Categorias
 
 - A: `Categoría A - Corporativo`, 2.26-3.00

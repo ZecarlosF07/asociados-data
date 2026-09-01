@@ -1,5 +1,3 @@
-import { formatDateOnly } from './dateOnly.js'
-
 export const COMPANY_CONTACT_SOURCES = {
   AREA_CONTACT: 'AREA_CONTACT',
   ASSOCIATE_PERSON: 'ASSOCIATE_PERSON',
@@ -27,21 +25,15 @@ export function getCompanyContactTypeLabel(contactType) {
 
 export function toCompanyContactExportRow(contact) {
   return {
-    contact_type: contact.contact_type_label,
+    associate_ruc: contact.associate?.ruc || '',
+    associate_name: contact.associate?.company_name || '',
+    category: contact.associate?.category?.name || '',
+    primary_committee: contact.associate?.primary_committee?.name || '',
+    contact_type: contact.contact_type_label || '',
     area: contact.area?.label || '',
-    contact_name: contact.full_name,
+    contact_name: contact.full_name || '',
     position: contact.position || '',
     email: contact.email || '',
     phone: contact.phone || '',
-    dni: contact.dni || '',
-    birthday: formatDateOnly(contact.birthday),
-    is_primary_label: contact.is_primary ? 'Sí' : 'No',
-    associate_name: contact.associate?.company_name || '',
-    associate_code: contact.associate?.internal_code || '',
-    associate_ruc: contact.associate?.ruc || '',
-    associate_status: contact.associate?.associate_status?.label || '',
-    category: contact.associate?.category?.name || '',
-    primary_committee: contact.associate?.primary_committee?.name || '',
-    notes: contact.notes || '',
   }
 }

@@ -231,22 +231,16 @@ export const EXPORT_COLUMNS = {
   ],
 
   companyContacts: [
+    { key: 'associate_ruc', label: 'RUC' },
+    { key: 'associate_name', label: 'Asociados' },
+    { key: 'category', label: 'Categoría' },
+    { key: 'primary_committee', label: 'Comité principal' },
     { key: 'contact_type', label: 'Tipo de contacto' },
     { key: 'area', label: 'Área' },
     { key: 'contact_name', label: 'Contacto' },
     { key: 'position', label: 'Cargo' },
     { key: 'email', label: 'Email' },
     { key: 'phone', label: 'Teléfono' },
-    { key: 'dni', label: 'DNI' },
-    { key: 'birthday', label: 'Onomástico' },
-    { key: 'is_primary_label', label: 'Principal' },
-    { key: 'associate_name', label: 'Asociado' },
-    { key: 'associate_code', label: 'Código asociado' },
-    { key: 'associate_ruc', label: 'RUC' },
-    { key: 'associate_status', label: 'Estado asociado' },
-    { key: 'category', label: 'Categoría' },
-    { key: 'primary_committee', label: 'Comité principal' },
-    { key: 'notes', label: 'Observaciones' },
   ],
 
   collections: [
