@@ -76,6 +76,5 @@ export interface CommitteeReportSummaryRow {
   total_assigned: number
   active_count: number
   inactive_count: number
-  suspended_count: number
   in_process_count: number
 }

@@ -100,7 +100,6 @@ function summarizeCommittee(committee, associates) {
     total_assigned: matches.length,
     active_count: countStatus(matches, 'ACTIVO'),
     inactive_count: countStatus(matches, 'INACTIVO'),
-    suspended_count: countStatus(matches, 'SUSPENDIDO'),
     in_process_count: countStatus(matches, 'EN_PROCESO'),
   }
 }

@@ -225,10 +225,19 @@ export const associatesService = {
     return data
   },
 
-  async setSuspension(associateId, suspended) {
-    const { data, error } = await supabase.rpc('set_associate_suspension', {
+  async offboard(associateId, reason, expectedStatusCode) {
+    const { data, error } = await supabase.rpc('offboard_associate', {
       p_associate_id: associateId,
-      p_suspended: suspended,
+      p_reason: reason,
+      p_expected_status_code: expectedStatusCode,
+    })
+    if (error) throw error
+    return data
+  },
+
+  async reinstate(associateId) {
+    const { data, error } = await supabase.rpc('reinstate_associate', {
+      p_associate_id: associateId,
     })
     if (error) throw error
     return data

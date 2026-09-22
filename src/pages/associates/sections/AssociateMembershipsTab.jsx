@@ -15,6 +15,7 @@ export function AssociateMembershipsTab(props) {
   const scheduledMembership = memberships.find(
     (membership) => membership.membership_status?.code === 'PROGRAMADA'
   )
+  const canManageMembership = !associate.is_offboarded
   const history = memberships.filter(
     (membership) => !['VIGENTE', 'PROGRAMADA'].includes(membership.membership_status?.code)
   )
@@ -40,7 +41,7 @@ export function AssociateMembershipsTab(props) {
               : 'Registra un nuevo periodo anual para el asociado.'}
           </p>
         </div>
-        {canCreate && !currentMembership && !scheduledMembership && !formOpen && associate.category && (
+        {canManageMembership && canCreate && !currentMembership && !scheduledMembership && !formOpen && associate.category && (
           <Button onClick={() => setFormOpen(true)}>Crear membresía</Button>
         )}
       </header>
@@ -50,6 +51,11 @@ export function AssociateMembershipsTab(props) {
         <MembershipCategoryWarning canEdit={props.canEditAssociate} onEdit={props.onEditAssociate} />
       )}
 
+      {associate.is_offboarded && (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          Empresa dada de baja. Reincorpórala antes de crear o renovar una membresía.
+        </p>
+      )}
       {formOpen ? (
         <MembershipFormPanel renewing={!!renewingFrom}>
           <MembershipForm initialData={renewingFrom ? renewalData(renewingFrom) : null}
@@ -60,7 +66,7 @@ export function AssociateMembershipsTab(props) {
         <>
           <MembershipList currentMembership={currentMembership}
             scheduledMembership={scheduledMembership} history={history}
-            canRenew={canCreate && canUpdate} canCancel={canUpdate}
+            canRenew={canManageMembership && canCreate && canUpdate} canCancel={canManageMembership && canUpdate}
             onCancel={props.onCancel} onCancelScheduled={props.onCancelScheduled}
             onRenew={openRenewal} />
           {!currentMembership && !scheduledMembership && associate.category && (
@@ -69,7 +75,7 @@ export function AssociateMembershipsTab(props) {
                 description={history.length
                   ? 'Los periodos anteriores están en el historial. Crea una membresía para iniciar un nuevo periodo.'
                   : 'Crea la primera membresía para generar su cronograma de pagos.'}
-                action={canCreate ? <Button onClick={() => setFormOpen(true)}>Crear membresía</Button> : null} />
+                action={canManageMembership && canCreate ? <Button onClick={() => setFormOpen(true)}>Crear membresía</Button> : null} />
             </div>
           )}
         </>

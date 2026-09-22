@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAssociateDetail } from '../../hooks/useAssociateDetail'
 import { useNotification } from '../../hooks/useNotification'
@@ -12,10 +11,10 @@ import { useAssociateAreaContactActions } from '../../hooks/useAssociateAreaCont
 import { useAssociateDocumentActions } from '../../hooks/useAssociateDocumentActions'
 import { AssociateDetailHeader } from './sections/AssociateDetailHeader'
 import { AssociateDetailTabs } from './sections/AssociateDetailTabs'
-import { AssociateCommitteeModal } from '../../components/molecules/associates/AssociateCommitteeModal'
+import { AssociateDetailModals } from './sections/AssociateDetailModals'
 import { ROUTES } from '../../router/routes'
 import { AssociateDetailState } from './sections/AssociateDetailState'
-import { associatesService } from '../../services/associates.service'
+import { useAssociateOffboarding } from '../../hooks/useAssociateOffboarding'
 
 export function AssociateDetailPage() {
   const { id } = useParams()
@@ -28,7 +27,7 @@ export function AssociateDetailPage() {
   const canUpdateMembership = canEdit('membresias')
   const canManageCollection = canCreate('cobranza') && canEdit('cobranza')
   const detail = useAssociateDetail(id)
-  const [statusLoading, setStatusLoading] = useState(false)
+  const offboarding = useAssociateOffboarding({ associateId: id, notify, refetch: detail.refetch })
   const committeeActions = useAssociateCommitteeActions({
     associateId: id,
     notify,
@@ -59,26 +58,8 @@ export function AssociateDetailPage() {
     notify,
     refetch: detail.refetch,
   })
-  const handleSuspension = async () => {
-    const suspended = detail.associate.associate_status?.code !== 'SUSPENDIDO'
-    const message = suspended
-      ? '¿Suspender a este asociado? La suspensión prevalecerá sobre su membresía.'
-      : '¿Reactivar a este asociado? Su estado volverá a calcularse según la membresía.'
-    if (!confirm(message)) return
-    setStatusLoading(true)
-    try {
-      await associatesService.setSuspension(id, suspended)
-      notify.success(suspended ? 'Asociado suspendido' : 'Estado automático restaurado')
-      await detail.refetch()
-    } catch (error) {
-      notify.error('Error: ' + error.message)
-    } finally {
-      setStatusLoading(false)
-    }
-  }
-
   const isActionLoading = financialLoading || collectionLoading || committeeActions.loading
-    || peopleActions.loading || contactActions.loading || documentActions.loading
+    || peopleActions.loading || contactActions.loading || documentActions.loading || offboarding.loading
 
   if (detail.loading || detail.error || !detail.associate) {
     return <AssociateDetailState loading={detail.loading} error={detail.error} onBack={() => navigate(ROUTES.ASOCIADOS)} />
@@ -90,11 +71,11 @@ export function AssociateDetailPage() {
         associate={detail.associate}
         canEdit={canEditAssociate}
         committeeActionLoading={committeeActions.loading}
-        statusActionLoading={statusLoading}
+        statusActionLoading={isActionLoading}
         onEdit={() => navigate(`${ROUTES.ASOCIADOS}/${id}/editar`)}
         onBack={() => navigate(ROUTES.ASOCIADOS)}
         onManageCommittee={committeeActions.open}
-        onToggleSuspension={handleSuspension}
+        onStatusAction={offboarding.open}
       />
 
       <AssociateDetailTabs
@@ -132,13 +113,8 @@ export function AssociateDetailPage() {
         onDocumentDelete={documentActions.remove}
       />
 
-      <AssociateCommitteeModal
-        isOpen={!!committeeActions.mode}
-        mode={committeeActions.mode}
-        loading={committeeActions.loading}
-        onClose={committeeActions.close}
-        onSubmit={committeeActions.submit}
-      />
+      <AssociateDetailModals committeeActions={committeeActions} offboarding={offboarding}
+        detail={detail} canUpdateMembership={canUpdateMembership} />
     </div>
   )
 }

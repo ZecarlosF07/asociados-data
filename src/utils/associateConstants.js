@@ -2,7 +2,6 @@
 export const ASSOCIATE_STATUS_VARIANT = {
   ACTIVO: 'success',
   INACTIVO: 'danger',
-  SUSPENDIDO: 'warning',
   EN_PROCESO: 'info',
 }
 

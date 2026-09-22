@@ -16,6 +16,12 @@ export function AssociateInternalInfo({ associate }) {
       <InfoRow label="Bienvenida" value={associate.welcome_status ? 'Sí' : 'No'} />
       <InfoRow label="Responsable afiliación" value={formatUser(associate.affiliation_responsible)} />
       <InfoRow label="Categoría" value={associate.category?.name} />
+      {associate.is_offboarded && (
+        <>
+          <InfoRow label="Fecha de baja" value={formatOffboardDate(associate.inactivated_at)} />
+          <InfoRow label="Motivo de baja" value={associate.inactivation_reason} />
+        </>
+      )}
       {associate.captador && <InfoRow label="Captador" value={associate.captador.full_name} />}
     </InfoSection>
   )
@@ -23,4 +29,11 @@ export function AssociateInternalInfo({ associate }) {
 
 function formatUser(user) {
   return user ? [user.first_name, user.last_name].filter(Boolean).join(' ') : null
+}
+
+function formatOffboardDate(value) {
+  if (!value) return null
+  return new Intl.DateTimeFormat('es-PE', {
+    timeZone: 'America/Lima', day: '2-digit', month: '2-digit', year: 'numeric',
+  }).format(new Date(value))
 }

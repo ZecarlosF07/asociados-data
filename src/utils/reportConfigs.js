@@ -21,7 +21,6 @@ export const STATUS_COLORS_PROSPECTS = {
 export const STATUS_COLORS_ASSOCIATES = {
   ACTIVO: 'bg-emerald-500',
   INACTIVO: 'bg-slate-400',
-  SUSPENDIDO: 'bg-red-500',
   EN_PROCESO: 'bg-amber-500',
 }
 
@@ -55,7 +54,6 @@ export const REPORT_TABLE_COLUMNS = {
       format: 'badge',
       badgeVariant: (val) => {
         if (val === 'Activo') return 'success'
-        if (val === 'Suspendido') return 'danger'
         if (val === 'Inactivo') return 'warning'
         return 'default'
       },
@@ -82,7 +80,6 @@ export const REPORT_TABLE_COLUMNS = {
     { key: 'total_assigned', label: 'Total', align: 'right' },
     { key: 'active_count', label: 'Activos', align: 'right' },
     { key: 'inactive_count', label: 'Inactivos', align: 'right' },
-    { key: 'suspended_count', label: 'Suspendidos', align: 'right' },
     { key: 'in_process_count', label: 'En proceso', align: 'right' },
   ],
 

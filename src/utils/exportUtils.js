@@ -165,7 +165,6 @@ export const EXPORT_COLUMNS = {
     { key: 'total_assigned', label: 'Total asociados', format: 'number' },
     { key: 'active_count', label: 'Activos', format: 'number' },
     { key: 'inactive_count', label: 'Inactivos', format: 'number' },
-    { key: 'suspended_count', label: 'Suspendidos', format: 'number' },
     { key: 'in_process_count', label: 'En proceso', format: 'number' },
   ],
 

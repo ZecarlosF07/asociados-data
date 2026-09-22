@@ -12,7 +12,7 @@ export function AssociateInternalFields({ form, onChange }) {
         <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
           <p className="text-xs font-semibold text-slate-500">Estado del asociado</p>
           <p className="mt-1 text-sm text-slate-700">
-            Se calcula automáticamente según la membresía.
+            Se calcula según la membresía, salvo cuando se registra una baja administrativa.
           </p>
         </div>
         <FormField label="Categoría" name="category_id">
