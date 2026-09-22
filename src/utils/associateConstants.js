@@ -7,6 +7,7 @@ export const ASSOCIATE_STATUS_VARIANT = {
 
 /** Mapeo de salud de pago a variantes de Badge */
 export const PAYMENT_HEALTH_VARIANT = {
+  NO_APLICA: 'default',
   AL_DIA: 'success',
   POR_VENCER: 'warning',
   MOROSO: 'danger',

@@ -1,4 +1,5 @@
 import { Badge } from '../../atoms/Badge'
+import { NoMembershipFinancialSummary } from './NoMembershipFinancialSummary'
 import { formatCurrency, formatDate, formatDateTime } from '../../../utils/helpers'
 import {
   compareDateOnly,
@@ -12,6 +13,8 @@ export function AssociateFinancialSummary({
   payments = [],
   collectionActions = [],
 }) {
+  if (associate?.payment_health?.code === 'NO_APLICA') return <NoMembershipFinancialSummary />
+
   const today = todayDateOnly()
 
   const activeSchedules = schedules.filter((schedule) => schedule.is_collectible)
