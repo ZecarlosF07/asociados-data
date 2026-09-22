@@ -402,6 +402,8 @@ async function attachOperationalAssociateState(associates) {
         code: operational.payment_health_code,
         label: operational.payment_health_label,
       },
+      collectible_amount: operational.collectible_amount,
+      overdue_amount: operational.overdue_amount,
     }
   })
 }

@@ -1,4 +1,5 @@
 import { Badge } from '../../atoms/Badge'
+import { InactiveFinancialNotice } from './InactiveFinancialNotice'
 import { NoMembershipFinancialSummary } from './NoMembershipFinancialSummary'
 import { formatCurrency, formatDate, formatDateTime } from '../../../utils/helpers'
 import {
@@ -14,7 +15,6 @@ export function AssociateFinancialSummary({
   collectionActions = [],
 }) {
   if (associate?.payment_health?.code === 'NO_APLICA') return <NoMembershipFinancialSummary />
-
   const today = todayDateOnly()
 
   const activeSchedules = schedules.filter((schedule) => schedule.is_collectible)
@@ -51,6 +51,10 @@ export function AssociateFinancialSummary({
           {associate?.payment_health?.label || 'Sin estado'}
         </Badge>
       </div>
+      {associate?.associate_status?.code === 'INACTIVO' && (
+        <InactiveFinancialNotice collectibleAmount={associate.collectible_amount ?? totalPending}
+          overdueAmount={associate.overdue_amount ?? totalOverdue} />
+      )}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <SummaryMetric

@@ -151,6 +151,8 @@ function mapAssociateReport(row) {
     activity_type: buildCatalog(row.activity_type_code, row.activity_type_label),
     company_size: buildCatalog(row.company_size_code, row.company_size_label),
     payment_health: buildCatalog(row.payment_health_code, row.payment_health_label),
+    collectible_amount: row.collectible_amount,
+    overdue_amount: row.overdue_amount,
   }
 }
 

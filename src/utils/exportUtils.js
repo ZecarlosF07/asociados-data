@@ -156,6 +156,8 @@ export const EXPORT_COLUMNS = {
     { key: 'corporate_email', label: 'Correo' },
     { key: 'association_date', label: 'Fecha de asociación', format: 'date' },
     { key: 'payment_health.label', label: 'Salud de pago' },
+    { key: 'collectible_amount', label: 'Saldo cobrable', format: 'currency' },
+    { key: 'overdue_amount', label: 'Deuda vencida', format: 'currency' },
   ],
 
   committeeSummary: [

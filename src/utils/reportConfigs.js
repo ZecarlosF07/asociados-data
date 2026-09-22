@@ -71,6 +71,8 @@ export const REPORT_TABLE_COLUMNS = {
         return 'default'
       },
     },
+    { key: 'collectible_amount', label: 'Saldo cobrable', format: 'currency', align: 'right' },
+    { key: 'overdue_amount', label: 'Deuda vencida', format: 'currency', align: 'right' },
   ],
 
   committeeSummary: [

@@ -1,4 +1,5 @@
--- S24: "No aplica" solo para empresas sin membresia; cache y reportes coherentes.
+-- S24: "No aplica · sin membresia" para EN_PROCESO sin membresia.
+-- Compatible con S25: INACTIVO usa su propio NO_APLICA_INACTIVO.
 with checks as (
   select 1 as position, 's24_no_aplica_catalog' as check_name,
     count(*)::int as found, 1 as expected,
@@ -19,7 +20,7 @@ with checks as (
     coalesce(jsonb_agg(a.id order by a.id), '[]'::jsonb)
   from public.associates a
   join public.associate_operational_summary s on s.id = a.id
-  where not a.is_deleted
+  where not a.is_deleted and s.effective_status_code = 'EN_PROCESO'
     and not exists (select 1 from public.memberships m
       where m.associate_id = a.id and not m.is_deleted)
     and (s.payment_health_code is distinct from 'NO_APLICA'
@@ -28,8 +29,9 @@ with checks as (
   select 4, 's24_without_membership_cache_mismatch', count(*)::int, 0,
     coalesce(jsonb_agg(a.id order by a.id), '[]'::jsonb)
   from public.associates a
+  join public.associate_operational_summary s on s.id = a.id
   left join public.catalog_items ci on ci.id = a.payment_health_status_id
-  where not a.is_deleted
+  where not a.is_deleted and s.effective_status_code = 'EN_PROCESO'
     and not exists (select 1 from public.memberships m
       where m.associate_id = a.id and not m.is_deleted)
     and ci.code is distinct from 'NO_APLICA'
@@ -46,7 +48,7 @@ with checks as (
     coalesce(jsonb_agg(a.id order by a.id), '[]'::jsonb)
   from public.associates a
   join public.report_associates_summary r on r.id = a.id
-  where not a.is_deleted
+  where not a.is_deleted and r.associate_status_code = 'EN_PROCESO'
     and not exists (select 1 from public.memberships m
       where m.associate_id = a.id and not m.is_deleted)
     and (r.payment_health_code is distinct from 'NO_APLICA'

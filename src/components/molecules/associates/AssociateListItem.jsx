@@ -1,5 +1,6 @@
 import { Badge } from '../../atoms/Badge'
 import { formatDate } from '../../../utils/helpers'
+import { InactiveDebtItem } from './InactiveDebtItem'
 import {
   ASSOCIATE_STATUS_VARIANT,
   PAYMENT_HEALTH_VARIANT,
@@ -47,7 +48,7 @@ export function AssociateListItem({ associate, onClick }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mt-4 text-xs">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 text-xs ${statusCode === 'INACTIVO' ? 'lg:grid-cols-6' : 'lg:grid-cols-5'}`}>
         <Item label="Código" value={associate.internal_code} strong />
         <Item label="RUC" value={associate.ruc} />
         <Item label="Responsable" value={responsible} />
@@ -55,6 +56,10 @@ export function AssociateListItem({ associate, onClick }) {
         <Item label="Salud de pago" value={healthLabel}>
           <Badge variant={healthVariant}>{healthLabel}</Badge>
         </Item>
+        {statusCode === 'INACTIVO' && (
+          <InactiveDebtItem collectibleAmount={associate.collectible_amount}
+            overdueAmount={associate.overdue_amount} />
+        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500">
